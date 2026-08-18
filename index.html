@@ -805,6 +805,7 @@
     const POLL_INTERVAL = 8000;          // 轮询后端获取留言间隔(毫秒)，用于同步其他用户消息
     const MAX_LIVE_DANMAKU = 12;         // 屏幕上同时最多存在弹幕数量，防止DOM爆炸
     const DANMAKU_GAP = 1200;            // 调度器生成一条弹幕的时间间隔（毫秒）
+    const VIRT_DANMAKU_SPEED = 120;      //【本地虚拟弹幕】像素/秒，向左滚动速度
     /* ==============================================
      * 工具函数模块
      * ============================================== */
@@ -897,6 +898,65 @@
     }
 
     /* ==============================================
+     * 【本地虚拟弹幕】JS驱动从容器中间向右边界向左滚动，不使用css @keyframes
+     * 仅本地浏览器可见；轮询loadMessages触发后销毁
+     * ============================================== */
+    let virtualDanmakuList = []; // 保存全部本地虚拟弹幕实例
+    /**
+     * 创建本地虚拟弹幕DOM，启动requestAnimationFrame向左滚动
+     * @param {string} contentText 弹幕文字
+     */
+    function createLocalVirtualDanmaku(contentText){
+      const container = document.getElementById('danmakuContainer');
+      const rect = container.getBoundingClientRect();
+
+      const div = document.createElement('div');
+      div.className = 'danmaku-item';
+      div.dataset.localVirtual = "1"; // 标记本地虚拟弹幕，轮询识别销毁
+      div.style.animation = "none"; // 关闭原css keyframes动画！！！
+      div.textContent = escapeHtml(contentText);
+      // 初始位置：弹幕容器可视区域右侧中间
+      div.style.top = "50%";
+      div.style.right = "0px";
+      div.style.transform = "translateY(-50%)";
+
+      container.appendChild(div);
+
+      // 虚拟弹幕实例对象
+      const inst = {
+        dom: div,
+        x: rect.width, // 起始X坐标，容器宽度（最右侧）
+        rafId: null
+      };
+      virtualDanmakuList.push(inst);
+
+      /** 逐帧向左滚动 */
+      function tick(){
+        inst.x -= VIRT_DANMAKU_SPEED / 60;
+        inst.dom.style.right = (rect.width - inst.x) + "px";
+        // 滚动跑出容器左边界，销毁
+        if(inst.x < -inst.dom.offsetWidth){
+          inst.dom.remove();
+          const idx = virtualDanmakuList.indexOf(inst);
+          if(idx > -1) virtualDanmakuList.splice(idx,1);
+          return;
+        }
+        inst.rafId = requestAnimationFrame(tick);
+      }
+      inst.rafId = requestAnimationFrame(tick);
+    }
+    /**
+     * 销毁全部本地虚拟弹幕，取消raf动画，loadMessages调用
+     */
+    function destroyAllVirtualDanmaku(){
+      for(const inst of virtualDanmakuList){
+        cancelAnimationFrame(inst.rafId);
+        if(inst.dom && inst.dom.parentNode) inst.dom.remove();
+      }
+      virtualDanmakuList = [];
+    }
+
+    /* ==============================================
      * IntersectionObserver 滚动观察器
      * 元素进入视口添加visible类实现滚动渐入动画，触发一次就停止观察节省性能
      * ============================================== */
@@ -979,24 +1039,20 @@
     let allMessages = [];         // 完整留言池，轮询接口更新这个数组
     let playIndex = 0;            // 播放索引指针，记录下一条要播放的留言下标
     let danmakuScheduler = null;  // 弹幕循环调度定时器
-    let localVirtualDanmaku = null; // 保存【本地虚拟弹幕】DOM引用，轮询时销毁
 
     /**
-     * 创建单条弹幕DOM
-     * @param {object} item 留言对象 {id,content,client_id,create_at,isLocalVirtual}
+     * 创建单条云端弹幕DOM（使用css @keyframes）
+     * @param {object} item 留言对象 {id,content,client_id,create_at}
      * @returns {HTMLElement}
      */
     function createDanmakuItem(item) {
       const div = document.createElement('div');
       div.className = 'danmaku-item';
       div.dataset.id = item.id;
-      // 标记本地虚拟弹幕，轮询时识别销毁
-      if(item.isLocalVirtual){
-        div.dataset.localVirtual = "1";
-      }
       div.textContent = escapeHtml(item.content);
       // top：5%~80%，上下留出安全边距避免文字被裁切
       div.style.top = (Math.random() * 75 + 5) + '%';
+      div.style.animation = ''; // 使用css默认danmakuMove动画
       const duration = Math.random() * 6 + 6;
       div.style.animationDuration = duration + 's';
       // 弹幕动画跑完直接销毁DOM，不复用
@@ -1018,7 +1074,7 @@
       }
       wallTip.style.display = 'none';
       // 屏幕弹幕数量保护，超过上限跳过本次生成
-      const currentCount = danmakuContainer.querySelectorAll('.danmaku-item').length;
+      const currentCount = danmakuContainer.querySelectorAll('.danmaku-item:not([data-local-virtual])').length;
       if(currentCount >= MAX_LIVE_DANMAKU){
         return;
       }
@@ -1126,12 +1182,12 @@
     }
     /* ==============================================
      * 后端留言轮询模块
-     * loadMessages：拉取云端真实数据；执行时销毁本地虚拟弹幕DOM
+     * loadMessages：拉取云端真实数据；执行时【销毁全部本地虚拟弹幕】
      * ============================================== */
     let pollTimer = null;
     /**
      * 请求后端获取最新留言，更新全局留言池 allMessages
-     * 逻辑：轮询拿到后端真实数据，清除页面上本地虚拟弹幕，用云端数据展示
+     * 逻辑：轮询拿到后端真实数据，销毁页面上全部本地虚拟弹幕DOM；数据库为空清空内存和DOM
      */
     async function loadMessages() {
       try {
@@ -1139,14 +1195,14 @@
         if (!res.ok) throw new Error('请求失败');
         const data = await res.json();
 
-        // 轮询到云端数据，销毁所有本地虚拟弹幕DOM
-        danmakuContainer.querySelectorAll('.danmaku-item[data-local-virtual="1"]').forEach(el=>el.remove());
-        localVirtualDanmaku = null;
+        // 【重点】轮询到云端数据，销毁所有本地虚拟弹幕
+        destroyAllVirtualDanmaku();
 
         // 后端返回空数组，数据库已经没有留言，强制清空内存与页面DOM
         if(Array.isArray(data) && data.length === 0){
           allMessages = [];
           playIndex = 0;
+          danmakuContainer.querySelectorAll('.danmaku-item:not([data-local-virtual])').forEach(el=>el.remove());
           wallTip.style.display = 'block';
           wallTip.textContent = '暂无留言，快来发布第一条回忆吧✨';
           wallTip.className = 'wall-tip';
@@ -1192,8 +1248,10 @@
     });
     /* ==============================================
      * 发布留言提交逻辑
-     * 时序：点击发布 → 播放飞行动画；飞到弹幕容器中间，生成【本地虚拟弹幕（仅本机可见，不上云）】直接进入流动轨道；
-     * 同时POST提交云端；等待POLL_INTERVAL=8000ms轮询执行loadMessages，拉取云端真实数据，销毁虚拟弹幕，同步云端真实留言
+     * 时序：点击发布 → 播放飞行动画；飞到弹幕容器【垂直正中间】，调用createLocalVirtualDanmaku
+     * 生成本地虚拟弹幕：从弹幕容器右侧中间位置直接向左滚动；仅本机可见；
+     * 同时POST提交云端；等待POLL_INTERVAL=8000ms轮询执行loadMessages，销毁虚拟弹幕，使用云端真实数据
+     * 注意：不修改allMessages内存留言池，等待轮询从后端拉取
      * ============================================== */
     const msgInput = document.getElementById('msgInput');
     const submitBtn = document.getElementById('submitBtn');
@@ -1209,19 +1267,9 @@
       submitBtn.disabled = true;
       submitBtn.textContent = '发布中...';
 
-      // 飞行动画，抵达弹幕容器中间，生成本地虚拟弹幕，直接开始滚动
+      // 飞行动画，抵达弹幕容器中间 → 创建本地虚拟弹幕
       playSendFlyAnimation(text, ()=>{
-        const virtualMsgObj = {
-          id: "virtual_" + Date.now(),
-          content: text,
-          client_id: CLIENT_ID,
-          create_at: new Date().toISOString(),
-          isLocalVirtual: true // 标记本地虚拟弹幕，轮询时销毁
-        };
-        localVirtualDanmaku = createDanmakuItem(virtualMsgObj);
-        // 放到弹幕容器垂直中间轨道
-        localVirtualDanmaku.style.top = "50%";
-        danmakuContainer.appendChild(localVirtualDanmaku);
+        createLocalVirtualDanmaku(text);
         wallTip.style.display = 'none';
       });
 
@@ -1235,7 +1283,7 @@
         const ret = await res.json();
         if (!res.ok || ret.error) throw new Error(ret.error || '发布失败');
         msgInput.value = '';
-        // 注意：这里不手动修改allMessages；等待8秒轮询loadMessages()从后端拉取真实数据同步
+        // 不手动修改allMessages；等待8秒轮询loadMessages()拉取真实数据
       } catch (err) {
         alert('发布失败：' + err.message);
       } finally {
