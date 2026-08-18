@@ -711,7 +711,7 @@
     }
   
 
-/* ================= 仿iOS 17 /  Upgrade ================= */
+/* ================= iOS 17 / Apple Style Upgrade ================= */
 :root{
  --ios-ease:cubic-bezier(.22,1,.36,1);
 }
@@ -2244,32 +2244,13 @@ body:before{
     });
   </script>
 
-
-// iOS style parallax depth
-(function(){
- const hero=document.querySelector('.hero');
- if(!hero)return;
- window.addEventListener('scroll',()=>{
-  const y=window.scrollY;
-  hero.style.transform=`translateY(${y*.08}px)`;
- },{passive:true});
-})();
-</body>
-</html>
-
 <script>
-document.querySelectorAll('.wall-btn,.open-my-msg-btn').forEach(btn=>{
- btn.addEventListener('pointermove',e=>{
-  const r=btn.getBoundingClientRect();
-  btn.style.setProperty('--mx',
-  ((e.clientX-r.left)/r.width*100)+'%');
-  btn.style.setProperty('--my',
-  ((e.clientY-r.top)/r.height*100)+'%');
- });
-});
-</script>
-
-<script>
+// ==========================================
+// iOS 26 Liquid Glass 光学跟随效果
+// 功能:
+// 鼠标移动时改变玻璃按钮高光位置
+// 不影响 Cloudflare / D1 逻辑
+// ==========================================
 document.querySelectorAll(".wall-btn,.open-my-msg-btn")
 .forEach(el=>{
  el.addEventListener("pointermove",e=>{
@@ -2281,3 +2262,6 @@ document.querySelectorAll(".wall-btn,.open-my-msg-btn")
  });
 });
 </script>
+
+</body>
+</html>
