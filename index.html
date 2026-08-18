@@ -2,42 +2,50 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <!-- 视口配置：禁止双指缩放，适配刘海挖孔屏，修复iOS输入框缩放 -->
-  <meta name="viewport" content="width=device‑width, initial‑scale=1.0, maximum‑scale=1.0, user‑scalable=no, viewport‑fit=cover"/>
+  <!--
+    移动端视口配置
+    maximum-scale=1.0 user-scalable=no：禁止双指缩放
+  -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>臻辉班 · 班级纪念册</title>
-  <!-- Google字体，增加中文字体降级，国内环境兜底 -->
+  <!--
+    引入Google字体，增加中文字体降级兜底
+    Noto Serif SC：正文衬线字体
+    Ma Shan Zheng：马善政手写书法字体（班训、签名、页脚）
+  -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
   <style>
-    /* ========== 全局重置与CSS变量区 ========== */
+    /* ====================== 全局重置与CSS变量 ====================== */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      touch-action: manipulation; /* 禁止双击缩放 */
+      touch-action: manipulation; /* CSS防护：禁止浏览器双击放大页面 */
     }
     :root {
-      --gold: #c9a84c;
-      --gold-light: #e8d5a3;
-      --dark: #1a1a2e;
-      --cream: #fdf8f0;
-      --text-main: #333;
-      --text-sub: #999;
-      --border: #e0e0e0;
-      --danger: #e74c3c;
-      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --gold: #c9a84c;         /* 主金色 */
+      --gold-light: #e8d5a3;   /* 浅金色 */
+      --dark: #1a1a2e;         /* 深色标题底色 */
+      --cream: #fdf8f0;        /* 页面米黄背景 */
+      --text-main: #333;       /* 主要文字颜色 */
+      --text-sub: #999;        /* 辅助次要文字 */
+      --border: #e0e0e0;       /* 通用边框 */
+      --danger: #e74c3c;       /* 警告/删除红色 */
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 通用过渡动画曲线 */
     }
     html {
-      scroll-behavior: smooth; /* 页面平滑滚动 */
+      scroll-behavior: smooth; /* 全局平滑滚动（返回顶部生效） */
     }
     body {
       font-family: 'Noto Serif SC', serif;
       background: var(--cream);
       color: var(--text-main);
-      overflow-x: hidden; /* 禁止横向溢出滚动 */
+      overflow-x: hidden; /* 禁止页面横向溢出滚动条 */
       line-height: 1.6;
-      -webkit-tap-highlight-color: transparent; /* 移动端点击高亮去除 */
+      -webkit-tap-highlight-color: transparent; /* 去除移动端点击半透明高亮框 */
     }
-    /* ========== 头部英雄区：标题、班训、签名 ========== */
+
+    /* ====================== 头部Hero区域：班级名称、班训、签名 ====================== */
     .hero {
       text-align: center;
       padding: 60px 20px 40px;
@@ -45,7 +53,7 @@
       position: relative;
       animation: fadeInDown 0.8s ease-out;
     }
-    /* 顶部渐变装饰线 */
+    /* 顶部金色渐变装饰横线 */
     .hero::before {
       content: '';
       position: absolute;
@@ -86,7 +94,8 @@
       margin: 30px auto 0;
       border-radius: 1px;
     }
-    /* ========== 关于我们模块：滚动渐入 ========== */
+
+    /* ====================== 关于我们模块，滚动渐入动画 ====================== */
     .about-section {
       text-align: center;
       padding: 50px 20px;
@@ -94,6 +103,7 @@
       transform: translateY(30px);
       transition: opacity 0.8s ease, transform 0.8s ease;
     }
+    /* IntersectionObserver触发后增加visible类完成入场 */
     .about-section.visible {
       opacity: 1;
       transform: translateY(0);
@@ -111,15 +121,16 @@
       letter-spacing: 8px;
       text-transform: uppercase;
     }
-    /* ========== 班级相册模块 ========== */
+
+    /* ====================== 班级相册模块 ====================== */
     .gallery-section {
-      padding: 20px 16px 50px;
+      padding: 20px 20px 60px;
       max-width: 1200px;
       margin: 0 auto;
     }
     .gallery-header {
       text-align: center;
-      margin-bottom: 24px;
+      margin-bottom: 30px;
       opacity: 0;
       transform: translateY(30px);
       transition: opacity 0.8s ease, transform 0.8s ease;
@@ -139,19 +150,16 @@
       color: var(--text-sub);
       letter-spacing: 3px;
     }
-    /* 相册网格布局：移动端2列，平板以上3列 */
+    /* 相册网格：移动端2列；平板768px以上3列 */
     .gallery-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
+      gap: 12px;
     }
     @media (min-width: 768px) {
       .gallery-grid {
         grid-template-columns: repeat(3, 1fr);
         gap: 16px;
-      }
-      .gallery-section {
-        padding: 20px 20px 60px;
       }
     }
     .gallery-item {
@@ -170,12 +178,12 @@
       transform: translateY(0);
       transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s ease;
     }
-    /* 宽幅图片，占两格 */
+    /* wide：宽幅图片，占网格两格 */
     .gallery-item.wide {
       grid-column: span 2;
       aspect-ratio: 16/7;
     }
-    /* 仅支持hover设备（PC）启用悬浮效果，避免移动端误触发 */
+    /* 仅PC hover设备启用悬浮效果，避免移动端触摸误触发 */
     @media (hover: hover) {
       .gallery-item:hover {
         transform: translateY(-4px);
@@ -198,7 +206,7 @@
       transition: transform 0.5s ease;
       display: block;
     }
-    /* 图片底部遮罩文字 */
+    /* 图片底部半透明遮罩文字 */
     .gallery-overlay {
       position: absolute;
       bottom: 0;
@@ -212,9 +220,10 @@
       transition: opacity 0.3s ease;
       pointer-events: none;
     }
-    /* ========== 寄语祝福模块 ========== */
+
+    /* ====================== 寄语祝福模块 ====================== */
     .blessings {
-      padding: 60px 16px;
+      padding: 70px 20px;
       text-align: center;
       background: linear-gradient(180deg, var(--cream), #fff, var(--cream));
       opacity: 0;
@@ -268,9 +277,10 @@
         transform: translateY(-2px);
       }
     }
-    /* ========== 回忆标题区块 ========== */
+
+    /* ====================== 回忆标题区块 ====================== */
     .memory-section {
-      padding: 50px 16px;
+      padding: 60px 20px;
       text-align: center;
       opacity: 0;
       transform: translateY(30px);
@@ -292,9 +302,10 @@
       color: var(--dark);
       margin: 12px 0;
     }
-    /* ========== 弹幕留言墙模块 ========== */
+
+    /* ====================== 弹幕留言墙模块 ====================== */
     .wall-section {
-      padding: 30px 16px 50px;
+      padding: 40px 20px 60px;
       background: #fff;
       border-radius: 24px 24px 0 0;
       box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
@@ -303,7 +314,7 @@
     }
     .wall-header {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
     .wall-title {
       font-size: 20px;
@@ -315,7 +326,7 @@
       color: var(--text-sub);
       margin-top: 4px;
     }
-    /* 弹幕外层容器 - 手机高度320px */
+    /* 弹幕滚动容器 */
     .danmaku-container {
       position: relative;
       height: 320px;
@@ -326,16 +337,6 @@
       max-width: 900px;
       margin: 0 auto;
     }
-    /* PC平板弹幕高度提升 */
-    @media (min-width:768px) {
-      .danmaku-container {
-        height:420px;
-      }
-      .wall-section {
-        padding: 40px 20px 60px;
-      }
-    }
-    /* 单条弹幕样式 */
     .danmaku-item {
       position: absolute;
       right: -100%;
@@ -351,7 +352,7 @@
       animation-timing-function: linear;
       animation-fill-mode: forwards;
     }
-    /* 空状态提示文字 */
+    /* 弹幕区空状态 / 错误提示 */
     .wall-tip {
       position: absolute;
       top: 50%;
@@ -366,11 +367,11 @@
     .wall-tip.error {
       color: var(--danger);
     }
-    /* 留言输入发布区域，iOS修复font-size:16px，禁止自动缩放 */
+    /* 留言输入区域 iOS修复 font-size:16px，防止输入时页面自动放大 */
     .wall-input-area {
       display: flex;
       gap: 10px;
-      margin-top: 20px;
+      margin-top: 24px;
       max-width: 700px;
       margin-left: auto;
       margin-right: auto;
@@ -380,7 +381,7 @@
       padding: 12px 16px;
       border: 1.5px solid var(--border);
       border-radius: 12px;
-      font-size: 16px; /* iOS必须>=16px防止输入框自动放大 */
+      font-size: 16px; /* iOS硬性要求 >=16px，否则点击输入自动缩放页面 */
       font-family: inherit;
       outline: none;
       transition: border-color 0.3s ease;
@@ -390,7 +391,7 @@
       border-color: var(--gold);
     }
     .wall-btn {
-      padding: 12px 20px;
+      padding: 12px 24px;
       background: var(--gold);
       color: #fff;
       border: none;
@@ -411,10 +412,11 @@
       cursor: not-allowed;
       transform: none;
     }
-    /* ========== 我的留言折叠面板 ========== */
+
+    /* ====================== 我的留言折叠面板 ====================== */
     .my-messages {
       max-width: 700px;
-      margin: 24px auto 0;
+      margin: 32px auto 0;
       border: 1px solid var(--border);
       border-radius: 16px;
       overflow: hidden;
@@ -424,7 +426,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 14px 18px;
+      padding: 14px 20px;
       background: linear-gradient(90deg, rgba(201,168,76,0.08), transparent);
       border-bottom: 1px solid var(--border);
       cursor: pointer;
@@ -453,7 +455,7 @@
       color: var(--text-sub);
       transition: transform 0.3s ease;
     }
-    /* 折叠状态，旋转箭头 */
+    /* collapsed折叠状态箭头旋转 */
     .my-messages.collapsed .my-messages-toggle {
       transform: rotate(-90deg);
     }
@@ -471,7 +473,7 @@
       justify-content: space-between;
       align-items: flex-start;
       gap: 12px;
-      padding: 12px 18px;
+      padding: 12px 20px;
       border-bottom: 1px solid #f0f0f0;
       transition: background 0.2s ease;
     }
@@ -514,15 +516,16 @@
       background: rgba(231,76,60,0.08);
     }
     .my-msg-empty {
-      padding: 26px 16px;
+      padding: 30px 20px;
       text-align: center;
       color: var(--text-sub);
       font-size: 13px;
     }
-    /* ========== 页脚区域 ========== */
+
+    /* ====================== 页脚区域 ====================== */
     .footer {
       text-align: center;
-      padding: 40px 16px 32px;
+      padding: 50px 20px 40px;
       background: var(--dark);
       color: #fff;
     }
@@ -554,7 +557,8 @@
       font-size: 12px;
       color: #666;
     }
-    /* ========== 图片灯箱（大图预览） ========== */
+
+    /* ====================== 图片灯箱：大图预览弹窗 ====================== */
     .lightbox {
       position: fixed;
       top: 0;
@@ -566,16 +570,16 @@
       justify-content: center;
       align-items: center;
       z-index: 1000;
-      padding: 16px;
+      padding: 20px;
       opacity: 0;
       visibility: hidden;
-      pointer-events: none; /* 隐藏时禁止点击，不阻挡页面交互 */
+      pointer-events: none; /* 隐藏时禁止交互 */
       transition: opacity 0.3s ease, visibility 0.3s ease;
     }
     .lightbox.active {
       visibility: visible;
       opacity: 1;
-      pointer-events: auto; /* 显示时恢复点击 */
+      pointer-events: auto;
     }
     .lightbox img {
       max-width: 100%;
@@ -590,13 +594,13 @@
     }
     .lightbox-close {
       position: absolute;
-      top: 16px;
-      right: 16px;
+      top: 20px;
+      right: 20px;
       color: #fff;
-      font-size: 30px;
+      font-size: 32px;
       cursor: pointer;
-      width: 42px;
-      height: 42px;
+      width: 44px;
+      height: 44px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -609,7 +613,8 @@
     .lightbox-close:active {
       background: rgba(255,255,255,0.3);
     }
-    /* ========== 花瓣飘落装饰元素 ========== */
+
+    /* ====================== 花瓣飘落装饰元素 ====================== */
     .petal {
       position: fixed;
       top: -20px;
@@ -621,13 +626,14 @@
       animation-timing-function: linear;
       animation-fill-mode: forwards;
     }
-    /* ========== 返回顶部悬浮按钮 ========== */
+
+    /* ====================== 返回顶部悬浮按钮 ====================== */
     .back-top {
       position: fixed;
-      bottom: 24px;
-      right: 16px;
-      width: 44px;
-      height: 44px;
+      bottom: 30px;
+      right: 20px;
+      width: 46px;
+      height: 46px;
       background: var(--gold);
       color: #fff;
       border-radius: 50%;
@@ -650,23 +656,24 @@
     .back-top:active {
       transform: scale(0.9);
     }
-    /* ========== 动画关键帧定义 ========== */
-    /* 头部入场淡入下移 */
+
+    /* ====================== Keyframes 动画定义 ====================== */
+    /* 头部区域入场：淡入向下位移 */
     @keyframes fadeInDown {
       from { opacity: 0; transform: translateY(-20px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    /* 年份呼吸放大效果 */
+    /* 年份文字呼吸放大 */
     @keyframes breathe {
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.02); }
     }
-    /* 弹幕横向滚动：从右侧外完全飞入，到左侧完全飞出 */
+    /* 弹幕从右向左飞出动画 */
     @keyframes danmakuMove {
       from { right: -100%; }
       to { right: 100%; }
     }
-    /* 花瓣下落旋转 */
+    /* 花瓣下落+旋转 */
     @keyframes fall {
       to {
         transform: translateY(100vh) rotate(360deg);
@@ -676,7 +683,7 @@
   </style>
 </head>
 <body>
-  <!-- 头部英雄区 -->
+  <!-- ====================== 头部Hero区域 ====================== -->
   <div class="hero">
     <div class="class-name">臻辉班</div>
     <div class="motto">
@@ -686,60 +693,70 @@
     <div class="signature">黄欢</div>
     <div class="divider-gold"></div>
   </div>
-  <!-- 关于我们 -->
+
+  <!-- ====================== 关于我们 ====================== -->
   <div class="about-section" id="about">
     <div class="about-title">关于我们</div>
     <div class="about-sub">ABOUT US</div>
   </div>
-  <!-- 班级相册 -->
+
+  <!-- ====================== 班级相册，本地图片 assets/img/ ====================== -->
   <div class="gallery-section">
     <div class="gallery-header">
       <div class="gallery-title">班级相册</div>
       <div class="gallery-sub">/ PHOTOS</div>
     </div>
     <div class="gallery-grid" id="gallery">
-      <!-- 宽幅图1 -->
-      <div class="gallery-item wide" data-src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1200">
-        <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600" alt="班级合影" loading="lazy">
+      <!-- wide宽幅图：占两格 -->
+      <div class="gallery-item wide" data-src="assets/img/class01.jpg">
+        <img src="assets/img/class01.jpg" alt="班级合影" loading="lazy">
         <div class="gallery-overlay">班级合影 · 最珍贵的记忆</div>
       </div>
-      <!-- 普通图 -->
-      <div class="gallery-item" data-src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1000">
-        <img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400" alt="课堂学习" loading="lazy">
+
+      <div class="gallery-item" data-src="assets/img/class02.jpg">
+        <img src="assets/img/class02.jpg" alt="课堂学习" loading="lazy">
         <div class="gallery-overlay">课堂学习</div>
       </div>
-      <div class="gallery-item" data-src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=1000">
-        <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=400" alt="校园活动" loading="lazy">
+
+      <div class="gallery-item" data-src="assets/img/class03.jpg">
+        <img src="assets/img/class03.jpg" alt="校园活动" loading="lazy">
         <div class="gallery-overlay">校园活动</div>
       </div>
-      <div class="gallery-item" data-src="https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=1000">
-        <img src="https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=400" alt="操场训练" loading="lazy">
+
+      <div class="gallery-item" data-src="assets/img/class04.jpg">
+        <img src="assets/img/class04.jpg" alt="操场训练" loading="lazy">
         <div class="gallery-overlay">操场训练</div>
       </div>
-      <div class="gallery-item" data-src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1000">
-        <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400" alt="集体活动" loading="lazy">
+
+      <div class="gallery-item" data-src="assets/img/class05.jpg">
+        <img src="assets/img/class05.jpg" alt="集体活动" loading="lazy">
         <div class="gallery-overlay">集体活动</div>
       </div>
-      <!-- 宽幅图2 -->
-      <div class="gallery-item wide" data-src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200">
-        <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600" alt="同窗友谊" loading="lazy">
+
+      <!-- wide宽幅图 -->
+      <div class="gallery-item wide" data-src="assets/img/class06.jpg">
+        <img src="assets/img/class06.jpg" alt="同窗友谊" loading="lazy">
         <div class="gallery-overlay">同窗友谊 · 青春飞扬</div>
       </div>
-      <div class="gallery-item" data-src="https://images.unsplash.com/photo-1427504740706-49a3a8efd28c?w=1000">
-        <img src="https://images.unsplash.com/photo-1427504740706-49a3a8efd28c?w=400" alt="毕业典礼" loading="lazy">
+
+      <div class="gallery-item" data-src="assets/img/class07.jpg">
+        <img src="assets/img/class07.jpg" alt="毕业典礼" loading="lazy">
         <div class="gallery-overlay">毕业典礼</div>
       </div>
-      <div class="gallery-item" data-src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=1000">
-        <img src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=400" alt="图书馆时光" loading="lazy">
+
+      <div class="gallery-item" data-src="assets/img/class08.jpg">
+        <img src="assets/img/class08.jpg" alt="图书馆时光" loading="lazy">
         <div class="gallery-overlay">图书馆时光</div>
       </div>
-      <div class="gallery-item" data-src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1000">
-        <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400" alt="运动会" loading="lazy">
+
+      <div class="gallery-item" data-src="assets/img/class09.jpg">
+        <img src="assets/img/class09.jpg" alt="运动会" loading="lazy">
         <div class="gallery-overlay">运动会</div>
       </div>
     </div>
   </div>
-  <!-- 寄语祝福 -->
+
+  <!-- ====================== 寄语祝福 ====================== -->
   <div class="blessings" id="blessings">
     <div class="blessing-line highlight">Splendid CLASS</div>
     <div class="blessing-line" style="font-size:22px; color:var(--gold); margin-bottom:16px;">锦绣韶华 · 前程似锦</div>
@@ -758,23 +775,25 @@
       <span class="bless-tag">万事胜意</span>
     </div>
   </div>
-  <!-- 回忆标题 -->
+
+  <!-- ====================== 回忆标题 ====================== -->
   <div class="memory-section">
     <div class="memory-title">BEST MEMORY</div>
     <div class="memory-class">臻辉班</div>
     <div class="memory-title">属于我们的时光</div>
   </div>
-  <!-- 弹幕留言墙 -->
+
+  <!-- ====================== 弹幕留言墙区域 ====================== -->
   <div class="wall-section">
     <div class="wall-header">
       <div class="wall-title">班级纪念册 · 弹幕留言墙</div>
       <div class="wall-sub">写下你的祝福与回忆，所有人都能看见</div>
     </div>
-    <!-- 弹幕展示区 -->
+    <!-- 弹幕滚动容器 -->
     <div class="danmaku-container" id="danmakuContainer">
       <div class="wall-tip" id="wallTip">正在加载云端留言...</div>
     </div>
-    <!-- 输入发布区 -->
+    <!-- 留言输入发布区 -->
     <div class="wall-input-area">
       <input
         type="text"
@@ -785,7 +804,7 @@
       >
       <button class="wall-btn" id="submitBtn">发布</button>
     </div>
-    <!-- 我的留言模块 -->
+    <!-- 我的留言折叠面板 -->
     <div class="my-messages" id="myMessages">
       <div class="my-messages-header" id="myMessagesHeader">
         <div class="my-messages-title">
@@ -799,7 +818,8 @@
       </div>
     </div>
   </div>
-  <!-- 页脚 -->
+
+  <!-- ====================== 页脚 ====================== -->
   <div class="footer">
     <div class="footer-name">臻辉班</div>
     <div class="footer-motto">
@@ -810,30 +830,32 @@
     <div class="footer-slogan">珍藏每一份美好，铭记每一段时光</div>
     <div class="footer-copy">Copyright © 2026 臻辉班. All Rights Reserved</div>
   </div>
-  <!-- 返回顶部 -->
+
+  <!-- ====================== 返回顶部按钮 ====================== -->
   <button class="back-top" id="backTop" aria-label="返回顶部">↑</button>
-  <!-- 图片灯箱大图预览 -->
+
+  <!-- ====================== 图片灯箱弹窗 大图预览 ====================== -->
   <div class="lightbox" id="lightbox">
     <div class="lightbox-close" id="lightboxClose">&times;</div>
     <img src="" alt="预览大图" id="lightboxImg">
   </div>
+
   <script>
-    // ========== 全局配置区 ==========
-    const API_URL = "/api/messages";     // 后端接口地址，Cloudflare Pages Function
-    const POLL_INTERVAL = 8000;          // 轮询后端间隔，单位毫秒
-    const MAX_LIVE_DANMAKU = 12;         // 屏幕同时存在弹幕上限，防止DOM爆炸
-    const DANMAKU_PLAY_INTERVAL = 1200;  // 生成下一条弹幕间隔毫秒
+    /* ==============================================
+     * 全局配置常量
+     * ============================================== */
+    const API_URL = "/api/messages";     // Cloudflare Pages Functions留言接口
+    const POLL_INTERVAL = 8000;          // 轮询后端获取留言间隔(毫秒)
+    const MAX_LIVE_DANMAKU = 12;         // 屏幕上同时最多存在弹幕数量，防止DOM爆炸
+    const DANMAKU_GAP = 1200;            // 调度器生成一条弹幕的时间间隔（毫秒）
 
-    // ========== 弹幕播放状态变量 ==========
-    let playPointer = 0;                 // 留言池播放索引指针
-    let danmakuPlayTimer = null;         // 弹幕循环生成定时器
-    let allMessages = [];                // 后端拉取全部留言池
-
-    // ========== 工具函数区 ==========
+    /* ==============================================
+     * 工具函数模块
+     * ============================================== */
     /**
-     * XSS HTML转义，防止注入攻击，所有用户输入必须经过此函数
-     * @param {string} str 用户原始字符串
-     * @returns {string} 转义后安全字符串
+     * XSS HTML转义函数，所有用户输入内容必须经过转义，防止注入攻击
+     * @param {string} str 用户原始输入字符串
+     * @returns {string} 转义后的安全文本
      */
     function escapeHtml(str) {
       return String(str)
@@ -843,9 +865,10 @@
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
     }
+
     /**
-     * 获取浏览器本地唯一客户端ID，用于区分不同用户的留言，存储localStorage
-     * @returns {string} clientId
+     * 获取浏览器本地唯一客户端ID，用来区分是谁发布的留言，存在localStorage
+     * @returns {string} clientId 唯一标识
      */
     function getClientId() {
       let clientId = localStorage.getItem('class_book_client_id');
@@ -857,40 +880,47 @@
     }
     const CLIENT_ID = getClientId();
 
-    // ========== 滚动观察器：元素进入视口添加visible实现渐入动画 ==========
+    /* ==============================================
+     * IntersectionObserver 滚动观察器
+     * 元素进入视口添加visible类实现滚动渐入动画，触发一次就停止观察节省性能
+     * ============================================== */
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('visible');
-          observer.unobserve(entry.target); // 触发一次之后停止观察，节省性能
+          observer.unobserve(entry.target);
         }
       });
     }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
-    // 需要滚动动画的DOM全部注册观察
+    // 将需要滚动入场的DOM全部注册观察
     document.querySelectorAll('.about-section, .gallery-header, .gallery-item, .blessings, .memory-section')
       .forEach(el => observer.observe(el));
 
-    // ========== 图片灯箱逻辑：点击相册图片放大预览 ==========
+    /* ==============================================
+     * 图片灯箱大图预览模块
+     * ============================================== */
     const lightbox = document.getElementById('lightbox');
     const lightboxImg = document.getElementById('lightboxImg');
     const lightboxClose = document.getElementById('lightboxClose');
-    // 绑定相册item点击事件，打开大图
+
+    // 相册图片点击打开灯箱
     document.querySelectorAll('.gallery-item').forEach(item => {
       item.addEventListener('click', () => {
         lightboxImg.src = item.dataset.src;
         lightbox.classList.add('active');
-        document.body.style.overflow = 'hidden'; // 打开灯箱禁止页面滚动
+        document.body.style.overflow = 'hidden'; // 打开弹窗禁止页面滚动
       });
     });
+
     /**
-     * 关闭灯箱函数
+     * 关闭灯箱
      */
     function closeLightbox() {
       lightbox.classList.remove('active');
       document.body.style.overflow = '';
-      setTimeout(() => lightboxImg.src = '', 300); // 动画结束清空图片地址，释放内存
+      setTimeout(() => lightboxImg.src = '', 300); // 动画结束清空图片释放内存
     }
-    // 关闭按钮、点击遮罩、ESC按键关闭
+    // 关闭方式：叉号、点击遮罩背景、ESC按键
     lightboxClose.addEventListener('click', closeLightbox);
     lightbox.addEventListener('click', (e) => {
       if (e.target === lightbox) closeLightbox();
@@ -899,10 +929,13 @@
       if (e.key === 'Escape' && lightbox.classList.contains('active')) closeLightbox();
     });
 
-    // ========== 花瓣飘落装饰逻辑 ==========
-    let petalTimer = null; // 花瓣定时器句柄，页面休眠可以关闭
+    /* ==============================================
+     * 花瓣飘落装饰逻辑
+     * ============================================== */
+    let petalTimer = null;
+
     /**
-     * 创建一片花瓣DOM，添加到body
+     * 创建单个花瓣DOM元素
      */
     function createPetal() {
       const petal = document.createElement('div');
@@ -914,14 +947,11 @@
       petal.style.color = colors[Math.floor(Math.random() * colors.length)];
       petal.style.animationDuration = (Math.random() * 4 + 6) + 's';
       document.body.appendChild(petal);
-      // 动画结束移除花瓣
       setTimeout(() => petal.remove(), 10000);
     }
-    /** 开启花瓣定时器 */
     function startPetal() {
       if (!petalTimer) petalTimer = setInterval(createPetal, 2500);
     }
-    /** 停止花瓣定时器，页面后台休眠调用 */
     function stopPetal() {
       if (petalTimer) {
         clearInterval(petalTimer);
@@ -929,7 +959,9 @@
       }
     }
 
-    // ========== 返回顶部按钮逻辑 ==========
+    /* ==============================================
+     * 返回顶部按钮逻辑
+     * ============================================== */
     const backTop = document.getElementById('backTop');
     window.addEventListener('scroll', () => {
       backTop.classList.toggle('show', window.scrollY > 400);
@@ -938,21 +970,29 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    // ========== 弹幕核心逻辑重构：循环播放留言池 ==========
+    /* ==============================================
+     * 弹幕核心逻辑【重构：循环调度器】
+     * 不再一次性渲染全部弹幕；调度器定时从allMessages留言池循环取消息生成弹幕DOM
+     * 弹幕animationend动画结束直接remove销毁不复用DOM；到数组末尾自动回到开头循环重播
+     * ============================================== */
     const danmakuContainer = document.getElementById('danmakuContainer');
     const wallTip = document.getElementById('wallTip');
 
+    let allMessages = [];         // 完整留言池，轮询接口更新这个数组
+    let playIndex = 0;            // 播放索引指针，记录下一条要播放的留言下标
+    let danmakuScheduler = null;  // 弹幕循环调度定时器
+
     /**
-     * 创建单条弹幕DOM元素
-     * @param {object} item 单条留言对象 {id,content,client_id,create_at}
-     * @returns {HTMLElement} dom
+     * 创建单条弹幕DOM
+     * @param {object} item 留言对象 {id,content,client_id,create_at}
+     * @returns {HTMLElement}
      */
     function createDanmakuItem(item) {
       const div = document.createElement('div');
       div.className = 'danmaku-item';
       div.dataset.id = item.id;
       div.textContent = escapeHtml(item.content);
-      // top：5%~80%，留出上下安全边距，避免文字被裁切
+      // top：5%~80%，上下留出安全边距避免文字被裁切
       div.style.top = (Math.random() * 75 + 5) + '%';
       const duration = Math.random() * 6 + 6;
       div.style.animationDuration = duration + 's';
@@ -964,56 +1004,61 @@
     }
 
     /**
-     * 循环调度：从allMessages留言池取消息生成弹幕，循环播放
+     * 弹幕循环调度器主函数
+     * 从留言池取出消息生成弹幕，索引走到数组末尾归零实现循环播放历史留言
      */
-    function tickDanmakuLoop() {
-      if(allMessages.length === 0) {
+    function danmakuLoopScheduler() {
+      if(allMessages.length === 0){
         wallTip.style.display = 'block';
         wallTip.textContent = '暂无留言，快来发布第一条回忆吧✨';
         wallTip.className = 'wall-tip';
         return;
       }
       wallTip.style.display = 'none';
-      // 当前屏幕弹幕数量保护，防止DOM爆炸
-      const screenCount = danmakuContainer.querySelectorAll('.danmaku-item').length;
-      if(screenCount >= MAX_LIVE_DANMAKU) return;
-
-      // 取出当前指针指向的留言
-      const msgItem = allMessages[playPointer];
-      const dan = createDanmakuItem(msgItem);
-      danmakuContainer.appendChild(dan);
-
-      // 指针前进；到数组末尾回到0，无限循环重播旧弹幕
-      playPointer +=1;
-      if(playPointer >= allMessages.length) {
-        playPointer = 0;
+      // 屏幕弹幕数量保护，超过上限跳过本次生成
+      const currentCount = danmakuContainer.querySelectorAll('.danmaku-item').length;
+      if(currentCount >= MAX_LIVE_DANMAKU){
+        return;
+      }
+      // 获取当前下标留言，生成弹幕
+      const msgItem = allMessages[playIndex];
+      const danmakuDom = createDanmakuItem(msgItem);
+      danmakuContainer.appendChild(danmakuDom);
+      // 索引前进，数组到头重置为0循环
+      playIndex += 1;
+      if(playIndex >= allMessages.length){
+        playIndex = 0;
       }
     }
 
-    /** 启动弹幕循环生成定时器 */
-    function startDanmakuLoop(){
-      if(danmakuPlayTimer) return;
-      danmakuPlayTimer = setInterval(tickDanmakuLoop, DANMAKU_PLAY_INTERVAL);
+    /** 启动弹幕调度器 */
+    function startDanmakuScheduler(){
+      if(danmakuScheduler) return;
+      danmakuScheduler = setInterval(danmakuLoopScheduler, DANMAKU_GAP);
     }
-    /** 停止弹幕循环定时器（页面切后台） */
-    function stopDanmakuLoop(){
-      if(danmakuPlayTimer){
-        clearInterval(danmakuPlayTimer);
-        danmakuPlayTimer = null;
+    /** 停止弹幕调度器（页面切后台休眠） */
+    function stopDanmakuScheduler(){
+      if(danmakuScheduler){
+        clearInterval(danmakuScheduler);
+        danmakuScheduler = null;
       }
     }
 
-    // ========== 我的留言折叠面板逻辑 ==========
+    /* ==============================================
+     * 我的留言折叠面板模块
+     * ============================================== */
     const myMessagesList = document.getElementById('myMessagesList');
     const myMessagesCount = document.getElementById('myMessagesCount');
     const myMessagesHeader = document.getElementById('myMessagesHeader');
     const myMessagesBox = document.getElementById('myMessages');
-    // 点击标题切换折叠展开状态
+
+    // 点击标题切换折叠展开
     myMessagesHeader.addEventListener('click', () => {
       myMessagesBox.classList.toggle('collapsed');
     });
+
     /**
-     * 渲染我的留言列表，过滤当前浏览器用户的留言
+     * 渲染"我的留言"列表，过滤属于当前浏览器客户端的留言
      * @param {Array} list 全部留言数组
      */
     function renderMyMessages(list) {
@@ -1036,7 +1081,7 @@
         `;
         myMessagesList.appendChild(div);
       });
-      // 绑定删除按钮事件
+      // 绑定删除按钮点击事件
       myMessagesList.querySelectorAll('.my-msg-delete').forEach(btn => {
         btn.addEventListener('click', (e) => {
           const id = e.target.dataset.id;
@@ -1044,10 +1089,11 @@
         });
       });
     }
+
     /**
-     * 时间格式化函数，后端时间转为月-日 时:分
-     * @param {string} timeStr 后端时间字符串
-     * @returns {string} 格式化后的时间
+     * 时间格式化，后端时间字符串转 "月-日 时:分"
+     * @param {string} timeStr 后端返回时间
+     * @returns {string}
      */
     function formatTime(timeStr) {
       if (!timeStr) return '';
@@ -1059,6 +1105,7 @@
       const min = String(date.getMinutes()).padStart(2, '0');
       return `${m}-${d} ${h}:${min}`;
     }
+
     /**
      * 删除留言接口请求
      * @param {string} id 留言ID
@@ -1072,45 +1119,46 @@
           body: JSON.stringify({ id, client_id: CLIENT_ID })
         });
         const ret = await res.json();
-        // 同时捕获HTTP错误码 和 返回体内部error字段（部分后端返回200但业务报错）
         if (!res.ok || ret.error) throw new Error(ret.error || '删除失败');
-        // 删除成功重新拉取全部留言刷新留言池
+        // 删除成功，重新拉取留言刷新界面
         await loadMessages();
-        // 移除屏幕上正在播放的对应弹幕DOM
+        // 移除页面上正在播放的对应弹幕DOM
         document.querySelectorAll(`.danmaku-item[data-id="${id}"]`).forEach(el => el.remove());
       } catch (err) {
         alert('删除失败：' + err.message);
       }
     }
 
-    // ========== 加载留言 & 轮询控制 ==========
-    let pollTimer = null; // 轮询定时器句柄，页面休眠关闭节省网络
+    /* ==============================================
+     * 后端留言轮询模块
+     * ============================================== */
+    let pollTimer = null;
+
     /**
-     * 请求后端获取最新留言列表，更新留言池allMessages
+     * 请求后端获取最新留言，更新全局留言池 allMessages
      */
     async function loadMessages() {
       try {
         const res = await fetch(API_URL);
         if (!res.ok) throw new Error('请求失败');
         const data = await res.json();
-        // 更新全局留言池，新留言自动加入循环播放池
         allMessages = data;
-        renderMyMessages(allMessages);
+        renderMyMessages(data);
       } catch (err) {
         console.error('加载留言失败:', err);
-        if(allMessages.length ===0){
+        // 如果还没有任何留言数据，展示错误提示
+        if (allMessages.length === 0) {
           wallTip.style.display = 'block';
           wallTip.textContent = '加载失败，请刷新页面重试';
           wallTip.className = 'wall-tip error';
         }
       }
     }
-    /** 开启轮询定时器 */
+
     function startPoll() {
       if (pollTimer) return;
       pollTimer = setInterval(loadMessages, POLL_INTERVAL);
     }
-    /** 停止轮询定时器，页面切后台调用 */
     function stopPoll() {
       if (pollTimer) {
         clearInterval(pollTimer);
@@ -1118,23 +1166,29 @@
       }
     }
 
-    // ========== 页面可见性监听：切后台全部暂停，切回来恢复 ==========
+    /* ==============================================
+     * 页面可见性监听：切后台全部休眠定时器，切回前台恢复
+     * 减少后台时CPU、网络消耗，移动端省电
+     * ============================================== */
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
         stopPoll();
         stopPetal();
-        stopDanmakuLoop();
+        stopDanmakuScheduler();
       } else {
         loadMessages();
         startPoll();
         startPetal();
-        startDanmakuLoop();
+        startDanmakuScheduler();
       }
     });
 
-    // ========== 发布留言提交逻辑 ==========
+    /* ==============================================
+     * 发布留言提交逻辑
+     * ============================================== */
     const msgInput = document.getElementById('msgInput');
     const submitBtn = document.getElementById('submitBtn');
+
     async function postMessage() {
       const text = msgInput.value.trim();
       if (!text) {
@@ -1167,12 +1221,14 @@
       if (e.key === 'Enter') postMessage();
     });
 
-    // ========== 页面DOM全部加载完成初始化入口 ==========
-    window.addEventListener('DOMContentLoaded', () => {
-      loadMessages();
-      startPoll();
-      startPetal();
-      startDanmakuLoop();
+    /* ==============================================
+     * DOM加载完毕，页面初始化入口
+     * ============================================== */
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadMessages();          // 首次拉取留言
+      startPoll();                   // 开启后端轮询
+      startPetal();                  // 开启花瓣飘落
+      startDanmakuScheduler();       // 开启弹幕循环调度器
     });
   </script>
 </body>
