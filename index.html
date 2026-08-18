@@ -1582,6 +1582,154 @@ body:before{
 }
 
 </style>
+
+<style>
+/* ===== iOS 26 Liquid Glass Music Capsule Integrated ===== */
+
+.music-capsule{
+ position:fixed;
+ left:22px;
+ top:50%;
+ transform:translateY(-50%);
+ width:64px;
+ height:64px;
+ border-radius:50%;
+ z-index:9999;
+ cursor:pointer;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ overflow:hidden;
+
+ background:
+ linear-gradient(135deg,
+ rgba(255,255,255,.55),
+ rgba(255,255,255,.12));
+
+ border:1px solid rgba(255,255,255,.65);
+
+ backdrop-filter:blur(28px) saturate(180%);
+ -webkit-backdrop-filter:blur(28px) saturate(180%);
+
+ box-shadow:
+ 0 20px 60px rgba(0,0,0,.16),
+ inset 0 1px 5px rgba(255,255,255,.9);
+
+ transition:
+ width .65s cubic-bezier(.22,1,.36,1),
+ height .65s cubic-bezier(.22,1,.36,1),
+ border-radius .65s cubic-bezier(.22,1,.36,1),
+ opacity .35s ease;
+}
+
+.music-capsule.active{
+ width:360px;
+ height:84px;
+ border-radius:32px;
+}
+
+.music-icon{
+ width:24px;
+ height:24px;
+ position:relative;
+}
+
+.music-icon:before{
+ content:"";
+ position:absolute;
+ width:7px;
+ height:7px;
+ border-radius:50%;
+ background:#c9a84c;
+ bottom:3px;
+ left:2px;
+}
+
+.music-icon:after{
+ content:"";
+ position:absolute;
+ width:3px;
+ height:20px;
+ border-radius:5px;
+ background:#c9a84c;
+ right:6px;
+ top:1px;
+}
+
+.music-panel{
+ display:none;
+ width:100%;
+ align-items:center;
+ gap:14px;
+ padding:12px 18px;
+ opacity:0;
+ transform:scale(.96);
+ transition:.45s cubic-bezier(.22,1,.36,1);
+}
+
+.music-capsule.active .music-panel{
+ display:flex;
+ opacity:1;
+ transform:scale(1);
+}
+
+.music-cover{
+ width:56px;
+ height:56px;
+ border-radius:18px;
+ object-fit:cover;
+}
+
+.music-info{
+ flex:1;
+}
+
+.music-title{
+ font-weight:700;
+ font-size:14px;
+}
+
+.music-sub{
+ font-size:11px;
+ opacity:.6;
+}
+
+.music-play{
+ width:40px;
+ height:40px;
+ border-radius:50%;
+ border:0;
+ background:rgba(255,255,255,.5);
+}
+
+.music-capsule.playing{
+ animation:musicBreath 3s infinite;
+}
+
+@keyframes musicBreath{
+ 50%{
+ box-shadow:
+ 0 25px 80px rgba(201,168,76,.35),
+ inset 0 1px 8px white;
+ }
+}
+
+.music-capsule.hidden{
+ opacity:.25;
+}
+
+@media(max-width:768px){
+ .music-capsule{
+ left:16px;
+ top:auto;
+ bottom:20px;
+ transform:none;
+ }
+ .music-capsule.active{
+ width:calc(100vw - 32px);
+ }
+}
+</style>
 </head>
 <body>
   <!-- ====================== 头部Hero区域 ====================== -->
@@ -2263,5 +2411,225 @@ document.querySelectorAll(".wall-btn,.open-my-msg-btn")
 });
 </script>
 
+
+<!-- iOS 26 Liquid Glass Music Capsule -->
+<div class="music-capsule" id="musicCapsule">
+
+ <div class="music-icon"></div>
+
+ <div class="music-panel">
+
+  <img class="music-cover" src="assets/music/cover.jpg">
+
+  <div class="music-info">
+   <div class="music-title">我们的青春</div>
+   <div class="music-sub">2026 Graduation</div>
+  </div>
+
+  <button class="music-play" id="musicPlay">▶</button>
+
+ </div>
+
+</div>
+
+<script>
+(()=>{
+const capsule=document.querySelector("#musicCapsule");
+const play=document.querySelector("#musicPlay");
+let playing=false;
+
+capsule.onclick=(e)=>{
+ if(e.target!==play)
+ capsule.classList.toggle("active");
+};
+
+play.onclick=(e)=>{
+ e.stopPropagation();
+ playing=!playing;
+ play.textContent=playing?"Ⅱ":"▶";
+ capsule.classList.toggle("playing",playing);
+};
+
+document.addEventListener("click",(e)=>{
+ if(!capsule.contains(e.target))
+ capsule.classList.remove("active");
+});
+
+window.addEventListener("scroll",()=>{
+ capsule.classList.toggle("hidden",scrollY>160);
+},{passive:true});
+
+})();
+</script>
+
+<style>
+/* =====================================================
+ iOS 26 Liquid Glass Blur Optimization Patch
+
+ 目标:
+ - 减少滚动时过重模糊
+ - 保留空间感
+ - 手机端更清晰
+===================================================== */
+
+
+/* 页面进入动画优化 */
+@keyframes iosCardInSoft {
+
+ from{
+   opacity:0;
+   transform:
+    translateY(38px)
+    scale(.965);
+   filter:blur(5px);
+ }
+
+ to{
+   opacity:1;
+   transform:none;
+   filter:blur(0);
+ }
+
+}
+
+
+/* 替换过强景深 */
+.reveal,
+.gallery-item,
+.message-card,
+.glass-card{
+
+ transition:
+ opacity .7s ease,
+ transform .7s cubic-bezier(.22,1,.36,1),
+ filter .7s ease !important;
+
+}
+
+
+/* 隐藏状态 */
+.reveal-hidden,
+[data-aos="hidden"]{
+
+ filter:blur(4px)!important;
+ transform:
+ translateY(35px)
+ scale(.97)!important;
+
+}
+
+
+/* 显示状态 */
+.reveal-show,
+[data-aos="show"]{
+
+ filter:blur(0)!important;
+
+}
+
+
+/* Liquid Glass 材质降低厚度 */
+
+.liquid-glass,
+.wall-btn,
+.open-my-msg-btn,
+.danmaku-item,
+.my-msg-modal-box{
+
+ backdrop-filter:
+ blur(18px)
+ saturate(150%) !important;
+
+ -webkit-backdrop-filter:
+ blur(18px)
+ saturate(150%) !important;
+
+}
+
+
+/* 背景光晕降低 */
+
+.liquid-light-orb{
+
+ filter:blur(30px)!important;
+
+ opacity:.35!important;
+
+}
+
+
+
+/* 弹幕避免过糊 */
+
+.danmaku-item{
+
+ backdrop-filter:
+ blur(12px)
+ saturate(140%) !important;
+
+ -webkit-backdrop-filter:
+ blur(12px)
+ saturate(140%) !important;
+
+}
+
+
+/* 手机专用 */
+
+@media(max-width:768px){
+
+.hero,
+.gallery-item,
+.message-card,
+.danmaku-item,
+.my-msg-modal-box{
+
+ backdrop-filter:
+ blur(10px)!important;
+
+ -webkit-backdrop-filter:
+ blur(10px)!important;
+
+}
+
+
+.reveal-hidden{
+
+ filter:blur(2px)!important;
+
+ transform:
+ translateY(22px)
+ scale(.985)!important;
+
+}
+
+
+.liquid-light-orb{
+
+ filter:blur(20px)!important;
+
+ opacity:.22!important;
+
+}
+
+}
+
+
+/* 减少滚动GPU压力 */
+
+@media(prefers-reduced-motion:no-preference){
+
+.reveal,
+.gallery-item,
+.message-card{
+
+ will-change:
+ transform,opacity;
+
+}
+
+}
+
+</style>
 </body>
 </html>
