@@ -801,8 +801,8 @@
     /* ==============================================
      * 全局配置常量
      * ============================================== */
-    const API_URL = "/api/messages";     // Cloudflare Pages Functions留言接口
-    const POLL_INTERVAL = 8000;          // 轮询后端获取留言间隔(毫秒)
+    const API_URL = "/api/messages";     // Cloudflare Pages Functions留言接口地址
+    const POLL_INTERVAL = 8000;          // 轮询后端获取留言间隔(毫秒)，用于同步其他用户消息
     const MAX_LIVE_DANMAKU = 12;         // 屏幕上同时最多存在弹幕数量，防止DOM爆炸
     const DANMAKU_GAP = 1200;            // 调度器生成一条弹幕的时间间隔（毫秒）
     /* ==============================================
@@ -1191,7 +1191,22 @@
         const ret = await res.json();
         if (!res.ok || ret.error) throw new Error(ret.error || '发布失败');
         msgInput.value = '';
-        await loadMessages();
+        // ==========修复发布后延迟出现弹幕：发布成功直接推入本地内存留言池，不用等待轮询8秒==========
+        const nowTime = new Date().toISOString();
+        // 构造本地模拟消息对象，id临时占位，下一次轮询会被后端真实数据覆盖
+        const localNewMsg = {
+          id: "temp_" + Date.now(),
+          content: text,
+          client_id: CLIENT_ID,
+          create_at: nowTime
+        };
+        // 插入到留言数组最前面，弹幕调度器立刻可以读取到这条消息
+        allMessages.unshift(localNewMsg);
+        // 立刻刷新我的留言面板，马上看到刚发的内容
+        renderMyMessages(allMessages);
+        // playIndex置0，调度器优先播放最新这条本地消息
+        playIndex = 0;
+        // 不等待await loadMessages(); 交由轮询定时器后续拉取后端真实数据覆盖临时id
       } catch (err) {
         alert('发布失败：' + err.message);
       } finally {
