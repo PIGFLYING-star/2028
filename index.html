@@ -709,7 +709,879 @@
         opacity: 0;
       }
     }
-  </style>
+  
+
+/* ================= 仿iOS 17 /  Upgrade ================= */
+:root{
+ --ios-ease:cubic-bezier(.22,1,.36,1);
+}
+body{
+ background:
+ radial-gradient(circle at 20% 0%,rgba(201,168,76,.12),transparent 35%),
+ var(--cream);
+}
+.hero{
+ isolation:isolate;
+ overflow:hidden;
+ animation:iosHeroIn 1.2s var(--ios-ease);
+}
+.hero::after{
+ content:"";
+ position:absolute;
+ width:260px;height:260px;
+ right:-80px;top:20px;
+ background:radial-gradient(circle,rgba(201,168,76,.22),transparent 70%);
+ filter:blur(20px);
+ animation:iosGlow 8s ease-in-out infinite;
+ z-index:-1;
+}
+.class-name{
+ animation:iosFloat 5s ease-in-out infinite;
+}
+.gallery-item,.blessing-line,.bless-tag,.wall-section{
+ transform-style:preserve-3d;
+}
+.gallery-item{
+ border-radius:24px;
+ box-shadow:0 20px 50px rgba(0,0,0,.12);
+ transition:transform .65s var(--ios-ease),box-shadow .65s var(--ios-ease);
+}
+.gallery-item.visible{
+ animation:iosCardIn .9s var(--ios-ease) both;
+}
+.danmaku-item{
+ background:rgba(255,255,255,.62)!important;
+ backdrop-filter:blur(18px);
+ -webkit-backdrop-filter:blur(18px);
+ border:1px solid rgba(255,255,255,.5);
+ box-shadow:0 12px 35px rgba(0,0,0,.12);
+}
+.wall-btn,.open-my-msg-btn{
+ position:relative;
+ overflow:hidden;
+}
+.wall-btn::after,.open-my-msg-btn::after{
+ content:"";
+ position:absolute;
+ inset:0;
+ background:linear-gradient(120deg,transparent,rgba(255,255,255,.5),transparent);
+ transform:translateX(-120%);
+ transition:.8s;
+}
+.wall-btn:hover::after,.open-my-msg-btn:hover::after{
+ transform:translateX(120%);
+}
+.lightbox img{
+ border-radius:24px;
+ animation:iosZoom .5s var(--ios-ease);
+}
+@keyframes iosHeroIn{
+ from{opacity:0;transform:translateY(50px) scale(.94);filter:blur(18px)}
+ to{opacity:1;transform:none;filter:blur(0)}
+}
+@keyframes iosCardIn{
+ from{opacity:0;transform:translateY(70px) scale(.86);filter:blur(12px)}
+ to{opacity:1;transform:none;filter:blur(0)}
+}
+@keyframes iosFloat{
+ 50%{transform:translateY(-8px)}
+}
+@keyframes iosGlow{
+ 50%{transform:translate(-40px,30px) scale(1.2)}
+}
+@keyframes iosZoom{
+ from{transform:scale(.82);opacity:0}
+ to{transform:scale(1);opacity:1}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation:none!important;transition:none!important}
+}
+
+/* ================= Liquid Glass Edition ================= */
+
+:root{
+  --liquid-border:rgba(255,255,255,.45);
+  --liquid-bg:rgba(255,255,255,.18);
+  --liquid-shadow:0 20px 60px rgba(0,0,0,.16);
+}
+
+.wall-btn,
+.open-my-msg-btn{
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+  border:1px solid var(--liquid-border)!important;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.55),
+      rgba(201,168,76,.72)
+    )!important;
+  backdrop-filter:blur(22px) saturate(180%);
+  -webkit-backdrop-filter:blur(22px) saturate(180%);
+  box-shadow:
+    0 12px 35px rgba(201,168,76,.28),
+    inset 0 1px 3px rgba(255,255,255,.9);
+  transition:
+    transform .45s cubic-bezier(.34,1.56,.64,1),
+    box-shadow .3s ease;
+}
+
+.open-my-msg-btn{
+  background:
+    rgba(255,255,255,.35)!important;
+  color:var(--gold)!important;
+}
+
+.wall-btn::before,
+.open-my-msg-btn::before{
+  content:"";
+  position:absolute;
+  top:-80%;
+  left:-80%;
+  width:45%;
+  height:260%;
+  background:linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.85),
+    transparent
+  );
+  transform:rotate(25deg);
+  animation:liquidShine 4s infinite;
+  z-index:-1;
+}
+
+@keyframes liquidShine{
+  0%,20%{left:-80%}
+  55%,100%{left:150%}
+}
+
+@media(hover:hover){
+.wall-btn:hover,
+.open-my-msg-btn:hover{
+  transform:translateY(-5px) scale(1.04);
+  box-shadow:
+    0 25px 60px rgba(201,168,76,.4),
+    inset 0 2px 8px rgba(255,255,255,.9);
+}
+}
+
+.wall-btn:active,
+.open-my-msg-btn:active{
+  transform:scale(.88);
+}
+
+/* Glass message bubbles */
+.danmaku-item{
+  background:rgba(255,255,255,.48)!important;
+  border:1px solid rgba(255,255,255,.55);
+  backdrop-filter:blur(18px) saturate(160%);
+  -webkit-backdrop-filter:blur(18px) saturate(160%);
+  box-shadow:
+    0 15px 45px rgba(0,0,0,.12),
+    inset 0 1px rgba(255,255,255,.8);
+}
+
+/* iOS style modal */
+.my-msg-modal{
+  background:rgba(0,0,0,.35)!important;
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+}
+
+.my-msg-modal-box{
+  background:rgba(255,255,255,.62)!important;
+  backdrop-filter:blur(30px) saturate(180%);
+  -webkit-backdrop-filter:blur(30px) saturate(180%);
+  border:1px solid rgba(255,255,255,.55)!important;
+  box-shadow:var(--liquid-shadow);
+}
+
+/* iOS photo lightbox */
+.lightbox{
+  background:rgba(0,0,0,.55)!important;
+  backdrop-filter:blur(25px);
+  -webkit-backdrop-filter:blur(25px);
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,
+  *::before,
+  *::after{
+    animation-duration:.01ms!important;
+    transition-duration:.01ms!important;
+  }
+}
+
+
+/* =============== Liquid Glass Pro Animation Upgrade =============== */
+
+/* 发布消息飞行动画升级：iOS AirDrop / iMessage 风格 */
+.fly-message{
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.75),
+      rgba(201,168,76,.35)
+    )!important;
+  border:1px solid rgba(255,255,255,.7)!important;
+  backdrop-filter:blur(25px) saturate(180%);
+  -webkit-backdrop-filter:blur(25px) saturate(180%);
+  box-shadow:
+    0 20px 60px rgba(201,168,76,.35),
+    inset 0 1px 5px rgba(255,255,255,.9);
+}
+
+/* 弹幕出现时增加漂浮感 */
+.danmaku-item{
+  animation-timing-function:
+    cubic-bezier(.22,1,.36,1)!important;
+}
+
+/* 页面滚动进入：Apple 官网式空间动画 */
+.about-section,
+.gallery-header,
+.gallery-item,
+.blessings,
+.memory-section{
+  transform:
+    translateY(80px)
+    scale(.92)!important;
+  filter:blur(12px);
+  transition:
+    opacity 1s cubic-bezier(.22,1,.36,1),
+    transform 1s cubic-bezier(.22,1,.36,1),
+    filter 1s ease!important;
+}
+
+.about-section.visible,
+.gallery-header.visible,
+.gallery-item.visible,
+.blessings.visible,
+.memory-section.visible{
+  transform:
+    translateY(0)
+    scale(1)!important;
+  filter:blur(0);
+}
+
+
+/* 按钮发布成功爆炸反馈 */
+.wall-btn.success{
+  animation:
+    sendSuccess .8s cubic-bezier(.34,1.56,.64,1);
+}
+
+@keyframes sendSuccess{
+  0%{
+    transform:scale(1);
+  }
+  40%{
+    transform:scale(.82);
+  }
+  70%{
+    transform:scale(1.12);
+  }
+  100%{
+    transform:scale(1);
+  }
+}
+
+
+/* 液态光球跟随 */
+body::after{
+  content:"";
+  position:fixed;
+  width:260px;
+  height:260px;
+  border-radius:50%;
+  pointer-events:none;
+  background:
+    radial-gradient(
+      circle,
+      rgba(201,168,76,.18),
+      transparent 70%
+    );
+  filter:blur(25px);
+  z-index:0;
+  animation:
+    liquidFloat 12s infinite alternate ease-in-out;
+}
+
+@keyframes liquidFloat{
+  from{
+    transform:
+      translate(10vw,10vh);
+  }
+  to{
+    transform:
+      translate(75vw,70vh);
+  }
+}
+
+
+/* 图片打开类似 iOS Photos */
+.lightbox.active img{
+  animation:
+    photoOpen .6s cubic-bezier(.22,1,.36,1);
+}
+
+@keyframes photoOpen{
+  from{
+    transform:
+      scale(.7)
+      translateY(40px);
+    opacity:0;
+    filter:blur(20px);
+  }
+
+  to{
+    transform:
+      scale(1);
+    opacity:1;
+    filter:blur(0);
+  }
+}
+
+
+/* 减少移动端压力 */
+@media(max-width:600px){
+ body::after{
+   display:none;
+ }
+}
+
+
+/* ================= iOS 17 Liquid Glass Ultra Edition ================= */
+
+/* Dynamic ambient light */
+.liquid-light-orb{
+ position:fixed;
+ width:420px;
+ height:420px;
+ border-radius:50%;
+ pointer-events:none;
+ background:radial-gradient(circle,rgba(255,215,120,.22),transparent 70%);
+ filter:blur(40px);
+ animation:orbMove 18s infinite alternate ease-in-out;
+ z-index:-1;
+}
+
+@keyframes orbMove{
+ 0%{transform:translate(-10vw,10vh)}
+ 100%{transform:translate(80vw,65vh)}
+}
+
+
+/* Apple spring entrance */
+.ultra-enter{
+ opacity:0;
+ transform:
+ translateY(80px)
+ scale(.82);
+ filter:blur(20px);
+ transition:
+ 1.2s cubic-bezier(.22,1,.36,1);
+}
+
+.ultra-enter.show{
+ opacity:1;
+ transform:
+ translateY(0)
+ scale(1);
+ filter:blur(0);
+}
+
+
+/* 3D card tilt support */
+.gallery-item,
+.photo-card,
+.glass-card{
+ transform-style:preserve-3d;
+ transition:
+ transform .35s cubic-bezier(.22,1,.36,1),
+ box-shadow .35s;
+}
+
+.gallery-item:hover,
+.photo-card:hover{
+ box-shadow:
+ 0 30px 80px rgba(0,0,0,.18);
+}
+
+
+/* Ultra liquid buttons */
+.wall-btn,
+.open-my-msg-btn{
+ transform-style:preserve-3d;
+ will-change:transform;
+}
+
+.wall-btn::after,
+.open-my-msg-btn::after{
+ content:"";
+ position:absolute;
+ inset:0;
+ border-radius:inherit;
+ background:
+ radial-gradient(circle at var(--mx,50%) var(--my,50%),
+ rgba(255,255,255,.55),
+ transparent 35%);
+ opacity:.8;
+ pointer-events:none;
+}
+
+
+/* AirDrop style send animation */
+.send-glass-flight{
+ animation:
+ glassFlight 1.25s cubic-bezier(.22,1,.36,1);
+}
+
+@keyframes glassFlight{
+ 0%{
+  transform:
+   scale(.3)
+   rotateY(80deg);
+  opacity:0;
+  filter:blur(30px);
+ }
+ 45%{
+  transform:
+   scale(1.15)
+   rotateY(0);
+  opacity:1;
+ }
+ 100%{
+  transform:
+   scale(1)
+   rotateY(0);
+  opacity:1;
+  filter:blur(0);
+ }
+}
+
+
+/* Ripple arrival */
+.glass-ripple{
+ animation:
+ ripple .8s ease-out;
+}
+
+@keyframes ripple{
+ from{
+  box-shadow:
+ 0 0 0 0 rgba(255,215,120,.5);
+ }
+ to{
+  box-shadow:
+ 0 0 0 60px rgba(255,215,120,0);
+ }
+}
+
+
+/* Mobile optimization */
+@media(max-width:768px){
+
+ body{
+  overflow-x:hidden;
+ }
+
+ .hero h1{
+  font-size:42px!important;
+ }
+
+ .gallery{
+  grid-template-columns:
+  repeat(2,1fr)!important;
+  gap:12px!important;
+ }
+
+ .wall-btn,
+ .open-my-msg-btn{
+  width:100%;
+  min-height:52px;
+ }
+
+ .liquid-light-orb{
+  width:220px;
+  height:220px;
+ }
+
+}
+
+
+/* Desktop enhancement */
+@media(min-width:1200px){
+
+.gallery-item:hover{
+ transform:
+ perspective(900px)
+ rotateX(4deg)
+ rotateY(-4deg)
+ translateY(-8px);
+}
+
+}
+
+
+/* Accessibility */
+@media(prefers-reduced-motion:reduce){
+
+*,
+*::before,
+*::after{
+ animation:none!important;
+ transition:none!important;
+}
+
+}
+
+
+/* ================= iOS 26 Liquid Glass Real Edition =================
+   Inspired by Apple's new Liquid Glass principles:
+   dynamic translucency, refraction, morphing and content focus.
+*/
+
+/* Real glass material */
+.liquid-glass,
+.wall-btn,
+.open-my-msg-btn,
+.danmaku-item,
+.my-msg-modal-box {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.42),
+      rgba(255,255,255,.12)
+    ) !important;
+
+  border:1px solid rgba(255,255,255,.55) !important;
+
+  backdrop-filter:
+    blur(28px)
+    saturate(180%);
+
+  -webkit-backdrop-filter:
+    blur(28px)
+    saturate(180%);
+
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.12),
+    inset 0 1px 1px rgba(255,255,255,.85),
+    inset 0 -10px 30px rgba(255,255,255,.08);
+}
+
+
+/* Glass edge refraction */
+.wall-btn::before,
+.open-my-msg-btn::before {
+ content:"";
+ position:absolute;
+ inset:1px;
+ border-radius:inherit;
+ background:
+ radial-gradient(
+  circle at var(--mx,50%) var(--my,50%),
+  rgba(255,255,255,.75),
+  transparent 35%
+ );
+ opacity:.8;
+ pointer-events:none;
+}
+
+
+/* Morphing interaction */
+.wall-btn,
+.open-my-msg-btn {
+ transition:
+ transform .5s cubic-bezier(.2,1.4,.4,1),
+ border-radius .5s ease,
+ backdrop-filter .5s ease;
+}
+
+.wall-btn:hover,
+.open-my-msg-btn:hover {
+ transform:
+ translateY(-5px)
+ scale(1.04);
+ border-radius:26px;
+}
+
+
+/* iOS 26 style button press */
+.wall-btn:active,
+.open-my-msg-btn:active {
+ transform:
+ scale(.86);
+ border-radius:32px;
+}
+
+
+/* Message sending: glass droplet */
+.send-glass-flight {
+ animation:
+ liquidMorphSend 1.4s cubic-bezier(.16,1,.3,1);
+}
+
+@keyframes liquidMorphSend {
+
+0%{
+ opacity:0;
+ transform:
+ scale(.3)
+ translateY(40px);
+ border-radius:50%;
+ filter:blur(30px);
+}
+
+35%{
+ opacity:1;
+ transform:
+ scale(1.15)
+ rotate(8deg);
+ border-radius:35%;
+ filter:blur(5px);
+}
+
+70%{
+ transform:
+ scale(.95)
+ rotate(-5deg);
+ border-radius:45px;
+}
+
+100%{
+ transform:
+ scale(1);
+ border-radius:999px;
+ filter:blur(0);
+}
+
+}
+
+
+/* Floating glass layers */
+body:before {
+ content:"";
+ position:fixed;
+ width:500px;
+ height:500px;
+ border-radius:50%;
+ background:
+ radial-gradient(
+  circle,
+  rgba(255,220,130,.18),
+  transparent 70%
+ );
+ filter:blur(50px);
+ animation:
+ glassFlow 20s infinite alternate;
+ pointer-events:none;
+ z-index:-1;
+}
+
+@keyframes glassFlow {
+ from{
+ transform:translate(-10vw,10vh);
+ }
+ to{
+ transform:translate(80vw,60vh);
+ }
+}
+
+
+/* Photo spatial opening */
+.lightbox img {
+ animation:
+ spatialPhoto .7s cubic-bezier(.2,1,.3,1);
+}
+
+@keyframes spatialPhoto {
+
+from{
+ transform:
+ perspective(1000px)
+ translateZ(-200px)
+ scale(.7);
+
+ opacity:0;
+ filter:blur(30px);
+}
+
+to{
+ transform:
+ perspective(1000px)
+ translateZ(0)
+ scale(1);
+
+ opacity:1;
+ filter:blur(0);
+}
+
+}
+
+
+/* Mobile */
+@media(max-width:768px){
+
+.wall-btn,
+.open-my-msg-btn{
+ min-height:52px;
+ border-radius:24px;
+}
+
+body:before{
+ width:250px;
+ height:250px;
+}
+
+}
+
+
+/* Reduce motion */
+@media(prefers-reduced-motion:reduce){
+*{
+ animation:none!important;
+ transition:none!important;
+}
+}
+
+
+/* =============== iOS 26 Liquid Glass Optimized Edition =============== */
+
+/* Fix button readability */
+.wall-btn{
+ color:#fff !important;
+ text-shadow:
+ 0 1px 8px rgba(0,0,0,.28);
+ background:
+ linear-gradient(
+ 135deg,
+ rgba(210,170,80,.92),
+ rgba(170,125,35,.78)
+ ) !important;
+ border:1px solid rgba(255,255,255,.55)!important;
+}
+
+.open-my-msg-btn{
+ color:#8b6418!important;
+ font-weight:700;
+ background:
+ rgba(255,255,255,.42)!important;
+}
+
+/* More realistic clear liquid glass */
+.open-my-msg-btn,
+.my-msg-modal-box{
+
+ background:
+ linear-gradient(
+ 135deg,
+ rgba(255,255,255,.62),
+ rgba(255,255,255,.22)
+ )!important;
+
+ backdrop-filter:
+ blur(36px)
+ saturate(160%);
+
+ -webkit-backdrop-filter:
+ blur(36px)
+ saturate(160%);
+
+ box-shadow:
+ 0 25px 80px rgba(0,0,0,.15),
+ inset 0 1px 2px rgba(255,255,255,.9);
+}
+
+
+/* Message panel redesign */
+.my-msg-modal{
+ background:
+ rgba(20,20,25,.18)!important;
+
+ backdrop-filter:
+ blur(24px);
+
+ -webkit-backdrop-filter:
+ blur(24px);
+}
+
+.my-msg-modal-box{
+ border-radius:32px!important;
+ overflow:hidden;
+}
+
+.my-msg-modal-box::before{
+ content:"";
+ position:absolute;
+ inset:0;
+ background:
+ radial-gradient(
+ circle at top left,
+ rgba(255,255,255,.65),
+ transparent 35%
+ );
+ pointer-events:none;
+}
+
+
+/* Cleaner text layer */
+.my-msg-modal-box,
+.my-msg-modal-box *{
+ position:relative;
+ z-index:1;
+}
+
+
+/* Liquid reflection */
+.wall-btn::after,
+.open-my-msg-btn::after{
+ content:"";
+ position:absolute;
+ inset:0;
+ background:
+ linear-gradient(
+ 120deg,
+ transparent 35%,
+ rgba(255,255,255,.55),
+ transparent 65%
+ );
+ transform:translateX(-120%);
+ transition:.8s;
+ pointer-events:none;
+}
+
+.wall-btn:hover::after,
+.open-my-msg-btn:hover::after{
+ transform:translateX(120%);
+}
+
+
+/* Better mobile glass */
+@media(max-width:768px){
+
+.my-msg-modal-box{
+ width:90%!important;
+ border-radius:28px!important;
+}
+
+.wall-btn{
+ color:white!important;
+}
+
+}
+
+
+/* keep Apple style: content first */
+.danmaku-item{
+ background:
+ rgba(255,255,255,.38)!important;
+}
+
+</style>
 </head>
 <body>
   <!-- ====================== 头部Hero区域 ====================== -->
@@ -1371,5 +2243,41 @@
       startDanmakuScheduler();       // 开启弹幕循环调度器
     });
   </script>
+
+
+// iOS style parallax depth
+(function(){
+ const hero=document.querySelector('.hero');
+ if(!hero)return;
+ window.addEventListener('scroll',()=>{
+  const y=window.scrollY;
+  hero.style.transform=`translateY(${y*.08}px)`;
+ },{passive:true});
+})();
 </body>
 </html>
+
+<script>
+document.querySelectorAll('.wall-btn,.open-my-msg-btn').forEach(btn=>{
+ btn.addEventListener('pointermove',e=>{
+  const r=btn.getBoundingClientRect();
+  btn.style.setProperty('--mx',
+  ((e.clientX-r.left)/r.width*100)+'%');
+  btn.style.setProperty('--my',
+  ((e.clientY-r.top)/r.height*100)+'%');
+ });
+});
+</script>
+
+<script>
+document.querySelectorAll(".wall-btn,.open-my-msg-btn")
+.forEach(el=>{
+ el.addEventListener("pointermove",e=>{
+  const r=el.getBoundingClientRect();
+  el.style.setProperty("--mx",
+   ((e.clientX-r.left)/r.width*100)+"%");
+  el.style.setProperty("--my",
+   ((e.clientY-r.top)/r.height*100)+"%");
+ });
+});
+</script>
