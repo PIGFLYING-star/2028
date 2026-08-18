@@ -899,7 +899,7 @@
 
     /* ==============================================
      * 【本地虚拟弹幕】JS驱动从容器中间向右边界向左滚动，不使用css @keyframes
-     * 仅本地浏览器可见；轮询loadMessages触发后销毁
+     * 仅本地浏览器可见；loadMessages调用标记needDestroy，弹幕滑出容器之后才真正销毁
      * ============================================== */
     let virtualDanmakuList = []; // 保存全部本地虚拟弹幕实例
     /**
@@ -922,38 +922,42 @@
 
       container.appendChild(div);
 
-      // 虚拟弹幕实例对象
+      // 虚拟弹幕实例对象，增加needDestroy标记：true=等待滑出后销毁
       const inst = {
         dom: div,
         x: rect.width, // 起始X坐标，容器宽度（最右侧）
-        rafId: null
+        rafId: null,
+        needDestroy: false // loadMessages只会设置这个标记，不会直接删DOM
       };
       virtualDanmakuList.push(inst);
 
-      /** 逐帧向左滚动 */
+      /** 逐帧向左滚动，增加判断：needDestroy为true必须等弹幕完全离开容器才remove */
       function tick(){
         inst.x -= VIRT_DANMAKU_SPEED / 60;
         inst.dom.style.right = (rect.width - inst.x) + "px";
-        // 滚动跑出容器左边界，销毁
-        if(inst.x < -inst.dom.offsetWidth){
+        // 判断：弹幕已经跑出容器左边界
+        const isOut = inst.x < -inst.dom.offsetWidth;
+
+        if(isOut){
+          cancelAnimationFrame(inst.rafId);
           inst.dom.remove();
           const idx = virtualDanmakuList.indexOf(inst);
           if(idx > -1) virtualDanmakuList.splice(idx,1);
           return;
         }
+        // 还没滑出去，但是已经收到销毁标记，继续滚动，不删除DOM，等isOut再销毁
         inst.rafId = requestAnimationFrame(tick);
       }
       inst.rafId = requestAnimationFrame(tick);
     }
     /**
-     * 销毁全部本地虚拟弹幕，取消raf动画，loadMessages调用
+     * 标记全部本地虚拟弹幕为待销毁，**不立刻删除DOM**；等待tick里面判断弹幕滑出容器后自动清理
+     * loadMessages()调用此函数
      */
-    function destroyAllVirtualDanmaku(){
+    function markAllVirtualDanmakuNeedDestroy(){
       for(const inst of virtualDanmakuList){
-        cancelAnimationFrame(inst.rafId);
-        if(inst.dom && inst.dom.parentNode) inst.dom.remove();
+        inst.needDestroy = true;
       }
-      virtualDanmakuList = [];
     }
 
     /* ==============================================
@@ -1073,7 +1077,7 @@
         return;
       }
       wallTip.style.display = 'none';
-      // 屏幕弹幕数量保护，超过上限跳过本次生成
+      // 屏幕弹幕数量保护，跳过本地虚拟弹幕不计入上限
       const currentCount = danmakuContainer.querySelectorAll('.danmaku-item:not([data-local-virtual])').length;
       if(currentCount >= MAX_LIVE_DANMAKU){
         return;
@@ -1182,12 +1186,13 @@
     }
     /* ==============================================
      * 后端留言轮询模块
-     * loadMessages：拉取云端真实数据；执行时【销毁全部本地虚拟弹幕】
+     * loadMessages：拉取云端真实数据；调用markAllVirtualDanmakuNeedDestroy()标记虚拟弹幕待销毁
+     * 规则：虚拟弹幕还没有滑出容器，不删除DOM；等tick滚动离开容器之后自动销毁
      * ============================================== */
     let pollTimer = null;
     /**
      * 请求后端获取最新留言，更新全局留言池 allMessages
-     * 逻辑：轮询拿到后端真实数据，销毁页面上全部本地虚拟弹幕DOM；数据库为空清空内存和DOM
+     * 逻辑：轮询拿到后端真实数据，标记本地虚拟弹幕为待销毁（不是立刻删DOM）；数据库为空清空内存和DOM
      */
     async function loadMessages() {
       try {
@@ -1195,10 +1200,10 @@
         if (!res.ok) throw new Error('请求失败');
         const data = await res.json();
 
-        // 【重点】轮询到云端数据，销毁所有本地虚拟弹幕
-        destroyAllVirtualDanmaku();
+        //【修改点】轮询触发，标记全部本地虚拟弹幕为待销毁，DOM不立刻删除，等待弹幕滑出容器后再清理
+        markAllVirtualDanmakuNeedDestroy();
 
-        // 后端返回空数组，数据库已经没有留言，强制清空内存与页面DOM
+        // 后端返回空数组，数据库已经没有留言，强制清空内存与页面真实弹幕DOM
         if(Array.isArray(data) && data.length === 0){
           allMessages = [];
           playIndex = 0;
@@ -1250,7 +1255,7 @@
      * 发布留言提交逻辑
      * 时序：点击发布 → 播放飞行动画；飞到弹幕容器【垂直正中间】，调用createLocalVirtualDanmaku
      * 生成本地虚拟弹幕：从弹幕容器右侧中间位置直接向左滚动；仅本机可见；
-     * 同时POST提交云端；等待POLL_INTERVAL=8000ms轮询执行loadMessages，销毁虚拟弹幕，使用云端真实数据
+     * 同时POST提交云端；等待POLL_INTERVAL=8000ms轮询执行loadMessages，标记虚拟弹幕待销毁，等弹幕滚出容器消失，使用云端真实数据
      * 注意：不修改allMessages内存留言池，等待轮询从后端拉取
      * ============================================== */
     const msgInput = document.getElementById('msgInput');
