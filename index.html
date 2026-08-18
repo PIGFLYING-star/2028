@@ -855,8 +855,9 @@
 
       document.body.appendChild(flyEl);
 
+      // 飞到弹幕容器垂直正中间位置
       const endX = targetRect.left + targetRect.width * 0.7;
-      const endY = targetRect.top + targetRect.height * 0.35;
+      const endY = targetRect.top + targetRect.height * 0.5;
 
       const duration = 600;
       const startTime = performance.now();
@@ -887,7 +888,7 @@
           requestAnimationFrame(animate);
         }else{
           flyEl.remove();
-          // 飞行到达终点执行回调，立刻生成弹幕DOM
+          // 飞行到达终点执行回调，生成本地虚拟弹幕
           if(typeof onArrive === "function") onArrive();
         }
       }
@@ -978,15 +979,21 @@
     let allMessages = [];         // 完整留言池，轮询接口更新这个数组
     let playIndex = 0;            // 播放索引指针，记录下一条要播放的留言下标
     let danmakuScheduler = null;  // 弹幕循环调度定时器
+    let localVirtualDanmaku = null; // 保存【本地虚拟弹幕】DOM引用，轮询时销毁
+
     /**
      * 创建单条弹幕DOM
-     * @param {object} item 留言对象 {id,content,client_id,create_at}
+     * @param {object} item 留言对象 {id,content,client_id,create_at,isLocalVirtual}
      * @returns {HTMLElement}
      */
     function createDanmakuItem(item) {
       const div = document.createElement('div');
       div.className = 'danmaku-item';
       div.dataset.id = item.id;
+      // 标记本地虚拟弹幕，轮询时识别销毁
+      if(item.isLocalVirtual){
+        div.dataset.localVirtual = "1";
+      }
       div.textContent = escapeHtml(item.content);
       // top：5%~80%，上下留出安全边距避免文字被裁切
       div.style.top = (Math.random() * 75 + 5) + '%';
@@ -1119,22 +1126,27 @@
     }
     /* ==============================================
      * 后端留言轮询模块
+     * loadMessages：拉取云端真实数据；执行时销毁本地虚拟弹幕DOM
      * ============================================== */
     let pollTimer = null;
     /**
      * 请求后端获取最新留言，更新全局留言池 allMessages
-     * BUG修复：当后端返回空数组，强制清空内存数组，清空页面现存弹幕DOM，重置playIndex，解决全部删除完刷新还有弹幕残留
+     * 逻辑：轮询拿到后端真实数据，清除页面上本地虚拟弹幕，用云端数据展示
      */
     async function loadMessages() {
       try {
         const res = await fetch(API_URL);
         if (!res.ok) throw new Error('请求失败');
         const data = await res.json();
+
+        // 轮询到云端数据，销毁所有本地虚拟弹幕DOM
+        danmakuContainer.querySelectorAll('.danmaku-item[data-local-virtual="1"]').forEach(el=>el.remove());
+        localVirtualDanmaku = null;
+
         // 后端返回空数组，数据库已经没有留言，强制清空内存与页面DOM
         if(Array.isArray(data) && data.length === 0){
           allMessages = [];
           playIndex = 0;
-          danmakuContainer.querySelectorAll('.danmaku-item').forEach(el=>el.remove());
           wallTip.style.display = 'block';
           wallTip.textContent = '暂无留言，快来发布第一条回忆吧✨';
           wallTip.className = 'wall-tip';
@@ -1180,7 +1192,8 @@
     });
     /* ==============================================
      * 发布留言提交逻辑
-     * 修改：飞行动画到达弹幕容器瞬间，直接生成真实弹幕DOM追加容器立刻滚动；不再等待调度器周期
+     * 时序：点击发布 → 播放飞行动画；飞到弹幕容器中间，生成【本地虚拟弹幕（仅本机可见，不上云）】直接进入流动轨道；
+     * 同时POST提交云端；等待POLL_INTERVAL=8000ms轮询执行loadMessages，拉取云端真实数据，销毁虚拟弹幕，同步云端真实留言
      * ============================================== */
     const msgInput = document.getElementById('msgInput');
     const submitBtn = document.getElementById('submitBtn');
@@ -1196,20 +1209,24 @@
       submitBtn.disabled = true;
       submitBtn.textContent = '发布中...';
 
-      // 飞行动画，抵达终点立刻生成弹幕DOM直接加入容器，马上滚动
+      // 飞行动画，抵达弹幕容器中间，生成本地虚拟弹幕，直接开始滚动
       playSendFlyAnimation(text, ()=>{
-        const tempMsgObj = {
-          id: "temp_" + Date.now(),
+        const virtualMsgObj = {
+          id: "virtual_" + Date.now(),
           content: text,
           client_id: CLIENT_ID,
-          create_at: new Date().toISOString()
+          create_at: new Date().toISOString(),
+          isLocalVirtual: true // 标记本地虚拟弹幕，轮询时销毁
         };
-        const instantDanmaku = createDanmakuItem(tempMsgObj);
-        danmakuContainer.appendChild(instantDanmaku);
+        localVirtualDanmaku = createDanmakuItem(virtualMsgObj);
+        // 放到弹幕容器垂直中间轨道
+        localVirtualDanmaku.style.top = "50%";
+        danmakuContainer.appendChild(localVirtualDanmaku);
         wallTip.style.display = 'none';
       });
 
       try {
+        // POST提交到云端数据库
         const res = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1218,18 +1235,7 @@
         const ret = await res.json();
         if (!res.ok || ret.error) throw new Error(ret.error || '发布失败');
         msgInput.value = '';
-        // 推入内存留言池，供调度器、我的留言面板使用
-        const nowTime = new Date().toISOString();
-        const localNewMsg = {
-          id: "temp_" + Date.now(),
-          content: text,
-          client_id: CLIENT_ID,
-          create_at: nowTime
-        };
-        allMessages.unshift(localNewMsg);
-        renderMyMessages(allMessages);
-        playIndex = 0;
-        // 不等待loadMessages，轮询定时器后续自动拉取真实数据覆盖临时id
+        // 注意：这里不手动修改allMessages；等待8秒轮询loadMessages()从后端拉取真实数据同步
       } catch (err) {
         alert('发布失败：' + err.message);
       } finally {
