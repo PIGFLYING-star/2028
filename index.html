@@ -34,7 +34,7 @@
       --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 通用过渡动画曲线 */
     }
     html {
-      scroll-behavior: smooth; /* 全局平滑滚动（返回顶部生效） */
+      scroll-behavior: smooth; /* 全局平滑滚动 */
     }
     body {
       font-family: 'Noto Serif SC', serif;
@@ -44,7 +44,6 @@
       line-height: 1.6;
       -webkit-tap-highlight-color: transparent; /* 去除移动端点击半透明高亮框 */
     }
-
     /* ====================== 头部Hero区域：班级名称、班训、签名 ====================== */
     .hero {
       text-align: center;
@@ -94,7 +93,6 @@
       margin: 30px auto 0;
       border-radius: 1px;
     }
-
     /* ====================== 关于我们模块，滚动渐入动画 ====================== */
     .about-section {
       text-align: center;
@@ -121,7 +119,6 @@
       letter-spacing: 8px;
       text-transform: uppercase;
     }
-
     /* ====================== 班级相册模块 ====================== */
     .gallery-section {
       padding: 20px 20px 60px;
@@ -178,7 +175,7 @@
       transform: translateY(0);
       transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s ease;
     }
-    /* wide：宽幅图片，占网格两格 */
+    /* wide：宽幅图片，占两格 */
     .gallery-item.wide {
       grid-column: span 2;
       aspect-ratio: 16/7;
@@ -220,7 +217,6 @@
       transition: opacity 0.3s ease;
       pointer-events: none;
     }
-
     /* ====================== 寄语祝福模块 ====================== */
     .blessings {
       padding: 70px 20px;
@@ -277,7 +273,6 @@
         transform: translateY(-2px);
       }
     }
-
     /* ====================== 回忆标题区块 ====================== */
     .memory-section {
       padding: 60px 20px;
@@ -302,7 +297,6 @@
       color: var(--dark);
       margin: 12px 0;
     }
-
     /* ====================== 弹幕留言墙模块 ====================== */
     .wall-section {
       padding: 40px 20px 60px;
@@ -413,6 +407,22 @@
       transform: none;
     }
 
+    /* ==========消息发送飞行动画元素【带硬件加速】========== */
+    .fly-message {
+      position: fixed;
+      z-index: 200;
+      pointer-events: none;
+      padding:6px 14px;
+      background:rgba(201,168,76,0.15);
+      border-left:3px solid var(--gold);
+      border-radius:18px;
+      font-size:14px;
+      color:var(--text-main);
+      white-space:nowrap;
+      will-change: transform, opacity, filter, left, top;
+      backface-visibility: hidden;
+    }
+
     /* ====================== 我的留言折叠面板 ====================== */
     .my-messages {
       max-width: 700px;
@@ -521,7 +531,6 @@
       color: var(--text-sub);
       font-size: 13px;
     }
-
     /* ====================== 页脚区域 ====================== */
     .footer {
       text-align: center;
@@ -557,7 +566,6 @@
       font-size: 12px;
       color: #666;
     }
-
     /* ====================== 图片灯箱：大图预览弹窗 ====================== */
     .lightbox {
       position: fixed;
@@ -613,7 +621,6 @@
     .lightbox-close:active {
       background: rgba(255,255,255,0.3);
     }
-
     /* ====================== 花瓣飘落装饰元素 ====================== */
     .petal {
       position: fixed;
@@ -626,37 +633,6 @@
       animation-timing-function: linear;
       animation-fill-mode: forwards;
     }
-
-    /* ====================== 返回顶部悬浮按钮 ====================== */
-    .back-top {
-      position: fixed;
-      bottom: 30px;
-      right: 20px;
-      width: 46px;
-      height: 46px;
-      background: var(--gold);
-      color: #fff;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      cursor: pointer;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: var(--transition);
-      box-shadow: 0 4px 12px rgba(201,168,76,0.4);
-      z-index: 99;
-      border: none;
-    }
-    .back-top.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .back-top:active {
-      transform: scale(0.9);
-    }
-
     /* ====================== Keyframes 动画定义 ====================== */
     /* 头部区域入场：淡入向下位移 */
     @keyframes fadeInDown {
@@ -693,13 +669,11 @@
     <div class="signature">黄欢</div>
     <div class="divider-gold"></div>
   </div>
-
   <!-- ====================== 关于我们 ====================== -->
   <div class="about-section" id="about">
     <div class="about-title">关于我们</div>
     <div class="about-sub">ABOUT US</div>
   </div>
-
   <!-- ====================== 班级相册，本地图片 assets/img/ ====================== -->
   <div class="gallery-section">
     <div class="gallery-header">
@@ -712,50 +686,41 @@
         <img src="assets/img/class01.jpg" alt="班级合影" loading="lazy">
         <div class="gallery-overlay">班级合影 · 最珍贵的记忆</div>
       </div>
-
       <div class="gallery-item" data-src="assets/img/class02.jpg">
         <img src="assets/img/class02.jpg" alt="课堂学习" loading="lazy">
         <div class="gallery-overlay">课堂学习</div>
       </div>
-
       <div class="gallery-item" data-src="assets/img/class03.jpg">
         <img src="assets/img/class03.jpg" alt="校园活动" loading="lazy">
         <div class="gallery-overlay">校园活动</div>
       </div>
-
       <div class="gallery-item" data-src="assets/img/class04.jpg">
         <img src="assets/img/class04.jpg" alt="操场训练" loading="lazy">
         <div class="gallery-overlay">操场训练</div>
       </div>
-
       <div class="gallery-item" data-src="assets/img/class05.jpg">
         <img src="assets/img/class05.jpg" alt="集体活动" loading="lazy">
         <div class="gallery-overlay">集体活动</div>
       </div>
-
       <!-- wide宽幅图 -->
       <div class="gallery-item wide" data-src="assets/img/class06.jpg">
         <img src="assets/img/class06.jpg" alt="同窗友谊" loading="lazy">
         <div class="gallery-overlay">同窗友谊 · 青春飞扬</div>
       </div>
-
       <div class="gallery-item" data-src="assets/img/class07.jpg">
         <img src="assets/img/class07.jpg" alt="毕业典礼" loading="lazy">
         <div class="gallery-overlay">毕业典礼</div>
       </div>
-
       <div class="gallery-item" data-src="assets/img/class08.jpg">
         <img src="assets/img/class08.jpg" alt="图书馆时光" loading="lazy">
         <div class="gallery-overlay">图书馆时光</div>
       </div>
-
       <div class="gallery-item" data-src="assets/img/class09.jpg">
         <img src="assets/img/class09.jpg" alt="运动会" loading="lazy">
         <div class="gallery-overlay">运动会</div>
       </div>
     </div>
   </div>
-
   <!-- ====================== 寄语祝福 ====================== -->
   <div class="blessings" id="blessings">
     <div class="blessing-line highlight">Splendid CLASS</div>
@@ -775,14 +740,12 @@
       <span class="bless-tag">万事胜意</span>
     </div>
   </div>
-
   <!-- ====================== 回忆标题 ====================== -->
   <div class="memory-section">
     <div class="memory-title">BEST MEMORY</div>
     <div class="memory-class">臻辉班</div>
     <div class="memory-title">属于我们的时光</div>
   </div>
-
   <!-- ====================== 弹幕留言墙区域 ====================== -->
   <div class="wall-section">
     <div class="wall-header">
@@ -818,7 +781,6 @@
       </div>
     </div>
   </div>
-
   <!-- ====================== 页脚 ====================== -->
   <div class="footer">
     <div class="footer-name">臻辉班</div>
@@ -830,16 +792,11 @@
     <div class="footer-slogan">珍藏每一份美好，铭记每一段时光</div>
     <div class="footer-copy">Copyright © 2026 臻辉班. All Rights Reserved</div>
   </div>
-
-  <!-- ====================== 返回顶部按钮 ====================== -->
-  <button class="back-top" id="backTop" aria-label="返回顶部">↑</button>
-
   <!-- ====================== 图片灯箱弹窗 大图预览 ====================== -->
   <div class="lightbox" id="lightbox">
     <div class="lightbox-close" id="lightboxClose">&times;</div>
     <img src="" alt="预览大图" id="lightboxImg">
   </div>
-
   <script>
     /* ==============================================
      * 全局配置常量
@@ -848,7 +805,6 @@
     const POLL_INTERVAL = 8000;          // 轮询后端获取留言间隔(毫秒)
     const MAX_LIVE_DANMAKU = 12;         // 屏幕上同时最多存在弹幕数量，防止DOM爆炸
     const DANMAKU_GAP = 1200;            // 调度器生成一条弹幕的时间间隔（毫秒）
-
     /* ==============================================
      * 工具函数模块
      * ============================================== */
@@ -865,7 +821,6 @@
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
     }
-
     /**
      * 获取浏览器本地唯一客户端ID，用来区分是谁发布的留言，存在localStorage
      * @returns {string} clientId 唯一标识
@@ -879,6 +834,63 @@
       return clientId;
     }
     const CLIENT_ID = getClientId();
+
+    /**
+     * ✨发送飞行动画：抛物线飞行 + 运动模糊 + skew畸变拉扯
+     * @param {string} text 发送文本
+     */
+    function playSendFlyAnimation(text){
+      const inputDom = document.getElementById('msgInput');
+      const targetDom = document.getElementById('danmakuContainer');
+      const flyEl = document.createElement('div');
+      flyEl.className = "fly-message";
+      flyEl.innerText = escapeHtml(text);
+
+      const inputRect = inputDom.getBoundingClientRect();
+      const targetRect = targetDom.getBoundingClientRect();
+
+      flyEl.style.left = inputRect.left + "px";
+      flyEl.style.top = inputRect.top + "px";
+
+      document.body.appendChild(flyEl);
+
+      const endX = targetRect.left + targetRect.width * 0.7;
+      const endY = targetRect.top + targetRect.height * 0.35;
+
+      const duration = 600;
+      const startTime = performance.now();
+
+      function animate(time){
+        const elapsed = time - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        const easeOut = 1 - Math.pow(1 - progress, 2);
+
+        const x = inputRect.left + (endX - inputRect.left) * easeOut;
+        const y = inputRect.top + (endY - inputRect.top) * easeOut - 60 * Math.sin(progress * Math.PI);
+
+        flyEl.style.left = x + "px";
+        flyEl.style.top = y + "px";
+        flyEl.style.opacity = 1 - progress;
+
+        // 畸变拉扯：缩放 + X轴倾斜
+        const scale = 1 + Math.sin(progress * Math.PI) * 0.15;
+        const skewX = Math.sin(progress * Math.PI) * 3;
+        flyEl.style.transform = `scale(${scale}) skewX(${skewX}deg)`;
+
+        // 运动模糊，飞行中段强度最大
+        const blur = Math.sin(progress * Math.PI) * 1.5;
+        flyEl.style.filter = `blur(${blur}px)`;
+
+        if(progress < 1){
+          requestAnimationFrame(animate);
+        }else{
+          flyEl.remove();
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
 
     /* ==============================================
      * IntersectionObserver 滚动观察器
@@ -895,14 +907,12 @@
     // 将需要滚动入场的DOM全部注册观察
     document.querySelectorAll('.about-section, .gallery-header, .gallery-item, .blessings, .memory-section')
       .forEach(el => observer.observe(el));
-
     /* ==============================================
      * 图片灯箱大图预览模块
      * ============================================== */
     const lightbox = document.getElementById('lightbox');
     const lightboxImg = document.getElementById('lightboxImg');
     const lightboxClose = document.getElementById('lightboxClose');
-
     // 相册图片点击打开灯箱
     document.querySelectorAll('.gallery-item').forEach(item => {
       item.addEventListener('click', () => {
@@ -911,7 +921,6 @@
         document.body.style.overflow = 'hidden'; // 打开弹窗禁止页面滚动
       });
     });
-
     /**
      * 关闭灯箱
      */
@@ -928,12 +937,10 @@
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && lightbox.classList.contains('active')) closeLightbox();
     });
-
     /* ==============================================
      * 花瓣飘落装饰逻辑
      * ============================================== */
     let petalTimer = null;
-
     /**
      * 创建单个花瓣DOM元素
      */
@@ -958,18 +965,6 @@
         petalTimer = null;
       }
     }
-
-    /* ==============================================
-     * 返回顶部按钮逻辑
-     * ============================================== */
-    const backTop = document.getElementById('backTop');
-    window.addEventListener('scroll', () => {
-      backTop.classList.toggle('show', window.scrollY > 400);
-    });
-    backTop.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-
     /* ==============================================
      * 弹幕核心逻辑【重构：循环调度器】
      * 不再一次性渲染全部弹幕；调度器定时从allMessages留言池循环取消息生成弹幕DOM
@@ -977,11 +972,9 @@
      * ============================================== */
     const danmakuContainer = document.getElementById('danmakuContainer');
     const wallTip = document.getElementById('wallTip');
-
     let allMessages = [];         // 完整留言池，轮询接口更新这个数组
     let playIndex = 0;            // 播放索引指针，记录下一条要播放的留言下标
     let danmakuScheduler = null;  // 弹幕循环调度定时器
-
     /**
      * 创建单条弹幕DOM
      * @param {object} item 留言对象 {id,content,client_id,create_at}
@@ -1002,7 +995,6 @@
       });
       return div;
     }
-
     /**
      * 弹幕循环调度器主函数
      * 从留言池取出消息生成弹幕，索引走到数组末尾归零实现循环播放历史留言
@@ -1030,7 +1022,6 @@
         playIndex = 0;
       }
     }
-
     /** 启动弹幕调度器 */
     function startDanmakuScheduler(){
       if(danmakuScheduler) return;
@@ -1043,7 +1034,6 @@
         danmakuScheduler = null;
       }
     }
-
     /* ==============================================
      * 我的留言折叠面板模块
      * ============================================== */
@@ -1051,12 +1041,10 @@
     const myMessagesCount = document.getElementById('myMessagesCount');
     const myMessagesHeader = document.getElementById('myMessagesHeader');
     const myMessagesBox = document.getElementById('myMessages');
-
     // 点击标题切换折叠展开
     myMessagesHeader.addEventListener('click', () => {
       myMessagesBox.classList.toggle('collapsed');
     });
-
     /**
      * 渲染"我的留言"列表，过滤属于当前浏览器客户端的留言
      * @param {Array} list 全部留言数组
@@ -1089,7 +1077,6 @@
         });
       });
     }
-
     /**
      * 时间格式化，后端时间字符串转 "月-日 时:分"
      * @param {string} timeStr 后端返回时间
@@ -1105,7 +1092,6 @@
       const min = String(date.getMinutes()).padStart(2, '0');
       return `${m}-${d} ${h}:${min}`;
     }
-
     /**
      * 删除留言接口请求
      * @param {string} id 留言ID
@@ -1128,12 +1114,10 @@
         alert('删除失败：' + err.message);
       }
     }
-
     /* ==============================================
      * 后端留言轮询模块
      * ============================================== */
     let pollTimer = null;
-
     /**
      * 请求后端获取最新留言，更新全局留言池 allMessages
      */
@@ -1154,7 +1138,6 @@
         }
       }
     }
-
     function startPoll() {
       if (pollTimer) return;
       pollTimer = setInterval(loadMessages, POLL_INTERVAL);
@@ -1165,7 +1148,6 @@
         pollTimer = null;
       }
     }
-
     /* ==============================================
      * 页面可见性监听：切后台全部休眠定时器，切回前台恢复
      * 减少后台时CPU、网络消耗，移动端省电
@@ -1182,13 +1164,11 @@
         startDanmakuScheduler();
       }
     });
-
     /* ==============================================
      * 发布留言提交逻辑
      * ============================================== */
     const msgInput = document.getElementById('msgInput');
     const submitBtn = document.getElementById('submitBtn');
-
     async function postMessage() {
       const text = msgInput.value.trim();
       if (!text) {
@@ -1197,6 +1177,9 @@
         msgInput.focus();
         return;
       }
+      // 播放发送飞行动画（畸变+运动模糊）
+      playSendFlyAnimation(text);
+
       submitBtn.disabled = true;
       submitBtn.textContent = '发布中...';
       try {
@@ -1220,7 +1203,6 @@
     msgInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') postMessage();
     });
-
     /* ==============================================
      * DOM加载完毕，页面初始化入口
      * ============================================== */
