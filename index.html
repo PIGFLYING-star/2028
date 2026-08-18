@@ -2630,93 +2630,357 @@ window.addEventListener("scroll",()=>{
 
 }
 
+  /* =================================================
+ iOS 26 Music Capsule Override Fix
+================================================= */
+
+
+#musicCapsule{
+
+position:fixed!important;
+
+left:28px!important;
+
+bottom:40px!important;
+
+width:64px!important;
+
+height:64px!important;
+
+background:
+linear-gradient(
+145deg,
+rgba(255,255,255,.75),
+rgba(255,255,255,.18)
+)!important;
+
+
+border-radius:50%!important;
+
+
+overflow:hidden!important;
+
+
+z-index:999999!important;
+
+
+cursor:pointer!important;
+
+
+box-shadow:
+0 20px 60px rgba(0,0,0,.18)!important;
+
+
+backdrop-filter:
+blur(25px)
+saturate(180%)!important;
+
+
+-webkit-backdrop-filter:
+blur(25px)
+saturate(180%)!important;
+
+
+transition:
+all .55s cubic-bezier(.22,1,.36,1)!important;
+
+
+}
+
+
+
+
+#musicCapsule.active{
+
+
+width:330px!important;
+
+height:90px!important;
+
+border-radius:45px!important;
+
+}
+
+
+
+
+
+#musicCapsule .music-capsule-icon{
+
+
+width:64px!important;
+
+height:64px!important;
+
+
+display:flex!important;
+
+align-items:center!important;
+
+justify-content:center!important;
+
+
+background:none!important;
+
+
+}
+
+
+
+
+#musicCapsule .music-capsule-icon::before{
+
+
+content:"♪"!important;
+
+
+font-size:28px!important;
+
+
+color:#222!important;
+
+
+}
+
+
+
+
+#musicCapsule .music-capsule-panel{
+
+
+display:flex!important;
+
+
+opacity:0;
+
+
+pointer-events:none;
+
+
+transition:.4s ease;
+
+
+}
+
+
+
+
+#musicCapsule.active 
+.music-capsule-panel{
+
+
+opacity:1!important;
+
+pointer-events:auto!important;
+
+
+}
+
+
+
+#musicCapsule.active 
+.music-capsule-icon{
+
+
+display:none!important;
+
+}
 </style>
-  <!-- ==================================================
- iOS 26 Liquid Glass Music Capsule
- Graduation Edition
-================================================== -->
-
-
-<div id="musicCapsule"
-class="music-capsule">
-
-
-    <!-- 折叠状态极简音乐图标 -->
-
-    <div class="music-capsule-icon">
-
-    </div>
-
-
-
-
-    <!-- 展开播放器 -->
-
-    <div class="music-capsule-panel">
-
-
-        <img
-        class="music-mini-cover"
-        src="/assets/music/cover.jpg"
-        alt="cover">
-
-
-
-        <div class="music-mini-info">
-
-
-            <div class="music-mini-title">
-                我们的青春
-            </div>
-
-
-
-            <div class="music-mini-sub">
-                2026 Graduation
-            </div>
-
-
-        </div>
-
-
-
-
-        <button
-        id="capsulePlay"
-        class="music-mini-btn">
-
-            ▶
-
-        </button>
-
-
-
-    </div>
-
-
-</div>
-
-
-
-
-
-<!-- HTML5 Audio -->
-
-<audio
-id="audio-player"
-preload="metadata"
-hidden>
-
-</audio>
-
-
-
-
-
-<!-- Music Engine -->
-
-<script src="/assets/js/music-player.js"></script>
+  
 
   
+
+<script>
+(()=>{
+ const capsule=document.getElementById('musicCapsule');
+ const play=document.getElementById('musicPlay');
+ const audio=document.getElementById('audio-player');
+ if(!capsule||!play||!audio) return;
+ let expanded=false;
+ capsule.addEventListener('click',e=>{
+   if(e.target!==play){
+    expanded=!expanded;
+    capsule.classList.toggle('active',expanded);
+   }
+ });
+ play.addEventListener('click',async e=>{
+   e.stopPropagation();
+   try{
+    if(audio.paused){
+      await audio.play();
+      play.textContent='Ⅱ';
+      capsule.classList.add('playing');
+    }else{
+      audio.pause();
+      play.textContent='▶';
+      capsule.classList.remove('playing');
+    }
+   }catch(err){
+    console.warn('音乐播放失败:',err);
+   }
+ });
+ audio.addEventListener('ended',()=>{play.textContent='▶';capsule.classList.remove('playing');});
+ document.addEventListener('click',e=>{if(!capsule.contains(e.target)){capsule.classList.remove('active');}});
+})();
+</script>
+
+<style>
+/* ===== iOS Spatial Liquid Glass Motion Upgrade ===== */
+
+:root{
+ --glass-ease:cubic-bezier(.22,1,.36,1);
+}
+
+/* Dynamic glass background */
+body{
+ overflow-x:hidden;
+}
+
+body::after{
+ content:"";
+ position:fixed;
+ width:360px;
+ height:360px;
+ border-radius:50%;
+ pointer-events:none;
+ background:radial-gradient(circle,rgba(255,220,130,.22),transparent 68%);
+ filter:blur(35px);
+ z-index:-1;
+ animation:glassOrb 18s infinite alternate var(--glass-ease);
+}
+
+@keyframes glassOrb{
+ from{transform:translate(-10vw,10vh)}
+ to{transform:translate(75vw,70vh)}
+}
+
+/* iOS card entrance */
+.gallery-item,
+.about-section,
+.gallery-header,
+.blessings,
+.memory-section{
+ will-change:transform,opacity,filter;
+}
+
+.gallery-item.visible,
+.about-section.visible,
+.gallery-header.visible,
+.blessings.visible,
+.memory-section.visible{
+ animation:iosSpring .9s var(--glass-ease) both;
+}
+
+@keyframes iosSpring{
+ from{
+  opacity:0;
+  transform:translateY(55px) scale(.88);
+  filter:blur(14px);
+ }
+ 70%{
+  transform:translateY(-6px) scale(1.02);
+ }
+ to{
+  opacity:1;
+  transform:none;
+  filter:blur(0);
+ }
+}
+
+/* Real liquid glass */
+.music-capsule,
+.my-msg-modal-box,
+.danmaku-item{
+ background:
+ linear-gradient(135deg,
+ rgba(255,255,255,.55),
+ rgba(255,255,255,.18))!important;
+ border:1px solid rgba(255,255,255,.55)!important;
+ backdrop-filter:blur(32px) saturate(180%)!important;
+ -webkit-backdrop-filter:blur(32px) saturate(180%)!important;
+ box-shadow:
+ 0 25px 70px rgba(0,0,0,.15),
+ inset 0 1px 2px rgba(255,255,255,.9)!important;
+}
+
+/* Dynamic Island style music capsule */
+.music-capsule{
+ overflow:hidden;
+}
+
+.music-capsule.active{
+ animation:islandOpen .55s var(--glass-ease);
+}
+
+@keyframes islandOpen{
+ from{
+  transform:translateY(-50%) scale(.7);
+  border-radius:50%;
+ }
+ to{
+  transform:translateY(-50%) scale(1);
+  border-radius:32px;
+ }
+}
+
+.music-capsule.playing{
+ animation:
+ musicPulse 3s infinite ease-in-out;
+}
+
+@keyframes musicPulse{
+ 50%{
+  box-shadow:
+ 0 35px 90px rgba(201,168,76,.45),
+ inset 0 2px 10px white;
+ }
+}
+
+/* Glass buttons */
+.wall-btn,
+.open-my-msg-btn{
+ transform-style:preserve-3d;
+}
+
+.wall-btn:active,
+.open-my-msg-btn:active{
+ transform:scale(.86)!important;
+ transition:.15s;
+}
+
+/* photo opening like iOS Photos */
+.lightbox.active img{
+ animation:photoSpatial .7s var(--glass-ease);
+}
+
+@keyframes photoSpatial{
+ from{
+  opacity:0;
+  transform:
+   perspective(900px)
+   translateZ(-250px)
+   scale(.65);
+  filter:blur(25px);
+ }
+ to{
+  opacity:1;
+  transform:
+   perspective(900px)
+   translateZ(0)
+   scale(1);
+  filter:blur(0);
+ }
+}
+
+@media(max-width:768px){
+ body::after{
+  display:none;
+ }
+ .music-capsule.active{
+  width:calc(100vw - 32px)!important;
+ }
+}
+</style>
+
 </body>
 </html>
