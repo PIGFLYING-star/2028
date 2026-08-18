@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <!-- 移动端视口适配，禁止强制缩放，保证移动端体验 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>臻辉班 · 班级纪念册</title>
+  <!-- 引入字体：衬线体增强纪念册质感 + 手写体用于署名/座右铭 -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+  <style>
+    /* ========== 全局重置与基础变量 ========== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    /* CSS变量：统一主题色，方便后续修改 */
+    :root {
+      --gold: #c9a84c;        /* 主金色 */
+      --gold-light: #e8d5a3;  /* 浅金色 */
+      --dark: #1a1a2e;        /* 深色标题 */
+      --cream: #fdf8f0;       /* 米白背景 */
+      --text-main: #333;      /* 主文本 */
+      --text-sub: #999;       /* 次要文本 */
+      --border: #e0e0e0;      /* 边框色 */
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 统一缓动曲线，保证顺滑 */
+    }
+    html {
+      scroll-behavior: smooth; /* 全局平滑滚动 */
+    }
+    body {
+      font-family: 'Noto Serif SC', serif;
+      background: var(--cream);
+      color: var(--text-main);
+      overflow-x: hidden; /* 禁止横向滚动 */
+      line-height: 1.6;
+      -webkit-tap-highlight-color: transparent; /* 移动端点击高亮去除 */
+    }
+
+    /* ========== 头部英雄区 ========== */
+    .hero {
+      text-align: center;
+      padding: 60px 20px 40px;
+      background: linear-gradient(180deg, #fff 0%, var(--cream) 100%);
+      position: relative;
+      /* 入场淡入动画 */
+      animation: fadeInDown 0.8s ease-out;
+    }
+    /* 顶部金色装饰条 */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+    .class-name {
+      font-size: clamp(36px, 8vw, 64px); /* 响应式字号，移动端自动缩小 */
+      font-weight: 900;
+      color: var(--dark);
+      letter-spacing: 12px;
+      margin-bottom: 24px;
+      text-shadow: 2px 2px 0px rgba(201,168,76,0.2);
+    }
+    .motto {
+      font-family: 'Ma Shan Zheng', cursive;
+      font-size: clamp(18px, 4vw, 24px);
+      color: #555;
+      line-height: 2.2;
+      margin-bottom: 30px;
+    }
+    .signature {
+      font-family: 'Ma Shan Zheng', cursive;
+      font-size: 28px;
+      color: var(--gold);
+      text-align: right;
+      padding-right: 10%;
+      margin-top: 10px;
+    }
+    /* 金色分割线 */
+    .divider-gold {
+      width: 60px;
+      height: 2px;
+      background: var(--gold);
+      margin: 30px auto 0;
+      border-radius: 1px;
+    }
+
+    /* ========== 关于我们模块 ========== */
+    .about-section {
+      text-align: center;
+      padding: 50px 20px;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .about-section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .about-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--dark);
+      letter-spacing: 6px;
+      margin-bottom: 8px;
+    }
+    .about-sub {
+      font-size: 12px;
+      color: var(--gold);
+      letter-spacing: 8px;
+      text-transform: uppercase;
+    }
+
+    /* ========== 班级相册模块 ========== */
+    .gallery-section {
+      padding: 20px 20px 60px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .gallery-header {
+      text-align: center;
+      margin-bottom: 30px;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .gallery-header.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .gallery-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 6px;
+    }
+    .gallery-sub {
+      font-size: 12px;
+      color: var(--text-sub);
+      letter-spacing: 3px;
+    }
+    /* 相册网格：移动端2列，PC端3列 */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    /* 平板以上断点：改为3列，提升PC端观感 */
+    @media (min-width: 768px) {
+      .gallery-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+    }
+    .gallery-item {
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      aspect-ratio: 4/3;
+      cursor: pointer;
+      transition: var(--transition);
+      opacity: 0;
+      transform: translateY(30px);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    /* 滚动进入视口后添加的动画类 */
+    .gallery-item.visible {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s ease;
+    }
+    /* 宽幅卡片：移动端跨2列，PC端跨2列 */
+    .gallery-item.wide {
+      grid-column: span 2;
+      aspect-ratio: 16/7;
+    }
+    /* hover效果：PC端放大+阴影加深 */
+    @media (hover: hover) {
+      .gallery-item:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      }
+      .gallery-item:hover img {
+        transform: scale(1.05);
+      }
+      .gallery-item:hover .gallery-overlay {
+        opacity: 1;
+      }
+    }
+    /* 点击态：移动端按压反馈 */
+    .gallery-item:active {
+      transform: scale(0.97);
+    }
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+      display: block;
+    }
+    /* 图片底部遮罩+文字 */
+    .gallery-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 30px 16px 12px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.6));
+      color: #fff;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    /* ========== 寄语祝福模块 ========== */
+    .blessings {
+      padding: 70px 20px;
+      text-align: center;
+      background: linear-gradient(180deg, var(--cream), #fff, var(--cream));
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .blessings.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .blessing-line {
+      font-size: 16px;
+      line-height: 2.4;
+      color: #444;
+    }
+    .blessing-line.highlight {
+      font-size: clamp(20px, 5vw, 28px);
+      font-weight: 700;
+      color: var(--gold);
+      margin: 12px 0;
+    }
+    .blessing-year {
+      font-size: clamp(56px, 15vw, 96px);
+      font-weight: 900;
+      color: var(--dark);
+      margin: 30px 0;
+      letter-spacing: 8px;
+      text-shadow: 4px 4px 0px rgba(201,168,76,0.25);
+      /* 数字轻微呼吸动画 */
+      animation: breathe 4s ease-in-out infinite;
+    }
+    .blessing-tags {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .bless-tag {
+      padding: 8px 20px;
+      border: 1.5px solid var(--gold);
+      border-radius: 24px;
+      font-size: 14px;
+      color: var(--gold);
+      background: rgba(201,168,76,0.08);
+      transition: var(--transition);
+    }
+    @media (hover: hover) {
+      .bless-tag:hover {
+        background: var(--gold);
+        color: #fff;
+        transform: translateY(-2px);
+      }
+    }
+
+    /* ========== 回忆标题区块 ========== */
+    .memory-section {
+      padding: 60px 20px;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .memory-section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .memory-title {
+      font-size: 13px;
+      color: var(--text-sub);
+      letter-spacing: 6px;
+      text-transform: uppercase;
+    }
+    .memory-class {
+      font-size: clamp(28px, 6vw, 42px);
+      font-weight: 700;
+      color: var(--dark);
+      margin: 12px 0;
+    }
+
+    /* ========== 弹幕留言墙模块 ========== */
+    .wall-section {
+      padding: 40px 20px 60px;
+      background: #fff;
+      border-radius: 24px 24px 0 0;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .wall-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .wall-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--dark);
+    }
+    .wall-sub {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-top: 4px;
+    }
+    /* 弹幕容器 */
+    .danmaku-container {
+      position: relative;
+      height: 320px;
+      overflow: hidden;
+      background: linear-gradient(180deg, #fafafa, #f5f5f5);
+      border-radius: 16px;
+      border: 1px solid #eee;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    /* 输入区域：调整到弹幕下方，上边距留白 */
+    .wall-input-area {
+      display: flex;
+      gap: 10px;
+      margin-top: 24px;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .wall-input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.3s ease;
+      -webkit-appearance: none;
+    }
+    .wall-input:focus {
+      border-color: var(--gold);
+    }
+    .wall-btn {
+      padding: 12px 24px;
+      background: var(--gold);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+      -webkit-appearance: none;
+    }
+    .wall-btn:active {
+      transform: scale(0.96);
+      background: #b8983a;
+    }
+    .wall-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    /* 单条弹幕样式 */
+    .danmaku-item {
+      position: absolute;
+      right: -100%; /* 初始位置：容器右侧外 */
+      white-space: nowrap;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.9);
+      border-radius: 20px;
+      font-size: 14px;
+      color: var(--text-main);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border-left: 3px solid var(--gold);
+      /* 滚动动画由JS动态设置时长 */
+      animation-name: danmakuMove;
+      animation-timing-function: linear;
+      animation-fill-mode: forwards;
+    }
+    /* 状态提示文字（加载/空/错误） */
+    .wall-tip {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: var(--text-sub);
+      font-size: 14px;
+      text-align: center;
+      width: 100%;
+      padding: 0 20px;
+    }
+    .wall-tip.error {
+      color: #e74c3c;
+    }
+
+    /* ========== 页脚 ========== */
+    .footer {
+      text-align: center;
+      padding: 50px 20px 40px;
+      background: var(--dark);
+      color: #fff;
+    }
+    .footer-name {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 8px;
+      margin-bottom: 12px;
+    }
+    .footer-motto {
+      font-family: 'Ma Shan Zheng', cursive;
+      font-size: 18px;
+      color: var(--gold-light);
+      line-height: 2;
+      margin-bottom: 20px;
+    }
+    .footer-divider {
+      width: 40px;
+      height: 1px;
+      background: var(--gold);
+      margin: 0 auto 20px;
+    }
+    .footer-slogan {
+      font-size: 13px;
+      color: #aaa;
+      margin-bottom: 16px;
+    }
+    .footer-copy {
+      font-size: 12px;
+      color: #666;
+    }
+
+    /* ========== 图片灯箱 ========== */
+    .lightbox {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.9);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 20px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .lightbox.active {
+      display: flex;
+      opacity: 1;
+    }
+    .lightbox img {
+      max-width: 100%;
+      max-height: 85vh;
+      border-radius: 8px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+    .lightbox.active img {
+      transform: scale(1);
+    }
+    .lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      color: #fff;
+      font-size: 32px;
+      cursor: pointer;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      transition: background 0.3s;
+      z-index: 1001;
+      line-height: 1;
+    }
+    .lightbox-close:active {
+      background: rgba(255,255,255,0.3);
+    }
+
+    /* ========== 花瓣飘落装饰 ========== */
+    .petal {
+      position: fixed;
+      top: -20px;
+      pointer-events: none;
+      z-index: 50;
+      opacity: 0.7;
+      font-size: 16px;
+      animation-name: fall;
+      animation-timing-function: linear;
+      animation-fill-mode: forwards;
+    }
+
+    /* ========== 返回顶部按钮 ========== */
+    .back-top {
+      position: fixed;
+      bottom: 30px;
+      right: 20px;
+      width: 46px;
+      height: 46px;
+      background: var(--gold);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: var(--transition);
+      box-shadow: 0 4px 12px rgba(201,168,76,0.4);
+      z-index: 99;
+      border: none;
+    }
+    .back-top.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .back-top:active {
+      transform: scale(0.9);
+    }
+
+    /* ========== 动画关键帧定义 ========== */
+    /* 头部淡入向下 */
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    /* 数字呼吸效果 */
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+    /* 弹幕横向滚动：从右侧外到左侧外 */
+    @keyframes danmakuMove {
+      from {
+        right: -100%;
+      }
+      to {
+        right: 100%;
+      }
+    }
+    /* 花瓣下落 */
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 头部英雄区：班级名称+座右铭+署名 -->
+  <div class="hero">
+    <div class="class-name">臻辉班</div>
+    <div class="motto">
+      让努力成为一种常态<br>
+      让优秀成为一种习惯
+    </div>
+    <div class="signature">黄欢</div>
+    <div class="divider-gold"></div>
+  </div>
+
+  <!-- 关于我们模块 -->
+  <div class="about-section" id="about">
+    <div class="about-title">关于我们</div>
+    <div class="about-sub">ABOUT US</div>
+  </div>
+
+  <!-- 班级相册模块 -->
+  <div class="gallery-section">
+    <div class="gallery-header">
+      <div class="gallery-title">班级相册</div>
+      <div class="gallery-sub">/ PHOTOS</div>
+    </div>
+    <div class="gallery-grid" id="gallery">
+      <!-- 宽幅图1 -->
+      <div class="gallery-item wide" data-src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1200">
+        <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600" alt="班级合影" loading="lazy">
+        <div class="gallery-overlay">班级合影 · 最珍贵的记忆</div>
+      </div>
+      <!-- 普通图 -->
+      <div class="gallery-item" data-src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1000">
+        <img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400" alt="课堂学习" loading="lazy">
+        <div class="gallery-overlay">课堂学习</div>
+      </div>
+      <div class="gallery-item" data-src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=1000">
+        <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=400" alt="校园活动" loading="lazy">
+        <div class="gallery-overlay">校园活动</div>
+      </div>
+      <div class="gallery-item" data-src="https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=1000">
+        <img src="https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=400" alt="操场训练" loading="lazy">
+        <div class="gallery-overlay">操场训练</div>
+      </div>
+      <div class="gallery-item" data-src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1000">
+        <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400" alt="集体活动" loading="lazy">
+        <div class="gallery-overlay">集体活动</div>
+      </div>
+      <!-- 宽幅图2 -->
+      <div class="gallery-item wide" data-src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200">
+        <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600" alt="同窗友谊" loading="lazy">
+        <div class="gallery-overlay">同窗友谊 · 青春飞扬</div>
+      </div>
+      <div class="gallery-item" data-src="https://images.unsplash.com/photo-1427504740706-49a3a8efd28c?w=1000">
+        <img src="https://images.unsplash.com/photo-1427504740706-49a3a8efd28c?w=400" alt="毕业典礼" loading="lazy">
+        <div class="gallery-overlay">毕业典礼</div>
+      </div>
+      <div class="gallery-item" data-src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=1000">
+        <img src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=400" alt="图书馆时光" loading="lazy">
+        <div class="gallery-overlay">图书馆时光</div>
+      </div>
+      <div class="gallery-item" data-src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1000">
+        <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400" alt="运动会" loading="lazy">
+        <div class="gallery-overlay">运动会</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 寄语祝福模块 -->
+  <div class="blessings" id="blessings">
+    <div class="blessing-line highlight">Splendid CLASS</div>
+    <div class="blessing-line" style="font-size:22px; color:var(--gold); margin-bottom:16px;">锦绣韶华 · 前程似锦</div>
+    <div class="blessing-line">不气馁，继续向前！</div>
+    <div class="blessing-line">一次考试不代表全部</div>
+    <div class="blessing-line">愿我们顶峰相见</div>
+    <div class="blessing-line highlight">学业精进 未来璀璨</div>
+    <div class="blessing-line">新岁启封，华章再续</div>
+    <div class="blessing-line">同心聚力，续写荣光</div>
+    <div class="blessing-year">2026</div>
+    <div class="blessing-tags">
+      <span class="bless-tag">骐骥驰骋</span>
+      <span class="bless-tag">势不可挡</span>
+      <span class="bless-tag">平安喜乐</span>
+      <span class="bless-tag">前程似锦</span>
+      <span class="bless-tag">万事胜意</span>
+    </div>
+  </div>
+
+  <!-- 回忆标题区块 -->
+  <div class="memory-section">
+    <div class="memory-title">BEST MEMORY</div>
+    <div class="memory-class">臻辉班</div>
+    <div class="memory-title">属于我们的时光</div>
+  </div>
+
+  <!-- 弹幕留言墙 -->
+  <div class="wall-section">
+    <div class="wall-header">
+      <div class="wall-title">班级纪念册 · 弹幕留言墙</div>
+      <div class="wall-sub">写下你的祝福与回忆，所有人都能看见</div>
+    </div>
+    <!-- 弹幕展示区域 -->
+    <div class="danmaku-container" id="danmakuContainer">
+      <div class="wall-tip" id="wallTip">正在加载云端留言...</div>
+    </div>
+    <!-- 输入区域：调整至弹幕容器下方 -->
+    <div class="wall-input-area">
+      <input 
+        type="text" 
+        class="wall-input" 
+        id="msgInput" 
+        placeholder="写下你的祝福与回忆..." 
+        maxlength="200"
+      >
+      <button class="wall-btn" id="submitBtn">发布</button>
+    </div>
+  </div>
+
+  <!-- 页脚 -->
+  <div class="footer">
+    <div class="footer-name">臻辉班</div>
+    <div class="footer-motto">
+      让努力成为一种常态<br>
+      让优秀成为一种习惯
+    </div>
+    <div class="footer-divider"></div>
+    <div class="footer-slogan">珍藏每一份美好，铭记每一段时光</div>
+    <div class="footer-copy">Copyright © 2026 臻辉班. All Rights Reserved</div>
+  </div>
+
+  <!-- 返回顶部按钮 -->
+  <button class="back-top" id="backTop" aria-label="返回顶部">↑</button>
+
+  <!-- 图片灯箱 -->
+  <div class="lightbox" id="lightbox">
+    <div class="lightbox-close" id="lightboxClose">&times;</div>
+    <img src="" alt="预览大图" id="lightboxImg">
+  </div>
+
+  <script>
+    // ========== 全局配置 ==========
+    const API_URL = "/api/messages"; // 后端接口地址，Pages Functions同域直接调用
+    const POLL_INTERVAL = 8000;      // 轮询间隔：8秒
+    const MAX_DANMAKU = 12;          // 最多展示最新12条弹幕
+
+    // ========== 工具函数：XSS转义 ==========
+    // 防止用户输入恶意脚本，所有用户生成内容必须经过此函数转义再插入DOM
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // ========== 滚动渐入动画（IntersectionObserver） ==========
+    // 监听元素进入视口，添加visible类触发动画
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target); // 动画只触发一次
+        }
+      });
+    }, { 
+      threshold: 0.1,  // 元素10%进入视口时触发
+      rootMargin: "0px 0px -50px 0px"
+    });
+
+    // 注册需要滚动动画的元素
+    document.querySelectorAll('.about-section, .gallery-header, .gallery-item, .blessings, .memory-section')
+      .forEach(el => observer.observe(el));
+
+    // ========== 图片灯箱功能 ==========
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const lightboxClose = document.getElementById('lightboxClose');
+
+    // 点击图片打开灯箱
+    document.querySelectorAll('.gallery-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const src = item.dataset.src;
+        lightboxImg.src = src;
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden'; // 禁止背景滚动
+      });
+    });
+
+    // 关闭灯箱函数
+    function closeLightbox() {
+      lightbox.classList.remove('active');
+      document.body.style.overflow = '';
+      setTimeout(() => {
+        lightboxImg.src = ''; // 清空图片，优化内存
+      }, 300);
+    }
+
+    // 点击关闭按钮
+    lightboxClose.addEventListener('click', closeLightbox);
+    // 点击遮罩空白处关闭
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) closeLightbox();
+    });
+    // ESC键关闭
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+        closeLightbox();
+      }
+    });
+
+    // ========== 花瓣飘落动画 ==========
+    // 控制生成频率，避免性能损耗
+    function createPetal() {
+      const petal = document.createElement('div');
+      petal.className = 'petal';
+      petal.innerHTML = '❀';
+      // 随机水平位置
+      petal.style.left = Math.random() * 100 + 'vw';
+      // 随机大小
+      petal.style.fontSize = (Math.random() * 10 + 12) + 'px';
+      // 随机颜色（金色系+浅粉色系）
+      const colors = ['#e8d5a3', '#f0d9b5', '#d4af37', '#c9a84c'];
+      petal.style.color = colors[Math.floor(Math.random() * colors.length)];
+      // 随机动画时长（6-10秒）
+      petal.style.animationDuration = (Math.random() * 4 + 6) + 's';
+      
+      document.body.appendChild(petal);
+      // 动画结束后移除元素
+      setTimeout(() => petal.remove(), 10000);
+    }
+    // 每2.5秒生成一片花瓣
+    setInterval(createPetal, 2500);
+
+    // ========== 返回顶部按钮 ==========
+    const backTop = document.getElementById('backTop');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 400) {
+        backTop.classList.add('show');
+      } else {
+        backTop.classList.remove('show');
+      }
+    });
+    backTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // ========== 弹幕留言墙核心逻辑 ==========
+    const msgInput = document.getElementById('msgInput');
+    const submitBtn = document.getElementById('submitBtn');
+    const danmakuContainer = document.getElementById('danmakuContainer');
+    const wallTip = document.getElementById('wallTip');
+    
+    let pollTimer = null; // 轮询定时器
+    let messageList = []; // 本地缓存的留言列表
+
+    // 渲染弹幕
+    function renderDanmaku(list) {
+      // 清空容器（保留提示元素）
+      danmakuContainer.innerHTML = '';
+      danmakuContainer.appendChild(wallTip);
+
+      // 空数据处理
+      if (!list || list.length === 0) {
+        wallTip.style.display = 'block';
+        wallTip.textContent = '暂无留言，快来发布第一条回忆吧✨';
+        wallTip.className = 'wall-tip';
+        return;
+      }
+
+      wallTip.style.display = 'none';
+      
+      // 只取最新的前MAX_DANMAKU条
+      const showList = list.slice(0, MAX_DANMAKU);
+      
+      showList.forEach((item, index) => {
+        const danmaku = document.createElement('div');
+        danmaku.className = 'danmaku-item';
+        danmaku.textContent = escapeHtml(item.content); // XSS转义
+        
+        // 随机垂直位置（0-85%，避免超出容器）
+        const topPercent = Math.random() * 85;
+        danmaku.style.top = topPercent + '%';
+        
+        // 随机动画时长：6-12秒
+        const duration = Math.random() * 6 + 6;
+        danmaku.style.animationDuration = duration + 's';
+        
+        // 错峰出现：每条延迟一点时间，避免挤在一起
+        danmaku.style.animationDelay = (index * 0.3) + 's';
+        
+        danmakuContainer.appendChild(danmaku);
+      });
+    }
+
+    // 加载留言列表
+    async function loadMessages() {
+      try {
+        const res = await fetch(API_URL);
+        if (!res.ok) throw new Error('请求失败');
+        const data = await res.json();
+        messageList = data;
+        renderDanmaku(messageList);
+      } catch (err) {
+        console.error('加载留言失败:', err);
+        wallTip.style.display = 'block';
+        wallTip.textContent = '加载失败，请刷新页面重试';
+        wallTip.className = 'wall-tip error';
+      }
+    }
+
+    // 提交留言
+    async function postMessage() {
+      const text = msgInput.value.trim();
+      if (!text) {
+        // 输入为空时边框变红提示
+        msgInput.style.borderColor = '#e74c3c';
+        setTimeout(() => {
+          msgInput.style.borderColor = '';
+        }, 1000);
+        msgInput.focus();
+        return;
+      }
+
+      // 防抖：提交过程禁用按钮
+      submitBtn.disabled = true;
+      submitBtn.textContent = '发布中...';
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: text })
+        });
+
+        const ret = await res.json();
+        if (!res.ok) throw new Error(ret.error || '发布失败');
+
+        // 提交成功：清空输入框
+        msgInput.value = '';
+        // 立即刷新弹幕，无需等待轮询
+        await loadMessages();
+
+      } catch (err) {
+        alert('发布失败：' + err.message);
+      } finally {
+        // 恢复按钮状态
+        submitBtn.disabled = false;
+        submitBtn.textContent = '发布';
+      }
+    }
+
+    // 绑定提交事件：点击按钮
+    submitBtn.addEventListener('click', postMessage);
+    // 绑定回车提交
+    msgInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') postMessage();
+    });
+
+    // ========== 自动轮询 + 后台暂停 ==========
+    // 启动轮询
+    function startPoll() {
+      if (pollTimer) return;
+      pollTimer = setInterval(loadMessages, POLL_INTERVAL);
+    }
+
+    // 停止轮询
+    function stopPoll() {
+      if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+    }
+
+    // 监听页面可见性：切后台暂停，切回恢复并立即拉取一次
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        stopPoll();
+      } else {
+        loadMessages(); // 切回立即刷新
+        startPoll();
+      }
+    });
+
+    // ========== 页面初始化 ==========
+    window.addEventListener('DOMContentLoaded', () => {
+      loadMessages();  // 加载留言
+      startPoll();     // 启动轮询
+    });
+  </script>
+</body>
+</html>
