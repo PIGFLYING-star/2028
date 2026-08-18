@@ -838,8 +838,9 @@
     /**
      * ✨发送飞行动画：抛物线飞行 + 运动模糊 + skew畸变拉扯
      * @param {string} text 发送文本
+     * @param {Function} onArrive 飞行抵达弹幕容器后的回调
      */
-    function playSendFlyAnimation(text){
+    function playSendFlyAnimation(text, onArrive){
       const inputDom = document.getElementById('msgInput');
       const targetDom = document.getElementById('danmakuContainer');
       const flyEl = document.createElement('div');
@@ -886,6 +887,8 @@
           requestAnimationFrame(animate);
         }else{
           flyEl.remove();
+          // 飞行到达终点执行回调，立刻生成弹幕DOM
+          if(typeof onArrive === "function") onArrive();
         }
       }
 
@@ -1120,14 +1123,25 @@
     let pollTimer = null;
     /**
      * 请求后端获取最新留言，更新全局留言池 allMessages
+     * BUG修复：当后端返回空数组，强制清空内存数组，清空页面现存弹幕DOM，重置playIndex，解决全部删除完刷新还有弹幕残留
      */
     async function loadMessages() {
       try {
         const res = await fetch(API_URL);
         if (!res.ok) throw new Error('请求失败');
         const data = await res.json();
-        allMessages = data;
-        renderMyMessages(data);
+        // 后端返回空数组，数据库已经没有留言，强制清空内存与页面DOM
+        if(Array.isArray(data) && data.length === 0){
+          allMessages = [];
+          playIndex = 0;
+          danmakuContainer.querySelectorAll('.danmaku-item').forEach(el=>el.remove());
+          wallTip.style.display = 'block';
+          wallTip.textContent = '暂无留言，快来发布第一条回忆吧✨';
+          wallTip.className = 'wall-tip';
+        }else{
+          allMessages = data;
+        }
+        renderMyMessages(allMessages);
       } catch (err) {
         console.error('加载留言失败:', err);
         // 如果还没有任何留言数据，展示错误提示
@@ -1166,6 +1180,7 @@
     });
     /* ==============================================
      * 发布留言提交逻辑
+     * 修改：飞行动画到达弹幕容器瞬间，直接生成真实弹幕DOM追加容器立刻滚动；不再等待调度器周期
      * ============================================== */
     const msgInput = document.getElementById('msgInput');
     const submitBtn = document.getElementById('submitBtn');
@@ -1177,11 +1192,23 @@
         msgInput.focus();
         return;
       }
-      // 播放发送飞行动画（畸变+运动模糊）
-      playSendFlyAnimation(text);
 
       submitBtn.disabled = true;
       submitBtn.textContent = '发布中...';
+
+      // 飞行动画，抵达终点立刻生成弹幕DOM直接加入容器，马上滚动
+      playSendFlyAnimation(text, ()=>{
+        const tempMsgObj = {
+          id: "temp_" + Date.now(),
+          content: text,
+          client_id: CLIENT_ID,
+          create_at: new Date().toISOString()
+        };
+        const instantDanmaku = createDanmakuItem(tempMsgObj);
+        danmakuContainer.appendChild(instantDanmaku);
+        wallTip.style.display = 'none';
+      });
+
       try {
         const res = await fetch(API_URL, {
           method: 'POST',
@@ -1191,22 +1218,18 @@
         const ret = await res.json();
         if (!res.ok || ret.error) throw new Error(ret.error || '发布失败');
         msgInput.value = '';
-        // ==========修复发布后延迟出现弹幕：发布成功直接推入本地内存留言池，不用等待轮询8秒==========
+        // 推入内存留言池，供调度器、我的留言面板使用
         const nowTime = new Date().toISOString();
-        // 构造本地模拟消息对象，id临时占位，下一次轮询会被后端真实数据覆盖
         const localNewMsg = {
           id: "temp_" + Date.now(),
           content: text,
           client_id: CLIENT_ID,
           create_at: nowTime
         };
-        // 插入到留言数组最前面，弹幕调度器立刻可以读取到这条消息
         allMessages.unshift(localNewMsg);
-        // 立刻刷新我的留言面板，马上看到刚发的内容
         renderMyMessages(allMessages);
-        // playIndex置0，调度器优先播放最新这条本地消息
         playIndex = 0;
-        // 不等待await loadMessages(); 交由轮询定时器后续拉取后端真实数据覆盖临时id
+        // 不等待loadMessages，轮询定时器后续自动拉取真实数据覆盖临时id
       } catch (err) {
         alert('发布失败：' + err.message);
       } finally {
