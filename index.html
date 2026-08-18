@@ -406,7 +406,6 @@
       cursor: not-allowed;
       transform: none;
     }
-
     /* ==========消息发送飞行动画元素【带硬件加速】========== */
     .fly-message {
       position: fixed;
@@ -423,61 +422,114 @@
       backface-visibility: hidden;
     }
 
-    /* ====================== 我的留言折叠面板 ====================== */
-    .my-messages {
-      max-width: 700px;
-      margin: 32px auto 0;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
-      background: #fafafa;
+    /* ====================== 【新增】我的留言弹窗触发按钮 ====================== */
+    .open-my-msg-btn-wrap{
+      max-width:700px;
+      margin:32px auto 0;
+      text-align:center;
     }
-    .my-messages-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 20px;
-      background: linear-gradient(90deg, rgba(201,168,76,0.08), transparent);
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-      transition: background 0.3s ease;
+    .open-my-msg-btn{
+      padding:10px 22px;
+      border:1px solid var(--gold);
+      background:rgba(201,168,76,0.08);
+      color:var(--gold);
+      border-radius:12px;
+      font-size:14px;
+      cursor:pointer;
+      transition:var(--transition);
+      -webkit-appearance:none;
     }
-    .my-messages-header:hover {
-      background: rgba(201,168,76,0.12);
+    .open-my-msg-btn:active{
+      transform:scale(0.96);
     }
-    .my-messages-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--dark);
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    @media (hover:hover){
+      .open-my-msg-btn:hover{
+        background:var(--gold);
+        color:#fff;
+      }
     }
-    .my-messages-count {
-      font-size: 12px;
-      color: var(--gold);
-      background: rgba(201,168,76,0.15);
-      padding: 2px 8px;
-      border-radius: 10px;
+
+    /* ====================== 【新增】我的留言弹窗模态框样式 ====================== */
+    .my-msg-modal{
+      position:fixed;
+      inset:0;
+      z-index:900;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:16px;
+      background:rgba(0,0,0,0.45);
+      opacity:0;
+      visibility:hidden;
+      pointer-events:none;
+      transition:opacity 0.3s ease, visibility 0.3s ease;
     }
-    .my-messages-toggle {
-      font-size: 12px;
-      color: var(--text-sub);
-      transition: transform 0.3s ease;
+    .my-msg-modal.active{
+      opacity:1;
+      visibility:visible;
+      pointer-events:auto;
     }
-    /* collapsed折叠状态箭头旋转 */
-    .my-messages.collapsed .my-messages-toggle {
-      transform: rotate(-90deg);
+    .my-msg-modal-box{
+      width:100%;
+      max-width:620px;
+      max-height:80vh;
+      background:#fafafa;
+      border-radius:18px;
+      border:1px solid var(--border);
+      transform:translateY(20px) scale(0.97);
+      transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
     }
-    .my-messages-list {
-      max-height: 280px;
-      overflow-y: auto;
-      transition: max-height 0.3s ease;
+    .my-msg-modal.active .my-msg-modal-box{
+      transform:translateY(0) scale(1);
     }
-    .my-messages.collapsed .my-messages-list {
-      max-height: 0;
-      overflow: hidden;
+    .my-msg-modal-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:16px 20px;
+      background:linear-gradient(90deg,rgba(201,168,76,0.08),transparent);
+      border-bottom:1px solid var(--border);
     }
+    .my-msg-modal-title{
+      font-size:16px;
+      font-weight:600;
+      color:var(--dark);
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .my-msg-modal-count{
+      font-size:12px;
+      color:var(--gold);
+      background:rgba(201,168,76,0.15);
+      padding:2px 8px;
+      border-radius:10px;
+    }
+    .my-msg-modal-close{
+      border:none;
+      background:none;
+      font-size:22px;
+      color:var(--text-sub);
+      cursor:pointer;
+      line-height:1;
+      padding:2px 6px;
+      border-radius:6px;
+      transition:var(--transition);
+    }
+    @media (hover:hover){
+      .my-msg-modal-close:hover{
+        background:rgba(0,0,0,0.06);
+        color:#333;
+      }
+    }
+    .my-msg-modal-body{
+      overflow-y:auto;
+      flex:1;
+    }
+    /* 弹窗内部留言条目样式（沿用原有条目样式，完全复用） */
     .my-msg-item {
       display: flex;
       justify-content: space-between;
@@ -531,6 +583,7 @@
       color: var(--text-sub);
       font-size: 13px;
     }
+
     /* ====================== 页脚区域 ====================== */
     .footer {
       text-align: center;
@@ -767,20 +820,29 @@
       >
       <button class="wall-btn" id="submitBtn">发布</button>
     </div>
-    <!-- 我的留言折叠面板 -->
-    <div class="my-messages" id="myMessages">
-      <div class="my-messages-header" id="myMessagesHeader">
-        <div class="my-messages-title">
+
+    <!--【修改：原折叠面板替换为触发按钮】 -->
+    <div class="open-my-msg-btn-wrap">
+      <button class="open-my-msg-btn" id="openMyMsgModalBtn">查看我的留言</button>
+    </div>
+  </div>
+
+  <!--【新增：我的留言弹窗模态DOM】 -->
+  <div class="my-msg-modal" id="myMsgModal">
+    <div class="my-msg-modal-box">
+      <div class="my-msg-modal-header">
+        <div class="my-msg-modal-title">
           我的留言
-          <span class="my-messages-count" id="myMessagesCount">0</span>
+          <span class="my-msg-modal-count" id="modalMyMsgCount">0</span>
         </div>
-        <span class="my-messages-toggle">▼</span>
+        <button class="my-msg-modal-close" id="closeMyMsgModalBtn">&times;</button>
       </div>
-      <div class="my-messages-list" id="myMessagesList">
+      <div class="my-msg-modal-body" id="modalMyMsgBody">
         <div class="my-msg-empty">暂无留言，发布第一条吧✨</div>
       </div>
     </div>
   </div>
+
   <!-- ====================== 页脚 ====================== -->
   <div class="footer">
     <div class="footer-name">臻辉班</div>
@@ -835,7 +897,6 @@
       return clientId;
     }
     const CLIENT_ID = getClientId();
-
     /**
      * ✨发送飞行动画：抛物线飞行 + 运动模糊 + skew畸变拉扯
      * @param {string} text 发送文本
@@ -847,44 +908,32 @@
       const flyEl = document.createElement('div');
       flyEl.className = "fly-message";
       flyEl.innerText = escapeHtml(text);
-
       const inputRect = inputDom.getBoundingClientRect();
       const targetRect = targetDom.getBoundingClientRect();
-
       flyEl.style.left = inputRect.left + "px";
       flyEl.style.top = inputRect.top + "px";
-
       document.body.appendChild(flyEl);
-
       // 飞到弹幕容器垂直正中间位置
       const endX = targetRect.left + targetRect.width * 0.7;
       const endY = targetRect.top + targetRect.height * 0.5;
-
       const duration = 600;
       const startTime = performance.now();
-
       function animate(time){
         const elapsed = time - startTime;
         const progress = Math.min(elapsed / duration, 1);
-
         const easeOut = 1 - Math.pow(1 - progress, 2);
-
         const x = inputRect.left + (endX - inputRect.left) * easeOut;
         const y = inputRect.top + (endY - inputRect.top) * easeOut - 60 * Math.sin(progress * Math.PI);
-
         flyEl.style.left = x + "px";
         flyEl.style.top = y + "px";
         flyEl.style.opacity = 1 - progress;
-
         // 畸变拉扯：缩放 + X轴倾斜
         const scale = 1 + Math.sin(progress * Math.PI) * 0.15;
         const skewX = Math.sin(progress * Math.PI) * 3;
         flyEl.style.transform = `scale(${scale}) skewX(${skewX}deg)`;
-
         // 运动模糊，飞行中段强度最大
         const blur = Math.sin(progress * Math.PI) * 1.5;
         flyEl.style.filter = `blur(${blur}px)`;
-
         if(progress < 1){
           requestAnimationFrame(animate);
         }else{
@@ -893,10 +942,8 @@
           if(typeof onArrive === "function") onArrive();
         }
       }
-
       requestAnimationFrame(animate);
     }
-
     /* ==============================================
      * 【本地虚拟弹幕】JS驱动从容器中间向右边界向左滚动，不使用css @keyframes
      * 仅本地浏览器可见；loadMessages调用标记needDestroy，弹幕滑出容器之后才真正销毁
@@ -909,7 +956,6 @@
     function createLocalVirtualDanmaku(contentText){
       const container = document.getElementById('danmakuContainer');
       const rect = container.getBoundingClientRect();
-
       const div = document.createElement('div');
       div.className = 'danmaku-item';
       div.dataset.localVirtual = "1"; // 标记本地虚拟弹幕，轮询识别销毁
@@ -919,9 +965,7 @@
       div.style.top = "50%";
       div.style.right = "0px";
       div.style.transform = "translateY(-50%)";
-
       container.appendChild(div);
-
       // 虚拟弹幕实例对象，增加needDestroy标记：true=等待滑出后销毁
       const inst = {
         dom: div,
@@ -930,14 +974,12 @@
         needDestroy: false // loadMessages只会设置这个标记，不会直接删DOM
       };
       virtualDanmakuList.push(inst);
-
       /** 逐帧向左滚动，增加判断：needDestroy为true必须等弹幕完全离开容器才remove */
       function tick(){
         inst.x -= VIRT_DANMAKU_SPEED / 60;
         inst.dom.style.right = (rect.width - inst.x) + "px";
         // 判断：弹幕已经跑出容器左边界
         const isOut = inst.x < -inst.dom.offsetWidth;
-
         if(isOut){
           cancelAnimationFrame(inst.rafId);
           inst.dom.remove();
@@ -959,7 +1001,6 @@
         inst.needDestroy = true;
       }
     }
-
     /* ==============================================
      * IntersectionObserver 滚动观察器
      * 元素进入视口添加visible类实现滚动渐入动画，触发一次就停止观察节省性能
@@ -1043,7 +1084,6 @@
     let allMessages = [];         // 完整留言池，轮询接口更新这个数组
     let playIndex = 0;            // 播放索引指针，记录下一条要播放的留言下标
     let danmakuScheduler = null;  // 弹幕循环调度定时器
-
     /**
      * 创建单条云端弹幕DOM（使用css @keyframes）
      * @param {object} item 留言对象 {id,content,client_id,create_at}
@@ -1104,29 +1144,53 @@
         danmakuScheduler = null;
       }
     }
+
     /* ==============================================
-     * 我的留言折叠面板模块
+     * 【修改：我的留言弹窗模块，复用原有业务逻辑，渲染目标切换到弹窗DOM】
      * ============================================== */
-    const myMessagesList = document.getElementById('myMessagesList');
-    const myMessagesCount = document.getElementById('myMessagesCount');
-    const myMessagesHeader = document.getElementById('myMessagesHeader');
-    const myMessagesBox = document.getElementById('myMessages');
-    // 点击标题切换折叠展开
-    myMessagesHeader.addEventListener('click', () => {
-      myMessagesBox.classList.toggle('collapsed');
+    const myMsgModal = document.getElementById('myMsgModal');
+    const openMyMsgModalBtn = document.getElementById('openMyMsgModalBtn');
+    const closeMyMsgModalBtn = document.getElementById('closeMyMsgModalBtn');
+    const modalMyMsgCount = document.getElementById('modalMyMsgCount');
+    const modalMyMsgBody = document.getElementById('modalMyMsgBody');
+
+    /**
+     * 打开我的留言弹窗：打开前刷新一次我的留言渲染
+     */
+    function openMyMsgModal(){
+      renderMyMessages(allMessages);
+      myMsgModal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    /**
+     * 关闭我的留言弹窗
+     */
+    function closeMyMsgModal(){
+      myMsgModal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+    // 绑定弹窗打开按钮
+    openMyMsgModalBtn.addEventListener('click', openMyMsgModal);
+    // 弹窗关闭按钮
+    closeMyMsgModalBtn.addEventListener('click', closeMyMsgModal);
+    // 点击遮罩层关闭弹窗
+    myMsgModal.addEventListener('click', (e)=>{
+      if(e.target === myMsgModal) closeMyMsgModal();
     });
+
     /**
      * 渲染"我的留言"列表，过滤属于当前浏览器客户端的留言
+     *【修改：渲染输出目标改为弹窗内部DOM，原有逻辑完全保留】
      * @param {Array} list 全部留言数组
      */
     function renderMyMessages(list) {
       const myList = list.filter(item => item.client_id === CLIENT_ID);
-      myMessagesCount.textContent = myList.length;
+      modalMyMsgCount.textContent = myList.length;
       if (myList.length === 0) {
-        myMessagesList.innerHTML = '<div class="my-msg-empty">暂无留言，发布第一条吧✨</div>';
+        modalMyMsgBody.innerHTML = '<div class="my-msg-empty">暂无留言，发布第一条吧✨</div>';
         return;
       }
-      myMessagesList.innerHTML = '';
+      modalMyMsgBody.innerHTML = '';
       myList.forEach(item => {
         const div = document.createElement('div');
         div.className = 'my-msg-item';
@@ -1137,10 +1201,10 @@
             <button class="my-msg-delete" data-id="${item.id}">删除</button>
           </div>
         `;
-        myMessagesList.appendChild(div);
+        modalMyMsgBody.appendChild(div);
       });
       // 绑定删除按钮点击事件
-      myMessagesList.querySelectorAll('.my-msg-delete').forEach(btn => {
+      modalMyMsgBody.querySelectorAll('.my-msg-delete').forEach(btn => {
         btn.addEventListener('click', (e) => {
           const id = e.target.dataset.id;
           deleteMessage(id);
@@ -1178,6 +1242,8 @@
         if (!res.ok || ret.error) throw new Error(ret.error || '删除失败');
         // 删除成功，重新拉取留言刷新界面
         await loadMessages();
+        // 删除后刷新弹窗渲染（弹窗如果处于打开状态立刻更新列表）
+        renderMyMessages(allMessages);
         // 移除页面上正在播放的对应弹幕DOM
         document.querySelectorAll(`.danmaku-item[data-id="${id}"]`).forEach(el => el.remove());
       } catch (err) {
@@ -1192,17 +1258,15 @@
     let pollTimer = null;
     /**
      * 请求后端获取最新留言，更新全局留言池 allMessages
-     * 逻辑：轮询拿到后端真实数据，标记本地虚拟弹幕为待销毁（不是立刻删DOM）；数据库为空清空内存和DOM
+     * 逻辑：轮询拿到后端真实数据，标记本地虚拟弹幕为待销毁（不是立刻删DOM）；数据库为空清空内存与DOM
      */
     async function loadMessages() {
       try {
         const res = await fetch(API_URL);
         if (!res.ok) throw new Error('请求失败');
         const data = await res.json();
-
         //【修改点】轮询触发，标记全部本地虚拟弹幕为待销毁，DOM不立刻删除，等待弹幕滑出容器后再清理
         markAllVirtualDanmakuNeedDestroy();
-
         // 后端返回空数组，数据库已经没有留言，强制清空内存与页面真实弹幕DOM
         if(Array.isArray(data) && data.length === 0){
           allMessages = [];
@@ -1268,16 +1332,13 @@
         msgInput.focus();
         return;
       }
-
       submitBtn.disabled = true;
       submitBtn.textContent = '发布中...';
-
       // 飞行动画，抵达弹幕容器中间 → 创建本地虚拟弹幕
       playSendFlyAnimation(text, ()=>{
         createLocalVirtualDanmaku(text);
         wallTip.style.display = 'none';
       });
-
       try {
         // POST提交到云端数据库
         const res = await fetch(API_URL, {
