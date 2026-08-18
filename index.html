@@ -2412,6 +2412,12 @@ document.querySelectorAll(".wall-btn,.open-my-msg-btn")
 </script>
 
 
+
+<!-- HTML5 音乐播放器核心 -->
+<audio id="audio-player" preload="metadata">
+  <source src="assets/music/youth.mp3" type="audio/mpeg">
+</audio>
+
 <!-- iOS 26 Liquid Glass Music Capsule -->
 <div class="music-capsule" id="musicCapsule">
 
@@ -2796,6 +2802,8 @@ display:none!important;
  const play=document.getElementById('musicPlay');
  const audio=document.getElementById('audio-player');
  if(!capsule||!play||!audio) return;
+ audio.volume=0.8;
+ audio.load();
  let expanded=false;
  capsule.addEventListener('click',e=>{
    if(e.target!==play){
