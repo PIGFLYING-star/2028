@@ -1583,153 +1583,7 @@ body:before{
 
 </style>
 
-<style>
-/* ===== iOS 26 Liquid Glass Music Capsule Integrated ===== */
 
-.music-capsule{
- position:fixed;
- left:22px;
- top:50%;
- transform:translateY(-50%);
- width:64px;
- height:64px;
- border-radius:50%;
- z-index:9999;
- cursor:pointer;
- display:flex;
- align-items:center;
- justify-content:center;
- overflow:hidden;
-
- background:
- linear-gradient(135deg,
- rgba(255,255,255,.55),
- rgba(255,255,255,.12));
-
- border:1px solid rgba(255,255,255,.65);
-
- backdrop-filter:blur(28px) saturate(180%);
- -webkit-backdrop-filter:blur(28px) saturate(180%);
-
- box-shadow:
- 0 20px 60px rgba(0,0,0,.16),
- inset 0 1px 5px rgba(255,255,255,.9);
-
- transition:
- width .65s cubic-bezier(.22,1,.36,1),
- height .65s cubic-bezier(.22,1,.36,1),
- border-radius .65s cubic-bezier(.22,1,.36,1),
- opacity .35s ease;
-}
-
-.music-capsule.active{
- width:360px;
- height:84px;
- border-radius:32px;
-}
-
-.music-icon{
- width:24px;
- height:24px;
- position:relative;
-}
-
-.music-icon:before{
- content:"";
- position:absolute;
- width:7px;
- height:7px;
- border-radius:50%;
- background:#c9a84c;
- bottom:3px;
- left:2px;
-}
-
-.music-icon:after{
- content:"";
- position:absolute;
- width:3px;
- height:20px;
- border-radius:5px;
- background:#c9a84c;
- right:6px;
- top:1px;
-}
-
-.music-panel{
- display:none;
- width:100%;
- align-items:center;
- gap:14px;
- padding:12px 18px;
- opacity:0;
- transform:scale(.96);
- transition:.45s cubic-bezier(.22,1,.36,1);
-}
-
-.music-capsule.active .music-panel{
- display:flex;
- opacity:1;
- transform:scale(1);
-}
-
-.music-cover{
- width:56px;
- height:56px;
- border-radius:18px;
- object-fit:cover;
-}
-
-.music-info{
- flex:1;
-}
-
-.music-title{
- font-weight:700;
- font-size:14px;
-}
-
-.music-sub{
- font-size:11px;
- opacity:.6;
-}
-
-.music-play{
- width:40px;
- height:40px;
- border-radius:50%;
- border:0;
- background:rgba(255,255,255,.5);
-}
-
-.music-capsule.playing{
- animation:musicBreath 3s infinite;
-}
-
-@keyframes musicBreath{
- 50%{
- box-shadow:
- 0 25px 80px rgba(201,168,76,.35),
- inset 0 1px 8px white;
- }
-}
-
-.music-capsule.hidden{
- opacity:.25;
-}
-
-@media(max-width:768px){
- .music-capsule{
- left:16px;
- top:auto;
- bottom:20px;
- transform:none;
- }
- .music-capsule.active{
- width:calc(100vw - 32px);
- }
-}
-</style>
 </head>
 <body>
   <!-- ====================== 头部Hero区域 ====================== -->
@@ -2413,61 +2267,6 @@ document.querySelectorAll(".wall-btn,.open-my-msg-btn")
 
 
 
-<!-- HTML5 音乐播放器核心 -->
-<audio id="audio-player" preload="metadata">
-  <source src="assets/music/youth.mp3" type="audio/mpeg">
-</audio>
-
-<!-- iOS 26 Liquid Glass Music Capsule -->
-<div class="music-capsule" id="musicCapsule">
-
- <div class="music-icon"></div>
-
- <div class="music-panel">
-
-  <img class="music-cover" src="assets/music/cover.jpg">
-
-  <div class="music-info">
-   <div class="music-title">我们的青春</div>
-   <div class="music-sub">2026 Graduation</div>
-  </div>
-
-  <button class="music-play" id="musicPlay">▶</button>
-
- </div>
-
-</div>
-
-<script>
-(()=>{
-const capsule=document.querySelector("#musicCapsule");
-const play=document.querySelector("#musicPlay");
-let playing=false;
-
-capsule.onclick=(e)=>{
- if(e.target!==play)
- capsule.classList.toggle("active");
-};
-
-play.onclick=(e)=>{
- e.stopPropagation();
- playing=!playing;
- play.textContent=playing?"Ⅱ":"▶";
- capsule.classList.toggle("playing",playing);
-};
-
-document.addEventListener("click",(e)=>{
- if(!capsule.contains(e.target))
- capsule.classList.remove("active");
-});
-
-window.addEventListener("scroll",()=>{
- capsule.classList.toggle("hidden",scrollY>160);
-},{passive:true});
-
-})();
-</script>
-
 <style>
 /* =====================================================
  iOS 26 Liquid Glass Blur Optimization Patch
@@ -2636,203 +2435,13 @@ window.addEventListener("scroll",()=>{
 
 }
 
-  /* =================================================
- iOS 26 Music Capsule Override Fix
-================================================= */
 
-
-#musicCapsule{
-
-position:fixed!important;
-
-left:28px!important;
-
-bottom:40px!important;
-
-width:64px!important;
-
-height:64px!important;
-
-background:
-linear-gradient(
-145deg,
-rgba(255,255,255,.75),
-rgba(255,255,255,.18)
-)!important;
-
-
-border-radius:50%!important;
-
-
-overflow:hidden!important;
-
-
-z-index:999999!important;
-
-
-cursor:pointer!important;
-
-
-box-shadow:
-0 20px 60px rgba(0,0,0,.18)!important;
-
-
-backdrop-filter:
-blur(25px)
-saturate(180%)!important;
-
-
--webkit-backdrop-filter:
-blur(25px)
-saturate(180%)!important;
-
-
-transition:
-all .55s cubic-bezier(.22,1,.36,1)!important;
-
-
-}
-
-
-
-
-#musicCapsule.active{
-
-
-width:330px!important;
-
-height:90px!important;
-
-border-radius:45px!important;
-
-}
-
-
-
-
-
-#musicCapsule .music-capsule-icon{
-
-
-width:64px!important;
-
-height:64px!important;
-
-
-display:flex!important;
-
-align-items:center!important;
-
-justify-content:center!important;
-
-
-background:none!important;
-
-
-}
-
-
-
-
-#musicCapsule .music-capsule-icon::before{
-
-
-content:"♪"!important;
-
-
-font-size:28px!important;
-
-
-color:#222!important;
-
-
-}
-
-
-
-
-#musicCapsule .music-capsule-panel{
-
-
-display:flex!important;
-
-
-opacity:0;
-
-
-pointer-events:none;
-
-
-transition:.4s ease;
-
-
-}
-
-
-
-
-#musicCapsule.active 
-.music-capsule-panel{
-
-
-opacity:1!important;
-
-pointer-events:auto!important;
-
-
-}
-
-
-
-#musicCapsule.active 
-.music-capsule-icon{
-
-
-display:none!important;
-
-}
-</style>
   
 
   
 
-<script>
-(()=>{
- const capsule=document.getElementById('musicCapsule');
- const play=document.getElementById('musicPlay');
- const audio=document.getElementById('audio-player');
- if(!capsule||!play||!audio) return;
- audio.volume=0.8;
- audio.load();
- let expanded=false;
- capsule.addEventListener('click',e=>{
-   if(e.target!==play){
-    expanded=!expanded;
-    capsule.classList.toggle('active',expanded);
-   }
- });
- play.addEventListener('click',async e=>{
-   e.stopPropagation();
-   try{
-    if(audio.paused){
-      await audio.play();
-      play.textContent='Ⅱ';
-      capsule.classList.add('playing');
-    }else{
-      audio.pause();
-      play.textContent='▶';
-      capsule.classList.remove('playing');
-    }
-   }catch(err){
-    console.warn('音乐播放失败:',err);
-   }
- });
- audio.addEventListener('ended',()=>{play.textContent='▶';capsule.classList.remove('playing');});
- document.addEventListener('click',e=>{if(!capsule.contains(e.target)){capsule.classList.remove('active');}});
-})();
-</script>
 
-<style>
+
 /* ===== iOS Spatial Liquid Glass Motion Upgrade ===== */
 
 :root{
@@ -2896,7 +2505,6 @@ body::after{
 }
 
 /* Real liquid glass */
-.music-capsule,
 .my-msg-modal-box,
 .danmaku-item{
  background:
@@ -2909,39 +2517,6 @@ body::after{
  box-shadow:
  0 25px 70px rgba(0,0,0,.15),
  inset 0 1px 2px rgba(255,255,255,.9)!important;
-}
-
-/* Dynamic Island style music capsule */
-.music-capsule{
- overflow:hidden;
-}
-
-.music-capsule.active{
- animation:islandOpen .55s var(--glass-ease);
-}
-
-@keyframes islandOpen{
- from{
-  transform:translateY(-50%) scale(.7);
-  border-radius:50%;
- }
- to{
-  transform:translateY(-50%) scale(1);
-  border-radius:32px;
- }
-}
-
-.music-capsule.playing{
- animation:
- musicPulse 3s infinite ease-in-out;
-}
-
-@keyframes musicPulse{
- 50%{
-  box-shadow:
- 0 35px 90px rgba(201,168,76,.45),
- inset 0 2px 10px white;
- }
 }
 
 /* Glass buttons */
@@ -2984,11 +2559,481 @@ body::after{
  body::after{
   display:none;
  }
- .music-capsule.active{
-  width:calc(100vw - 32px)!important;
- }
 }
 </style>
 
+
+<!-- =========================================================
+     iOS 26 Liquid Glass Music Capsule — Clean / Final
+     说明：音乐胶囊只保留这一套 CSS + DOM + JS。
+     特点：
+     1. 收起状态使用原来的极简“圆点 + 竖线”音乐图标。
+     2. 展开时只做尺寸形变，不改变 bottom / top，因此不会上抽。
+     3. 使用多层玻璃高光、内反射、背景模糊和动态光斑模拟 Liquid Glass。
+     4. 展开内容采用独立的 opacity / blur / scale 过渡，避免文字突然跳出。
+========================================================= -->
+<style>
+  :root {
+    --music-ease: cubic-bezier(.16, 1, .3, 1);
+    --music-spring: cubic-bezier(.22, 1.18, .36, 1);
+    --music-width: 360px;
+    --music-height: 74px;
+    --music-mini: 64px;
+    --music-left: 28px;
+    --music-bottom: 28px;
+  }
+
+  #musicCapsule {
+    position: fixed;
+    left: var(--music-left);
+    bottom: var(--music-bottom);
+    width: var(--music-mini);
+    height: var(--music-mini);
+    z-index: 999999;
+    box-sizing: border-box;
+    overflow: hidden;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    isolation: isolate;
+
+    /* 绝不使用 translateY：防止展开时上下跳动。 */
+    transform: translate3d(0, 0, 0) scale(1);
+    transform-origin: 50% 50%;
+    will-change: width, height, box-shadow, transform;
+
+    /* Liquid Glass 基底：高透、强模糊、高饱和。 */
+    background:
+      radial-gradient(120% 150% at var(--glass-x, 24%) var(--glass-y, 12%),
+        rgba(255,255,255,.78) 0%,
+        rgba(255,255,255,.34) 22%,
+        rgba(255,255,255,.12) 48%,
+        transparent 72%),
+      linear-gradient(145deg,
+        rgba(255,255,255,.54),
+        rgba(255,255,255,.18) 48%,
+        rgba(255,255,255,.30));
+
+    border: 1px solid rgba(255,255,255,.72);
+
+    backdrop-filter: blur(30px) saturate(190%) contrast(105%);
+    -webkit-backdrop-filter: blur(30px) saturate(190%) contrast(105%);
+
+    box-shadow:
+      0 18px 46px rgba(0,0,0,.15),
+      0 4px 14px rgba(0,0,0,.07),
+      inset 0 1px 0 rgba(255,255,255,.92),
+      inset 0 -1px 0 rgba(255,255,255,.20),
+      inset 0 0 0 1px rgba(255,255,255,.12);
+
+    transition:
+      width .72s var(--music-spring),
+      height .72s var(--music-spring),
+      box-shadow .55s var(--music-ease),
+      transform .28s var(--music-ease),
+      opacity .3s ease;
+  }
+
+  /* 第一层：移动中的玻璃高光。 */
+  #musicCapsule::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: inherit;
+    background:
+      radial-gradient(80px 54px at var(--glass-x, 24%) var(--glass-y, 12%),
+        rgba(255,255,255,.86), transparent 72%),
+      linear-gradient(115deg,
+        rgba(255,255,255,.38) 0%,
+        rgba(255,255,255,.10) 28%,
+        transparent 47%,
+        rgba(255,255,255,.18) 78%,
+        transparent 100%);
+    opacity: .72;
+    transform: translate3d(0,0,0) scale(1.02);
+    transition: opacity .42s ease, transform .72s var(--music-ease);
+  }
+
+  /* 第二层：玻璃内缘 / specular edge。 */
+  #musicCapsule::after {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    z-index: 4;
+    pointer-events: none;
+    border-radius: inherit;
+    border: 1px solid rgba(255,255,255,.30);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.60),
+      inset 0 -1px 0 rgba(255,255,255,.16),
+      inset 0 0 18px rgba(255,255,255,.08);
+    opacity: .95;
+  }
+
+  #musicCapsule.is-open {
+    width: min(var(--music-width), calc(100vw - 32px));
+    height: var(--music-height);
+    border-radius: 999px;
+    transform: translate3d(0, 0, 0) scale(1);
+    box-shadow:
+      0 24px 68px rgba(0,0,0,.18),
+      0 6px 18px rgba(0,0,0,.08),
+      0 0 34px rgba(255,255,255,.10),
+      inset 0 1px 0 rgba(255,255,255,.96),
+      inset 0 -1px 0 rgba(255,255,255,.22),
+      inset 0 0 0 1px rgba(255,255,255,.15);
+  }
+
+  #musicCapsule.is-open::before {
+    opacity: .9;
+    transform: translate3d(0,0,0) scale(1.04);
+  }
+
+  /* 仅按压时轻微缩放，不改变位置。 */
+  #musicCapsule.is-pressed {
+    transform: translate3d(0, 0, 0) scale(.965);
+  }
+
+  /* ---------- 原来的极简音乐图标：圆点 + 竖线 ---------- */
+  .music-capsule-icon {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 24px;
+    height: 24px;
+    margin: -12px 0 0 -12px;
+    z-index: 3;
+    pointer-events: none;
+    opacity: 1;
+    transform: scale(1);
+    transform-origin: center;
+    transition:
+      opacity .22s ease,
+      transform .52s var(--music-ease),
+      filter .35s ease;
+  }
+
+  /* 极简圆点 */
+  .music-capsule-icon::before {
+    content: "";
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    left: 2px;
+    bottom: 3px;
+    border-radius: 50%;
+    background: rgba(35,35,35,.86);
+    box-shadow:
+      0 1px 2px rgba(255,255,255,.72),
+      0 0 8px rgba(255,255,255,.18);
+  }
+
+  /* 极简竖线 */
+  .music-capsule-icon::after {
+    content: "";
+    position: absolute;
+    width: 3px;
+    height: 20px;
+    right: 6px;
+    top: 1px;
+    border-radius: 5px;
+    background: rgba(35,35,35,.86);
+    box-shadow: 0 1px 2px rgba(255,255,255,.72);
+  }
+
+  #musicCapsule.is-open .music-capsule-icon {
+    opacity: 0;
+    transform: scale(.55);
+    filter: blur(4px);
+  }
+
+  /* ---------- 展开内容：像玻璃中的内容层一样进入 ---------- */
+  .music-capsule-panel {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 10px;
+    box-sizing: border-box;
+    opacity: 0;
+    transform: scale(.965);
+    filter: blur(7px);
+    pointer-events: none;
+    will-change: opacity, transform, filter;
+    transition:
+      opacity .32s ease,
+      transform .66s var(--music-ease),
+      filter .48s var(--music-ease);
+  }
+
+  #musicCapsule.is-open .music-capsule-panel {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+    pointer-events: auto;
+    transition-delay: .10s;
+  }
+
+  .music-cover {
+    width: 56px;
+    height: 56px;
+    flex: 0 0 56px;
+    object-fit: cover;
+    border-radius: 18px;
+    box-shadow:
+      0 7px 20px rgba(0,0,0,.14),
+      inset 0 1px 0 rgba(255,255,255,.72);
+    transform: translateZ(0) scale(.98);
+    transition: transform .7s var(--music-ease), box-shadow .45s ease;
+  }
+
+  #musicCapsule.is-open .music-cover {
+    transform: translateZ(0) scale(1);
+  }
+
+  .music-info {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+  }
+
+  .music-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -.01em;
+    color: rgba(20,20,20,.88);
+  }
+
+  .music-sub {
+    margin-top: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 11px;
+    line-height: 1.2;
+    color: rgba(20,20,20,.54);
+  }
+
+  .music-play {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid rgba(255,255,255,.70);
+    border-radius: 50%;
+    cursor: pointer;
+    color: rgba(25,25,25,.86);
+    background:
+      radial-gradient(circle at 30% 20%, rgba(255,255,255,.76), transparent 42%),
+      rgba(255,255,255,.40);
+    box-shadow:
+      0 6px 17px rgba(0,0,0,.10),
+      inset 0 1px 0 rgba(255,255,255,.84),
+      inset 0 -1px 0 rgba(255,255,255,.18);
+    transition:
+      transform .22s var(--music-ease),
+      background .25s ease,
+      box-shadow .25s ease;
+  }
+
+  .music-play:hover {
+    background:
+      radial-gradient(circle at 30% 20%, rgba(255,255,255,.90), transparent 42%),
+      rgba(255,255,255,.56);
+  }
+
+  .music-play:active {
+    transform: scale(.88);
+  }
+
+  #musicCapsule.is-playing {
+    box-shadow:
+      0 24px 68px rgba(0,0,0,.18),
+      0 0 34px rgba(255,255,255,.13),
+      0 0 0 5px rgba(255,255,255,.035),
+      inset 0 1px 0 rgba(255,255,255,.96),
+      inset 0 -1px 0 rgba(255,255,255,.22);
+  }
+
+  #musicCapsule.is-playing .music-cover {
+    animation: musicCoverBreath 3.2s ease-in-out infinite;
+  }
+
+  @keyframes musicCoverBreath {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.022); }
+  }
+
+  #musicCapsule.is-dimmed {
+    opacity: .76;
+  }
+
+  @media (max-width: 768px) {
+    :root {
+      --music-left: 16px;
+      --music-bottom: max(18px, env(safe-area-inset-bottom));
+    }
+
+    #musicCapsule {
+      width: 60px;
+      height: 60px;
+    }
+
+    #musicCapsule.is-open {
+      width: calc(100vw - 32px);
+      height: 68px;
+    }
+
+    .music-cover {
+      width: 50px;
+      height: 50px;
+      flex-basis: 50px;
+      border-radius: 16px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #musicCapsule,
+    #musicCapsule::before,
+    .music-capsule-panel,
+    .music-capsule-icon,
+    .music-cover,
+    .music-play {
+      transition-duration: .01ms !important;
+      animation-duration: .01ms !important;
+      animation-iteration-count: 1 !important;
+    }
+  }
+</style>
+
+<audio id="audio-player" preload="metadata">
+  <source src="assets/music/youth.mp3" type="audio/mpeg">
+  你的浏览器不支持 HTML5 音频播放。
+</audio>
+
+<div id="musicCapsule" aria-label="音乐播放器" aria-expanded="false">
+  <div class="music-capsule-icon" aria-hidden="true"></div>
+
+  <div class="music-capsule-panel">
+    <img class="music-cover" src="assets/music/cover.jpg" alt="我们的青春封面">
+
+    <div class="music-info">
+      <div class="music-title">我们的青春</div>
+      <div class="music-sub" id="musicStatus">2026 Graduation</div>
+    </div>
+
+    <button class="music-play" id="musicPlay" type="button" aria-label="播放音乐" aria-pressed="false">▶</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const capsule = document.getElementById('musicCapsule');
+  const playButton = document.getElementById('musicPlay');
+  const audio = document.getElementById('audio-player');
+  const status = document.getElementById('musicStatus');
+
+  if (!capsule || !playButton || !audio) return;
+
+  audio.volume = 0.8;
+
+  const setOpen = (open) => {
+    capsule.classList.toggle('is-open', open);
+    capsule.setAttribute('aria-expanded', String(open));
+  };
+
+  const setPlayingUI = (playing) => {
+    capsule.classList.toggle('is-playing', playing);
+    playButton.textContent = playing ? 'Ⅱ' : '▶';
+    playButton.setAttribute('aria-label', playing ? '暂停音乐' : '播放音乐');
+    playButton.setAttribute('aria-pressed', String(playing));
+
+    if (status) {
+      status.textContent = playing ? '正在播放 · 我们的青春' : '2026 Graduation';
+    }
+  };
+
+  capsule.addEventListener('click', (event) => {
+    if (event.target.closest('#musicPlay')) return;
+    setOpen(!capsule.classList.contains('is-open'));
+  });
+
+  playButton.addEventListener('click', async (event) => {
+    event.stopPropagation();
+
+    try {
+      if (audio.paused) {
+        await audio.play();
+        setPlayingUI(true);
+      } else {
+        audio.pause();
+        setPlayingUI(false);
+      }
+    } catch (error) {
+      console.warn('[Music Capsule] 音乐播放失败：', error);
+      setPlayingUI(false);
+      if (status) status.textContent = '无法播放，请检查 assets/music/youth.mp3';
+    }
+  });
+
+  audio.addEventListener('play', () => setPlayingUI(true));
+  audio.addEventListener('pause', () => setPlayingUI(false));
+  audio.addEventListener('ended', () => {
+    setPlayingUI(false);
+    audio.currentTime = 0;
+  });
+
+  document.addEventListener('pointerdown', (event) => {
+    if (!capsule.contains(event.target)) setOpen(false);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') setOpen(false);
+  });
+
+  capsule.addEventListener('pointerdown', () => {
+    capsule.classList.add('is-pressed');
+  });
+
+  const clearPressed = () => capsule.classList.remove('is-pressed');
+  capsule.addEventListener('pointerup', clearPressed);
+  capsule.addEventListener('pointercancel', clearPressed);
+  capsule.addEventListener('pointerleave', clearPressed);
+
+  let scrollTimer = null;
+  window.addEventListener('scroll', () => {
+    capsule.classList.toggle('is-dimmed', window.scrollY > 160);
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => capsule.classList.remove('is-dimmed'), 500);
+  }, { passive: true });
+
+  capsule.addEventListener('pointermove', (event) => {
+    const rect = capsule.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * 100;
+    const y = ((event.clientY - rect.top) / rect.height) * 100;
+    capsule.style.setProperty('--glass-x', `${x}%`);
+    capsule.style.setProperty('--glass-y', `${y}%`);
+  });
+
+  setOpen(false);
+  setPlayingUI(false);
+})();
+</script>
 </body>
 </html>
