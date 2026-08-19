@@ -1845,52 +1845,57 @@ body:before{
         4. 卡片外围的 Liquid Glass 背景会自动跟随照片尺寸，不会因为 16:9 / 4:3 / 3:4 / 1:1 等比例而溢出。
       -->
 
-           <!-- 班级合影 → class01 系列 -->
+      <!-- 班级合影 → class01 系列 -->
       <div class="gallery-item" data-gallery-group="class-photo" data-gallery-title="班级合影"
-           data-gallery-images="assets/img/class01.webp|assets/img/class01-2.webp|assets/img/class01-3.webp|assets/img/class01-4.webp">
+           data-gallery-images="/assets/img/class01.webp|/assets/img/class01-2.webp|/assets/img/class01-3.webp|/assets/img/class01-4.webp">
         <div class="gallery-glass-backdrop" aria-hidden="true"></div>
         <div class="gallery-photo-frame">
-          <img src="assets/img/class01.webp" alt="班级合影" loading="lazy" decoding="async">
+          <img src="/assets/img/class01.webp" alt="班级合影" loading="lazy" decoding="async">
         </div>
         <div class="gallery-overlay"><strong>班级合影</strong><span>最珍贵的记忆</span></div>
       </div>
+
       <!-- 课堂学习 → class02 系列 -->
       <div class="gallery-item" data-gallery-group="classroom" data-gallery-title="课堂学习"
-           data-gallery-images="assets/img/class02.webp|assets/img/class02-2.webp|assets/img/class02-3.webp|assets/img/class02-4.webp|assets/img/class02-5.webp">
+           data-gallery-images="/assets/img/class02.webp|/assets/img/class02-2.webp|/assets/img/class02-3.webp|/assets/img/class02-4.webp|/assets/img/class02-5.webp">
         <div class="gallery-glass-backdrop" aria-hidden="true"></div>
         <div class="gallery-photo-frame">
-          <img src="assets/img/class02.webp" alt="课堂学习" loading="lazy" decoding="async">
+          <img src="/assets/img/class02.webp" alt="课堂学习" loading="lazy" decoding="async">
         </div>
         <div class="gallery-overlay"><strong>课堂学习</strong><span>专注的每一刻</span></div>
       </div>
+
       <!-- 校园活动 → class03 系列 -->
       <div class="gallery-item" data-gallery-group="campus" data-gallery-title="校园活动"
-           data-gallery-images="assets/img/class03.webp|assets/img/class03-2.webp|assets/img/class03-3.webp|assets/img/class03-4.webp">
+           data-gallery-images="/assets/img/class03.webp|/assets/img/class03-2.webp|/assets/img/class03-3.webp|/assets/img/class03-4.webp">
         <div class="gallery-glass-backdrop" aria-hidden="true"></div>
         <div class="gallery-photo-frame">
-          <img src="assets/img/class03.webp" alt="校园活动" loading="lazy" decoding="async">
+          <img src="/assets/img/class03.webp" alt="校园活动" loading="lazy" decoding="async">
         </div>
         <div class="gallery-overlay"><strong>校园活动</strong><span>校园里的青春</span></div>
       </div>
+
       <!-- 操场训练 → class04 系列 -->
       <div class="gallery-item" data-gallery-group="training" data-gallery-title="操场训练"
-           data-gallery-images="assets/img/class04.webp|assets/img/class04-2.webp|assets/img/class04-3.webp|assets/img/class04-4.webp">
+           data-gallery-images="/assets/img/class04.webp|/assets/img/class04-2.webp|/assets/img/class04-3.webp|/assets/img/class04-4.webp">
         <div class="gallery-glass-backdrop" aria-hidden="true"></div>
         <div class="gallery-photo-frame">
-          <img src="assets/img/class04.webp" alt="操场训练" loading="lazy" decoding="async">
+          <img src="/assets/img/class04.webp" alt="操场训练" loading="lazy" decoding="async">
         </div>
         <div class="gallery-overlay"><strong>操场训练</strong><span>汗水与坚持</span></div>
       </div>
+
       <!-- 集体活动 → class05 系列 -->
       <div class="gallery-item" data-gallery-group="group-activity" data-gallery-title="集体活动"
-           data-gallery-images="assets/img/class05.webp|assets/img/class05-2.webp|assets/img/class05-3.webp|assets/img/class05-4.webp|assets/img/class05-5.webp">
+           data-gallery-images="/assets/img/class05.webp|/assets/img/class05-2.webp|/assets/img/class05-3.webp|/assets/img/class05-4.webp|/assets/img/class05-5.webp">
         <div class="gallery-glass-backdrop" aria-hidden="true"></div>
         <div class="gallery-photo-frame">
-          <img src="assets/img/class05.webp" alt="集体活动" loading="lazy" decoding="async">
+          <img src="/assets/img/class05.webp" alt="集体活动" loading="lazy" decoding="async">
         </div>
         <div class="gallery-overlay"><strong>集体活动</strong><span>一起留下的回忆</span></div>
       </div>
-
+    </div>
+  </div>
   <!-- ====================== 寄语祝福 ====================== -->
   <div class="blessings" id="blessings">
     <div class="blessing-line highlight">Splendid CLASS</div>
@@ -3112,68 +3117,63 @@ body::after{
 
 <style>
 /* ============================================================
-   iOS 26 Liquid Glass · 自适应照片比例优化
+   iOS 26 Liquid Glass · 相册卡片统一裁切版
    ------------------------------------------------------------
-   核心目标：
-   - 16:9、4:3、3:4、1:1、超宽、超高照片都不强制裁切。
-   - 缩略图使用“玻璃底 + 原图 contain”的结构。
-   - 玻璃层根据原图比例自动设置安全比例。
-   - 图片本身永远被限制在卡片内部，避免阴影、圆角、blur 溢出。
-   - 手机端减少 blur，降低 GPU 压力。
+   - 卡片固定 4:3（wide 16:9），object-fit: cover 裁切，排列整齐
+   - 点进大图 / 左右翻动：object-fit: contain，完整显示不裁切
    ============================================================ */
 
 .gallery-grid{
-  align-items:start;
+  align-items: stretch;
 }
 
 .gallery-item{
   --photo-ratio: 4 / 3;
-  position:relative;
-  aspect-ratio:auto !important;
-  min-width:0;
-  height:auto;
-  overflow:hidden;
-  isolation:isolate;
-  contain:paint;
-  border-radius:24px;
-  padding:0;
-  background:rgba(255,255,255,.12);
+  position: relative;
+  aspect-ratio: 4 / 3 !important;
+  min-width: 0;
+  height: auto;
+  overflow: hidden;
+  isolation: isolate;
+  contain: paint;
+  border-radius: 24px;
+  padding: 0;
+  background: rgba(255,255,255,.12);
 }
 
-/* 删除旧的 wide 两列强制比例行为，所有照片统一走自适应算法。 */
 .gallery-item.wide{
-  grid-column:span 2;
-  aspect-ratio:auto !important;
+  grid-column: span 2;
+  aspect-ratio: 16 / 9 !important;
 }
 
 .gallery-glass-backdrop{
-  position:absolute;
-  z-index:0;
-  inset:0;
-  overflow:hidden;
-  border-radius:inherit;
-  pointer-events:none;
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
   background:
     radial-gradient(circle at 18% 12%,rgba(255,255,255,.60),transparent 34%),
     linear-gradient(135deg,rgba(255,255,255,.28),rgba(255,255,255,.08));
 }
 
 .gallery-glass-backdrop::before{
-  content:"";
-  position:absolute;
-  inset:-12%;
-  background-image:var(--photo-bg);
-  background-position:center;
-  background-size:cover;
-  filter:blur(24px) saturate(1.35);
-  transform:scale(1.08);
-  opacity:.58;
+  content: "";
+  position: absolute;
+  inset: -12%;
+  background-image: var(--photo-bg);
+  background-position: center;
+  background-size: cover;
+  filter: blur(24px) saturate(1.35);
+  transform: scale(1.08);
+  opacity: .58;
 }
 
 .gallery-glass-backdrop::after{
-  content:"";
-  position:absolute;
-  inset:0;
+  content: "";
+  position: absolute;
+  inset: 0;
   background:
     linear-gradient(135deg,rgba(255,255,255,.40),transparent 38%,rgba(255,255,255,.08)),
     radial-gradient(circle at 75% 85%,rgba(201,168,76,.16),transparent 45%);
@@ -3183,56 +3183,56 @@ body::after{
 }
 
 .gallery-photo-frame{
-  position:relative;
-  z-index:1;
-  width:100%;
-  aspect-ratio:var(--photo-ratio);
-  display:grid;
-  place-items:center;
-  overflow:hidden;
-  border-radius:inherit;
-  background:rgba(255,255,255,.10);
-  border:1px solid rgba(255,255,255,.50);
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: unset;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: inherit;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.50);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.70),
     inset 0 -1px 0 rgba(255,255,255,.10),
     0 20px 50px rgba(0,0,0,.12);
 }
 
+/* 卡片内图片：强制 cover 裁切 */
 .gallery-photo-frame img{
-  display:block;
-  width:100%;
-  height:100%;
-  max-width:100%;
-  max-height:100%;
-  object-fit:contain;
-  object-position:center;
-  border-radius:inherit;
-  background:rgba(255,255,255,.04);
-  transform:translate3d(0,0,0);
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: cover !important;
+  object-position: center;
+  border-radius: inherit;
+  background: rgba(255,255,255,.04);
+  transform: translate3d(0,0,0);
   transition:
     transform .72s cubic-bezier(.22,1,.36,1),
     filter .5s ease;
 }
 
-/* 图片加载完成后才让卡片进入正常状态，避免尺寸跳动。 */
 .gallery-item:not(.ratio-ready) .gallery-photo-frame{
-  min-height:220px;
-  background:linear-gradient(135deg,rgba(255,255,255,.28),rgba(255,255,255,.08));
+  min-height: 0;
+  background: linear-gradient(135deg,rgba(255,255,255,.28),rgba(255,255,255,.08));
 }
 
 .gallery-item.ratio-ready .gallery-photo-frame{
-  min-height:0;
+  min-height: 0;
 }
 
-/* 原图错误时，不会把整个卡片撑爆。 */
 .gallery-photo-frame img.is-broken{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-  padding:32px;
-  box-sizing:border-box;
-  background:rgba(255,255,255,.10);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  padding: 0;
+  box-sizing: border-box;
+  background: rgba(255,255,255,.10);
 }
 
 /* 缩略图文字玻璃层 */
@@ -3469,7 +3469,7 @@ body::after{
     if (!img.naturalWidth || !img.naturalHeight) return;
 
     const ratio = img.naturalWidth / img.naturalHeight;
-    item.style.setProperty('--photo-ratio', `${img.naturalWidth} / ${img.naturalHeight}`);
+    // 卡片固定 4:3 裁切，不再跟随原图比例（大图查看器仍完整显示）
     item.style.setProperty('--photo-bg', `url("${img.currentSrc || img.src}")`);
     item.dataset.photoShape = classifyRatio(ratio);
     item.classList.add('ratio-ready');
@@ -3899,7 +3899,6 @@ body::after{
 
 
 <style>
-<style>
 /* ========== 动画性能收敛：移动端降模糊、关装饰光球 ========== */
 @media (max-width: 768px) {
   body::after,
@@ -3922,6 +3921,7 @@ body::after{
     filter: none !important;
   }
 }
+
 @media (prefers-reduced-motion: reduce) {
   .petal,
   .danmaku-item,
@@ -3933,18 +3933,24 @@ body::after{
   }
 }
 </style>
-<audio id="audio-player" preload="auto" playsinline>
+
+<audio id="audio-player" preload="auto" playsinline></audio>
+
 <div id="musicCapsule" aria-label="音乐播放器" aria-expanded="false">
   <div class="music-capsule-icon" aria-hidden="true"></div>
+
   <div class="music-capsule-panel">
     <img class="music-cover" src="/assets/img/class01.webp" alt="我们的青春封面" width="56" height="56">
+
     <div class="music-info">
       <div class="music-title">我们的青春</div>
       <div class="music-sub" id="musicStatus">2026 Graduation</div>
     </div>
+
     <button class="music-play" id="musicPlay" type="button" aria-label="播放音乐" aria-pressed="false">▶</button>
   </div>
 </div>
+
 <script>
 /**
  * iOS 26 Liquid Glass Music Capsule（内联，不依赖外部 js 文件）
@@ -3952,47 +3958,54 @@ body::after{
  */
 (() => {
   'use strict';
+
   const playlist = [
     {
       title: '我们的青春',
       artist: '2026 Graduation',
-      src: 'assets/music/youth.mp3',
-      cover: 'assets/img/class01.webp'
+      src: '/assets/music/youth.mp3',
+      cover: '/assets/img/class01.webp'
     },
     {
       title: '毕业',
       artist: 'Memory',
-      src: 'assets/music/graduation.mp3',
-      cover: 'assets/img/class01.webp'
+      src: '/assets/music/graduation.mp3',
+      cover: '/assets/img/class01.webp'
     },
     {
       title: '未来可期',
       artist: 'Class 2026',
-      src: 'assets/music/memory.mp3',
-      cover: 'assets/img/class01.webp'
+      src: '/assets/music/memory.mp3',
+      cover: '/assets/img/class01.webp'
     }
   ];
+
   const audio = document.getElementById('audio-player');
   const capsule = document.getElementById('musicCapsule');
   const playButton = document.getElementById('musicPlay');
   const titleEl = document.querySelector('#musicCapsule .music-title');
   const statusEl = document.getElementById('musicStatus');
   const coverEl = document.querySelector('#musicCapsule .music-cover');
+
   if (!audio || !capsule || !playButton) {
     console.warn('[Music Capsule] DOM missing');
     return;
   }
+
   let currentIndex = 0;
   let isLoading = false;
   let isOpen = false;
+
   audio.volume = 0.8;
   audio.setAttribute('playsinline', '');
   audio.preload = 'auto';
+
   function setOpen(next) {
     isOpen = !!next;
     capsule.classList.toggle('is-open', isOpen);
     capsule.setAttribute('aria-expanded', String(isOpen));
   }
+
   /** 统一驱动按钮图标：加载中 …，播放 ▶，暂停双竖杠 Ⅱ（避免手机渲染成 ⏸️ emoji） */
   function setPlayingUI(playing) {
     capsule.classList.toggle('is-playing', playing);
@@ -4002,12 +4015,14 @@ body::after{
       playButton.textContent = '…';
     } else {
       // Ⅱ = 双竖杠；不要用 ⏸（Android 常变成彩色 ⏸️）
-      playButton.textContent = playing ? '❙❙' : '▶';
+      playButton.textContent = playing ? 'Ⅱ' : '▶';
     }
   }
+
   function setStatus(text) {
     if (statusEl) statusEl.textContent = text;
   }
+
   function loadSong(index, autoplay) {
     currentIndex = ((index % playlist.length) + playlist.length) % playlist.length;
     const song = playlist[currentIndex];
@@ -4021,6 +4036,7 @@ body::after{
     updateMediaSession();
     if (autoplay) playMusic();
   }
+
   function waitForCanPlay(timeoutMs) {
     timeoutMs = timeoutMs || 2500;
     if (audio.readyState >= 3) return Promise.resolve();
@@ -4037,6 +4053,7 @@ body::after{
       new Promise(function (resolve) { setTimeout(resolve, timeoutMs); })
     ]);
   }
+
   async function playMusic() {
     const song = playlist[currentIndex];
     try {
@@ -4063,18 +4080,22 @@ body::after{
       setPlayingUI(!audio.paused);
     }
   }
+
   function pauseMusic() {
     audio.pause();
     isLoading = false;
     setPlayingUI(false);
     setStatus(playlist[currentIndex].artist);
   }
+
   function nextSong() {
     loadSong(currentIndex + 1, true);
   }
+
   function prevSong() {
     loadSong(currentIndex - 1, true);
   }
+
   function updateMediaSession() {
     if (!('mediaSession' in navigator)) return;
     const song = playlist[currentIndex];
@@ -4083,7 +4104,7 @@ body::after{
         title: song.title,
         artist: song.artist,
         album: '2026 Graduation',
-        artwork: [{ src: song.cover || 'assets/img/class01.webp', sizes: '512x512', type: 'image/webp' }]
+        artwork: [{ src: song.cover || '/assets/img/class01.webp', sizes: '512x512', type: 'image/webp' }]
       });
       navigator.mediaSession.setActionHandler('play', function () { playMusic(); });
       navigator.mediaSession.setActionHandler('pause', function () { pauseMusic(); });
@@ -4093,18 +4114,21 @@ body::after{
       console.warn('[Music Capsule] Media Session error:', err);
     }
   }
+
   // 点击胶囊展开/收起（不要用 document 捕获阶段抢先关闭）
   capsule.addEventListener('click', function (e) {
     if (e.target.closest('#musicPlay')) return;
     e.stopPropagation();
     setOpen(!isOpen);
   });
+
   playButton.addEventListener('click', function (e) {
     e.preventDefault();
     e.stopPropagation();
     if (audio.paused) playMusic();
     else pauseMusic();
   });
+
   audio.addEventListener('play', function () {
     // 加载中保持 …；加载结束后才显示暂停键
     if (!isLoading) setPlayingUI(true);
@@ -4134,13 +4158,16 @@ body::after{
       setTimeout(function () { nextSong(); }, 800);
     }
   });
+
   // 点击外部收起：用 click 冒泡阶段，避免与展开同一次 pointerdown 冲突
   document.addEventListener('click', function (e) {
     if (!capsule.contains(e.target)) setOpen(false);
   });
+
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') setOpen(false);
   });
+
   capsule.addEventListener('pointerdown', function () {
     capsule.classList.add('is-pressed');
   });
@@ -4148,6 +4175,7 @@ body::after{
   capsule.addEventListener('pointerup', clearPressed);
   capsule.addEventListener('pointercancel', clearPressed);
   capsule.addEventListener('pointerleave', clearPressed);
+
   var scrollTimer = null;
   window.addEventListener('scroll', function () {
     capsule.classList.toggle('is-dimmed', window.scrollY > 160);
@@ -4156,6 +4184,7 @@ body::after{
       capsule.classList.remove('is-dimmed');
     }, 500);
   }, { passive: true });
+
   capsule.addEventListener('pointermove', function (e) {
     var rect = capsule.getBoundingClientRect();
     var x = ((e.clientX - rect.left) / rect.width) * 100;
@@ -4163,13 +4192,13 @@ body::after{
     capsule.style.setProperty('--glass-x', x + '%');
     capsule.style.setProperty('--glass-y', y + '%');
   });
+
   loadSong(0, false);
   setOpen(false);
   setPlayingUI(false);
   window.__musicCapsuleReady = true;
   console.log('🎵 Music Capsule Ready ·', playlist.length, 'tracks');
 })();
-
 </script>
 </body>
 </html>
