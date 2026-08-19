@@ -1718,19 +1718,7 @@ body:before{
  * 产生固定玻璃区域。
  */
 .photo-slide::before{
-  content:"";
-  position:absolute;
-  z-index:-2;
-  inset:-12%;
-  background-image:var(--photo-bg);
-  background-size:cover;
-  background-position:center;
-  background-repeat:no-repeat;
-  filter:blur(48px) saturate(135%);
-  opacity:.26;
-  transform:scale(1.08);
-  pointer-events:none;
-  transition:opacity .5s ease,filter .5s ease,transform .8s cubic-bezier(.16,1,.3,1);
+  display:none !important;
 }
 .photo-slide::after{
   content:"";
@@ -1741,9 +1729,7 @@ body:before{
   pointer-events:none;
 }
 .photo-slide.is-current::before{
-  opacity:.34;
-  filter:blur(52px) saturate(145%);
-  transform:scale(1.1);
+  display:none !important;
 }
 
 /*
