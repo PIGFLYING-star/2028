@@ -4004,13 +4004,17 @@ body::after{
     capsule.setAttribute('aria-expanded', String(isOpen));
   }
 
+  /** 统一驱动按钮图标：加载中显示 …，否则按播放状态显示 ▶ / ⏸ */
   function setPlayingUI(playing) {
     capsule.classList.toggle('is-playing', playing);
-    if (!isLoading) {
-      playButton.textContent = playing ? 'Ⅱ' : '▶';
-    }
     playButton.setAttribute('aria-label', playing ? '暂停音乐' : '播放音乐');
-    playButton.setAttribute('aria-pressed', String(playing));
+    playButton.setAttribute('aria-pressed', String(!!playing));
+    if (isLoading) {
+      playButton.textContent = '…';
+    } else {
+      // ⏸ 暂停；▶ 播放（不要用 Ⅱ，部分字体看起来像省略/更多）
+      playButton.textContent = playing ? '⏸' : '▶';
+    }
   }
 
   function setStatus(text) {
@@ -4052,30 +4056,32 @@ body::after{
     const song = playlist[currentIndex];
     try {
       isLoading = true;
-      playButton.textContent = '…';
       playButton.disabled = true;
+      setPlayingUI(false); // isLoading=true → 显示 …
       setStatus('正在加载…');
       if (audio.readyState < 2) audio.load();
       await waitForCanPlay();
       await audio.play();
-      setPlayingUI(true);
+      // 必须先结束 loading，再刷新图标，否则会一直停在 …
+      isLoading = false;
+      setPlayingUI(true); // → ⏸
       setStatus('正在播放 · ' + song.title);
     } catch (err) {
       console.warn('[Music Capsule] play failed:', err);
-      setPlayingUI(false);
+      isLoading = false;
+      setPlayingUI(false); // → ▶
       setStatus('无法播放，请检查音频文件');
     } finally {
       isLoading = false;
       playButton.disabled = false;
-      if (audio.paused) {
-        playButton.textContent = '▶';
-        setStatus(song.artist);
-      }
+      // 最终再同步一次，防止 play 事件与 isLoading 竞态
+      setPlayingUI(!audio.paused);
     }
   }
 
   function pauseMusic() {
     audio.pause();
+    isLoading = false;
     setPlayingUI(false);
     setStatus(playlist[currentIndex].artist);
   }
@@ -4121,19 +4127,29 @@ body::after{
     else pauseMusic();
   });
 
-  audio.addEventListener('play', function () { setPlayingUI(true); });
+  audio.addEventListener('play', function () {
+    // 加载中保持 …；加载结束后才显示暂停键
+    if (!isLoading) setPlayingUI(true);
+  });
   audio.addEventListener('pause', function () {
     if (!isLoading) setPlayingUI(false);
   });
   audio.addEventListener('ended', function () { nextSong(); });
   audio.addEventListener('waiting', function () {
-    if (!audio.paused) setStatus('缓冲中…');
+    if (!audio.paused) {
+      isLoading = true;
+      setPlayingUI(true); // 缓冲中显示 …
+      setStatus('缓冲中…');
+    }
   });
   audio.addEventListener('playing', function () {
+    isLoading = false;
+    setPlayingUI(true); // 真正出声后一定切到 ⏸
     setStatus('正在播放 · ' + playlist[currentIndex].title);
   });
   audio.addEventListener('error', function () {
     console.error('[Music Capsule] load error:', audio.src);
+    isLoading = false;
     setPlayingUI(false);
     setStatus('加载失败 · 自动跳过');
     if (playlist.length > 1) {
