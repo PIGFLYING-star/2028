@@ -1845,57 +1845,52 @@ body:before{
         4. 卡片外围的 Liquid Glass 背景会自动跟随照片尺寸，不会因为 16:9 / 4:3 / 3:4 / 1:1 等比例而溢出。
       -->
 
-      <!-- 班级合影 → class01 系列 -->
+           <!-- 班级合影 → class01 系列 -->
       <div class="gallery-item" data-gallery-group="class-photo" data-gallery-title="班级合影"
-           data-gallery-images="assets/img/class01.jpg|assets/img/class01-2.jpg|assets/img/class01-3.jpg|assets/img/class01-4.jpg">
+           data-gallery-images="assets/img/class01.webp|assets/img/class01-2.webp|assets/img/class01-3.webp|assets/img/class01-4.webp">
         <div class="gallery-glass-backdrop" aria-hidden="true"></div>
         <div class="gallery-photo-frame">
-          <img src="assets/img/class01.jpg" alt="班级合影" loading="lazy" decoding="async">
+          <img src="assets/img/class01.webp" alt="班级合影" loading="lazy" decoding="async">
         </div>
         <div class="gallery-overlay"><strong>班级合影</strong><span>最珍贵的记忆</span></div>
       </div>
-
       <!-- 课堂学习 → class02 系列 -->
       <div class="gallery-item" data-gallery-group="classroom" data-gallery-title="课堂学习"
-           data-gallery-images="assets/img/class02.jpg|assets/img/class02-2.jpg|assets/img/class02-3.jpg|assets/img/class02-4.jpg|assets/img/class02-5.jpg">
+           data-gallery-images="assets/img/class02.webp|assets/img/class02-2.webp|assets/img/class02-3.webp|assets/img/class02-4.webp|assets/img/class02-5.webp">
         <div class="gallery-glass-backdrop" aria-hidden="true"></div>
         <div class="gallery-photo-frame">
-          <img src="assets/img/class02.jpg" alt="课堂学习" loading="lazy" decoding="async">
+          <img src="assets/img/class02.webp" alt="课堂学习" loading="lazy" decoding="async">
         </div>
         <div class="gallery-overlay"><strong>课堂学习</strong><span>专注的每一刻</span></div>
       </div>
-
       <!-- 校园活动 → class03 系列 -->
       <div class="gallery-item" data-gallery-group="campus" data-gallery-title="校园活动"
-           data-gallery-images="assets/img/class03.jpg|assets/img/class03-2.jpg|assets/img/class03-3.jpg|assets/img/class03-4.jpg">
+           data-gallery-images="assets/img/class03.webp|assets/img/class03-2.webp|assets/img/class03-3.webp|assets/img/class03-4.webp">
         <div class="gallery-glass-backdrop" aria-hidden="true"></div>
         <div class="gallery-photo-frame">
-          <img src="assets/img/class03.jpg" alt="校园活动" loading="lazy" decoding="async">
+          <img src="assets/img/class03.webp" alt="校园活动" loading="lazy" decoding="async">
         </div>
         <div class="gallery-overlay"><strong>校园活动</strong><span>校园里的青春</span></div>
       </div>
-
       <!-- 操场训练 → class04 系列 -->
       <div class="gallery-item" data-gallery-group="training" data-gallery-title="操场训练"
-           data-gallery-images="assets/img/class04.jpg|assets/img/class04-2.jpg|assets/img/class04-3.jpg|assets/img/class04-4.jpg">
+           data-gallery-images="assets/img/class04.webp|assets/img/class04-2.webp|assets/img/class04-3.webp|assets/img/class04-4.webp">
         <div class="gallery-glass-backdrop" aria-hidden="true"></div>
         <div class="gallery-photo-frame">
-          <img src="assets/img/class04.jpg" alt="操场训练" loading="lazy" decoding="async">
+          <img src="assets/img/class04.webp" alt="操场训练" loading="lazy" decoding="async">
         </div>
         <div class="gallery-overlay"><strong>操场训练</strong><span>汗水与坚持</span></div>
       </div>
-
       <!-- 集体活动 → class05 系列 -->
       <div class="gallery-item" data-gallery-group="group-activity" data-gallery-title="集体活动"
-           data-gallery-images="assets/img/class05.jpg|assets/img/class05-2.jpg|assets/img/class05-3.jpg|assets/img/class05-4.jpg|assets/img/class05-5.jpg">
+           data-gallery-images="assets/img/class05.webp|assets/img/class05-2.webp|assets/img/class05-3.webp|assets/img/class05-4.webp|assets/img/class05-5.webp">
         <div class="gallery-glass-backdrop" aria-hidden="true"></div>
         <div class="gallery-photo-frame">
-          <img src="assets/img/class05.jpg" alt="集体活动" loading="lazy" decoding="async">
+          <img src="assets/img/class05.webp" alt="集体活动" loading="lazy" decoding="async">
         </div>
         <div class="gallery-overlay"><strong>集体活动</strong><span>一起留下的回忆</span></div>
       </div>
-    </div>
-  </div>
+
   <!-- ====================== 寄语祝福 ====================== -->
   <div class="blessings" id="blessings">
     <div class="blessing-line highlight">Splendid CLASS</div>
@@ -3904,6 +3899,7 @@ body::after{
 
 
 <style>
+<style>
 /* ========== 动画性能收敛：移动端降模糊、关装饰光球 ========== */
 @media (max-width: 768px) {
   body::after,
@@ -3926,7 +3922,6 @@ body::after{
     filter: none !important;
   }
 }
-
 @media (prefers-reduced-motion: reduce) {
   .petal,
   .danmaku-item,
@@ -3938,24 +3933,18 @@ body::after{
   }
 }
 </style>
-
-<audio id="audio-player" preload="auto" playsinline></audio>
-
+<audio id="audio-player" preload="auto" playsinline>
 <div id="musicCapsule" aria-label="音乐播放器" aria-expanded="false">
   <div class="music-capsule-icon" aria-hidden="true"></div>
-
   <div class="music-capsule-panel">
-    <img class="music-cover" src="/assets/img/class01.jpg" alt="我们的青春封面" width="56" height="56">
-
+    <img class="music-cover" src="/assets/img/class01.webp" alt="我们的青春封面" width="56" height="56">
     <div class="music-info">
       <div class="music-title">我们的青春</div>
       <div class="music-sub" id="musicStatus">2026 Graduation</div>
     </div>
-
     <button class="music-play" id="musicPlay" type="button" aria-label="播放音乐" aria-pressed="false">▶</button>
   </div>
 </div>
-
 <script>
 /**
  * iOS 26 Liquid Glass Music Capsule（内联，不依赖外部 js 文件）
@@ -3963,54 +3952,47 @@ body::after{
  */
 (() => {
   'use strict';
-
   const playlist = [
     {
       title: '我们的青春',
       artist: '2026 Graduation',
       src: 'assets/music/youth.mp3',
-      cover: 'assets/img/class01.jpg'
+      cover: 'assets/img/class01.webp'
     },
     {
       title: '毕业',
       artist: 'Memory',
       src: 'assets/music/graduation.mp3',
-      cover: 'assets/img/class01.jpg'
+      cover: 'assets/img/class01.webp'
     },
     {
       title: '未来可期',
       artist: 'Class 2026',
       src: 'assets/music/memory.mp3',
-      cover: 'assets/img/class01.jpg'
+      cover: 'assets/img/class01.webp'
     }
   ];
-
   const audio = document.getElementById('audio-player');
   const capsule = document.getElementById('musicCapsule');
   const playButton = document.getElementById('musicPlay');
   const titleEl = document.querySelector('#musicCapsule .music-title');
   const statusEl = document.getElementById('musicStatus');
   const coverEl = document.querySelector('#musicCapsule .music-cover');
-
   if (!audio || !capsule || !playButton) {
     console.warn('[Music Capsule] DOM missing');
     return;
   }
-
   let currentIndex = 0;
   let isLoading = false;
   let isOpen = false;
-
   audio.volume = 0.8;
   audio.setAttribute('playsinline', '');
   audio.preload = 'auto';
-
   function setOpen(next) {
     isOpen = !!next;
     capsule.classList.toggle('is-open', isOpen);
     capsule.setAttribute('aria-expanded', String(isOpen));
   }
-
   /** 统一驱动按钮图标：加载中 …，播放 ▶，暂停双竖杠 Ⅱ（避免手机渲染成 ⏸️ emoji） */
   function setPlayingUI(playing) {
     capsule.classList.toggle('is-playing', playing);
@@ -4023,11 +4005,9 @@ body::after{
       playButton.textContent = playing ? '❙❙' : '▶';
     }
   }
-
   function setStatus(text) {
     if (statusEl) statusEl.textContent = text;
   }
-
   function loadSong(index, autoplay) {
     currentIndex = ((index % playlist.length) + playlist.length) % playlist.length;
     const song = playlist[currentIndex];
@@ -4041,7 +4021,6 @@ body::after{
     updateMediaSession();
     if (autoplay) playMusic();
   }
-
   function waitForCanPlay(timeoutMs) {
     timeoutMs = timeoutMs || 2500;
     if (audio.readyState >= 3) return Promise.resolve();
@@ -4058,7 +4037,6 @@ body::after{
       new Promise(function (resolve) { setTimeout(resolve, timeoutMs); })
     ]);
   }
-
   async function playMusic() {
     const song = playlist[currentIndex];
     try {
@@ -4085,22 +4063,18 @@ body::after{
       setPlayingUI(!audio.paused);
     }
   }
-
   function pauseMusic() {
     audio.pause();
     isLoading = false;
     setPlayingUI(false);
     setStatus(playlist[currentIndex].artist);
   }
-
   function nextSong() {
     loadSong(currentIndex + 1, true);
   }
-
   function prevSong() {
     loadSong(currentIndex - 1, true);
   }
-
   function updateMediaSession() {
     if (!('mediaSession' in navigator)) return;
     const song = playlist[currentIndex];
@@ -4109,7 +4083,7 @@ body::after{
         title: song.title,
         artist: song.artist,
         album: '2026 Graduation',
-        artwork: [{ src: song.cover || 'assets/img/class01.jpg', sizes: '512x512', type: 'image/jpeg' }]
+        artwork: [{ src: song.cover || 'assets/img/class01.webp', sizes: '512x512', type: 'image/webp' }]
       });
       navigator.mediaSession.setActionHandler('play', function () { playMusic(); });
       navigator.mediaSession.setActionHandler('pause', function () { pauseMusic(); });
@@ -4119,21 +4093,18 @@ body::after{
       console.warn('[Music Capsule] Media Session error:', err);
     }
   }
-
   // 点击胶囊展开/收起（不要用 document 捕获阶段抢先关闭）
   capsule.addEventListener('click', function (e) {
     if (e.target.closest('#musicPlay')) return;
     e.stopPropagation();
     setOpen(!isOpen);
   });
-
   playButton.addEventListener('click', function (e) {
     e.preventDefault();
     e.stopPropagation();
     if (audio.paused) playMusic();
     else pauseMusic();
   });
-
   audio.addEventListener('play', function () {
     // 加载中保持 …；加载结束后才显示暂停键
     if (!isLoading) setPlayingUI(true);
@@ -4163,16 +4134,13 @@ body::after{
       setTimeout(function () { nextSong(); }, 800);
     }
   });
-
   // 点击外部收起：用 click 冒泡阶段，避免与展开同一次 pointerdown 冲突
   document.addEventListener('click', function (e) {
     if (!capsule.contains(e.target)) setOpen(false);
   });
-
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') setOpen(false);
   });
-
   capsule.addEventListener('pointerdown', function () {
     capsule.classList.add('is-pressed');
   });
@@ -4180,7 +4148,6 @@ body::after{
   capsule.addEventListener('pointerup', clearPressed);
   capsule.addEventListener('pointercancel', clearPressed);
   capsule.addEventListener('pointerleave', clearPressed);
-
   var scrollTimer = null;
   window.addEventListener('scroll', function () {
     capsule.classList.toggle('is-dimmed', window.scrollY > 160);
@@ -4189,7 +4156,6 @@ body::after{
       capsule.classList.remove('is-dimmed');
     }, 500);
   }, { passive: true });
-
   capsule.addEventListener('pointermove', function (e) {
     var rect = capsule.getBoundingClientRect();
     var x = ((e.clientX - rect.left) / rect.width) * 100;
@@ -4197,13 +4163,13 @@ body::after{
     capsule.style.setProperty('--glass-x', x + '%');
     capsule.style.setProperty('--glass-y', y + '%');
   });
-
   loadSong(0, false);
   setOpen(false);
   setPlayingUI(false);
   window.__musicCapsuleReady = true;
   console.log('🎵 Music Capsule Ready ·', playlist.length, 'tracks');
 })();
+
 </script>
 </body>
 </html>
