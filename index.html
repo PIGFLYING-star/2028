@@ -1674,22 +1674,100 @@ body:before{
   transition:opacity .58s cubic-bezier(.22,1,.36,1),transform .78s cubic-bezier(.16,1,.3,1),filter .58s ease;
 }
 .photo-viewer.is-open .photo-stage{transform:none;opacity:1;filter:blur(0);transition-delay:.02s;}
+/*
+ * 照片查看区域：取消“照片玻璃框”。
+ * 这里不再给照片设置固定比例、玻璃边框、内描边或玻璃阴影。
+ * viewport 只负责裁切滑动轨道，照片本身保持真实比例。
+ */
 .photo-track-viewport{
-  position:relative;width:min(84vw,1180px);height:min(72dvh,calc(100dvh - 190px));
-  min-width:0;min-height:0;overflow:hidden;border-radius:32px;touch-action:pan-y;isolation:isolate;
+  position:relative;
+  width:min(92vw,1400px);
+  height:min(78dvh,calc(100dvh - 170px));
+  min-width:0;
+  min-height:0;
+  overflow:hidden;
+  border-radius:0;
+  touch-action:pan-y;
+  isolation:isolate;
 }
-.photo-track{width:100%;height:100%;display:flex;will-change:transform;transform:translate3d(0,0,0);transition:transform .62s cubic-bezier(.16,1,.3,1);}
+.photo-track{
+  width:100%;
+  height:100%;
+  display:flex;
+  will-change:transform;
+  transform:translate3d(0,0,0);
+  transition:transform .62s cubic-bezier(.16,1,.3,1);
+}
 .photo-slide{
-  position:relative;flex:0 0 auto;height:100%;display:flex;align-items:center;justify-content:center;
-  padding:14px;box-sizing:border-box;overflow:hidden;
+  position:relative;
+  flex:0 0 auto;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  box-sizing:border-box;
+  overflow:hidden;
+  isolation:isolate;
 }
-/* 关键修复：不再把图片强制拉成“容器宽高”，而是用自然尺寸 + 最大边界约束，彻底避免电脑端裁切。 */
+
+/*
+ * 照片后方的环境模糊层。
+ * 它不是照片的玻璃边框，而是整张照片的柔和放大/模糊背景，
+ * 用来保留 iOS Photos 那种“空间感”，同时避免因照片比例不同
+ * 产生固定玻璃区域。
+ */
+.photo-slide::before{
+  content:"";
+  position:absolute;
+  z-index:-2;
+  inset:-12%;
+  background-image:var(--photo-bg);
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  filter:blur(48px) saturate(135%);
+  opacity:.26;
+  transform:scale(1.08);
+  pointer-events:none;
+  transition:opacity .5s ease,filter .5s ease,transform .8s cubic-bezier(.16,1,.3,1);
+}
+.photo-slide::after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:0;
+  background:radial-gradient(circle at center,rgba(255,255,255,.055),transparent 62%);
+  pointer-events:none;
+}
+.photo-slide.is-current::before{
+  opacity:.34;
+  filter:blur(52px) saturate(145%);
+  transform:scale(1.1);
+}
+
+/*
+ * 核心：照片只使用自然尺寸 + max-width/max-height。
+ * object-fit:contain 保证任何比例都完整显示，不裁切。
+ * 注意：这里没有 border、内描边、玻璃背景、玻璃阴影。
+ */
 .photo-slide img{
-  display:block;width:auto;height:auto;max-width:100%;max-height:100%;
-  object-fit:contain;object-position:center;
-  border-radius:24px;user-select:none;-webkit-user-drag:none;
-  box-shadow:0 28px 80px rgba(0,0,0,.38),0 0 0 1px rgba(255,255,255,.15);
-  opacity:.96;transform:translate3d(0,0,0);transform-origin:center center;
+  display:block;
+  width:auto;
+  height:auto;
+  max-width:100%;
+  max-height:100%;
+  object-fit:contain;
+  object-position:center;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  background:transparent;
+  user-select:none;
+  -webkit-user-drag:none;
+  opacity:.98;
+  transform:translate3d(0,0,0);
+  transform-origin:center center;
   transition:opacity .42s ease,filter .42s ease;
   filter:saturate(105%);
 }
@@ -1701,7 +1779,7 @@ body:before{
   60%{opacity:1;transform:perspective(1000px) translate3d(0,-2px,0) scale(1);filter:blur(0) saturate(108%);}
   100%{opacity:1;transform:perspective(1000px) translate3d(0,0,0) scale(1);filter:blur(0) saturate(105%);}
 }
-.photo-slide img.is-broken{width:min(420px,70vw);height:min(300px,45vh);object-fit:contain;padding:40px;box-sizing:border-box;border-radius:24px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.7);}
+.photo-slide img.is-broken{width:min(420px,70vw);height:min(300px,45vh);object-fit:contain;color:rgba(255,255,255,.7);}
 .photo-nav{position:absolute;top:50%;width:52px;height:52px;margin-top:-26px;border-radius:50%;display:grid;place-items:center;z-index:12;}
 .photo-nav-prev{left:max(22px,calc(50% - min(42vw,590px) - 74px));}.photo-nav-next{right:max(22px,calc(50% - min(42vw,590px) - 74px));}
 .photo-nav span{width:10px;height:10px;border-top:1.8px solid rgba(255,255,255,.94);border-right:1.8px solid rgba(255,255,255,.94);display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.22));}
@@ -1714,9 +1792,9 @@ body:before{
   .photo-viewer-topbar{top:max(10px,env(safe-area-inset-top));left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));}
   .photo-viewer-title-wrap{max-width:68vw;padding:9px 13px;}.photo-viewer-close{width:44px;height:44px;flex-basis:44px;}
   .photo-stage{padding:clamp(70px,11vh,96px) 0 clamp(58px,10vh,78px);}
-  .photo-track-viewport{width:calc(100vw - 20px);height:calc(100dvh - 145px);max-height:none;border-radius:24px;}
-  .photo-slide{padding:8px;}
-  .photo-slide img{max-width:100%;max-height:100%;border-radius:20px;}
+  .photo-track-viewport{width:100vw;height:calc(100dvh - 145px);max-height:none;border-radius:0;}
+  .photo-slide{padding:0;}
+  .photo-slide img{max-width:100%;max-height:100%;border-radius:0;box-shadow:none;}
   .photo-nav{display:none!important;}
   .photo-viewer-hint{bottom:max(12px,env(safe-area-inset-bottom));}
 }
@@ -2223,9 +2301,7 @@ body:before{
     function renderPhotoSlides(){
       photoTrack.innerHTML = activeGallery.map((src,index) => `
         <div class="photo-slide" data-index="${index}">
-          <div class="photo-frame">
-            <img src="${src}" alt="${escapeHtml(activeGalleryTitle)} · 第 ${index + 1} 张" draggable="false" decoding="async">
-          </div>
+          <img src="${src}" alt="${escapeHtml(activeGalleryTitle)} · 第 ${index + 1} 张" draggable="false" decoding="async">
         </div>
       `).join('');
 
@@ -3354,34 +3430,15 @@ body::after{
   });
 
   /* 将当前照片的自然尺寸传给查看器玻璃框。 */
+  /*
+   * 重新计算照片可显示范围。
+   * 现在不再计算“玻璃框”的宽高，只把真实比例保存给背景层。
+   * 图片尺寸完全交给 CSS 的 width:auto / height:auto / contain。
+   */
   window.__fitPhotoFrame = function(slide, img){
     if (!slide || !img) return;
-
-    const viewport = document.getElementById('photoTrackViewport');
-    if (!viewport) return;
-
-    const vw = Math.max(viewport.clientWidth - 20, 160);
-    const vh = Math.max(viewport.clientHeight - 20, 160);
-
     const naturalW = img.naturalWidth || 4;
     const naturalH = img.naturalHeight || 3;
-    const ratio = naturalW / naturalH;
-
-    let width = vw;
-    let height = width / ratio;
-
-    /* 先按宽度限制，再按高度限制，永远不会超出 viewport。 */
-    if (height > vh) {
-      height = vh;
-      width = height * ratio;
-    }
-
-    /* 极端超宽 / 超高图片再次做安全钳制。 */
-    width = clamp(width, 120, vw);
-    height = clamp(height, 120, vh);
-
-    slide.style.setProperty('--frame-width', `${Math.round(width)}px`);
-    slide.style.setProperty('--frame-height', `${Math.round(height)}px`);
     slide.style.setProperty('--photo-ratio', `${naturalW} / ${naturalH}`);
     slide.style.setProperty('--photo-bg', `url("${img.currentSrc || img.src}")`);
   };
