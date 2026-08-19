@@ -175,7 +175,7 @@
     .gallery-item.visible {
       opacity: 1;
       transform: translateY(0);
-      transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s ease;
+      transition: opacity 0.7s cubic-bezier(.22,1.15,.36,1), transform 0.75s cubic-bezier(.22,1.15,.36,1), box-shadow 0.45s ease;
     }
     /* wide：宽幅图片，占两格 */
     .gallery-item.wide {
@@ -185,18 +185,20 @@
     /* 仅PC hover设备启用悬浮效果，避免移动端触摸误触发 */
     @media (hover: hover) {
       .gallery-item:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        transform: translateY(-8px) scale(1.015);
+        box-shadow: 0 22px 48px rgba(0,0,0,0.16), 0 4px 12px rgba(201,168,76,0.12);
       }
+      .gallery-item:hover .gallery-photo-frame img,
       .gallery-item:hover img {
-        transform: scale(1.05);
+        transform: scale(1.08);
       }
       .gallery-item:hover .gallery-overlay {
         opacity: 1;
       }
     }
     .gallery-item:active {
-      transform: scale(0.97);
+      transform: scale(0.96);
+      transition-duration: .12s;
     }
     .gallery-item img {
       width: 100%;
@@ -1770,24 +1772,37 @@ body:before{
   object-fit:contain;
   object-position:center;
   border:0;
-  border-radius:0;
-  box-shadow:none;
+  border-radius:22px;
+  box-shadow:
+    0 24px 60px rgba(0,0,0,.28),
+    0 2px 8px rgba(0,0,0,.12);
   background:transparent;
   user-select:none;
   -webkit-user-drag:none;
-  opacity:.98;
-  transform:translate3d(0,0,0);
+  opacity:0;
+  transform:translate3d(0,0,0) scale(.97);
   transform-origin:center center;
-  transition:opacity .42s ease,filter .42s ease;
-  filter:saturate(105%);
+  transition:
+    opacity .55s cubic-bezier(.22,1,.36,1),
+    transform .7s cubic-bezier(.22,1.15,.36,1),
+    filter .5s ease,
+    box-shadow .45s ease;
+  filter:saturate(108%);
+  will-change: opacity, transform;
 }
-.photo-slide.is-current img{opacity:1;}
-/* 绝不在进入动画中放大超过 1 倍，避免图片边缘被 viewport 裁掉。 */
-.photo-viewer.is-open .photo-slide.is-current img{animation:iosPhotoReveal .72s cubic-bezier(.16,1,.3,1) both;}
+.photo-slide.is-current img,
+.photo-slide img.is-loaded{
+  opacity:1;
+  transform:translate3d(0,0,0) scale(1);
+}
+/* 打开时的果感弹簧 */
+.photo-viewer.is-open .photo-slide.is-current img.is-loaded{
+  animation:iosPhotoReveal .78s cubic-bezier(.22,1.2,.36,1) both;
+}
 @keyframes iosPhotoReveal{
-  0%{opacity:0;transform:perspective(1000px) translate3d(0,16px,-120px) scale(.94);filter:blur(12px) saturate(85%);}
-  60%{opacity:1;transform:perspective(1000px) translate3d(0,-2px,0) scale(1);filter:blur(0) saturate(108%);}
-  100%{opacity:1;transform:perspective(1000px) translate3d(0,0,0) scale(1);filter:blur(0) saturate(105%);}
+  0%{opacity:0;transform:translate3d(0,28px,0) scale(.88);filter:blur(10px) saturate(90%);}
+  55%{opacity:1;transform:translate3d(0,-4px,0) scale(1.02);filter:blur(0) saturate(110%);}
+  100%{opacity:1;transform:translate3d(0,0,0) scale(1);filter:blur(0) saturate(108%);}
 }
 .photo-slide img.is-broken{width:min(420px,70vw);height:min(300px,45vh);object-fit:contain;color:rgba(255,255,255,.7);}
 .photo-nav{position:absolute;top:50%;width:52px;height:52px;margin-top:-26px;border-radius:50%;display:grid;place-items:center;z-index:12;}
@@ -1804,7 +1819,7 @@ body:before{
   .photo-stage{padding:clamp(70px,11vh,96px) 0 clamp(58px,10vh,78px);}
   .photo-track-viewport{width:100vw;height:calc(100dvh - 145px);max-height:none;border-radius:0;}
   .photo-slide{padding:0;}
-  .photo-slide img{max-width:100%;max-height:100%;border-radius:0;box-shadow:none;}
+  .photo-slide img{max-width:100%;max-height:100%;border-radius:16px;box-shadow:0 12px 36px rgba(0,0,0,.22);}
   .photo-nav{display:none!important;}
   .photo-viewer-hint{bottom:max(12px,env(safe-area-inset-bottom));}
 }
@@ -1812,6 +1827,8 @@ body:before{
   .photo-viewer,.photo-viewer::before,.photo-viewer-topbar,.photo-stage,.photo-track,.photo-slide img,.photo-nav,.photo-viewer-close{transition:none!important;animation:none!important;}
 }
 </style>
+  <link rel="preload" as="image" href="/assets/music/cover.webp" type="image/webp">
+  <link rel="preload" as="image" href="/assets/img/class01.webp" type="image/webp">
 </head>
 <body>
   <!-- ====================== 头部Hero区域 ====================== -->
@@ -1850,7 +1867,7 @@ body:before{
            data-gallery-images="/assets/img/class01.webp|/assets/img/class01-2.webp|/assets/img/class01-3.webp|/assets/img/class01-4.webp">
         <div class="gallery-glass-backdrop" aria-hidden="true"></div>
         <div class="gallery-photo-frame">
-          <img src="/assets/img/class01.webp" alt="班级合影" loading="lazy" decoding="async">
+          <img src="/assets/img/class01.webp" alt="班级合影" loading="eager" fetchpriority="high" decoding="async">
         </div>
         <div class="gallery-overlay"><strong>班级合影</strong><span>最珍贵的记忆</span></div>
       </div>
@@ -2335,7 +2352,7 @@ body:before{
     });
 
     function applyPhotoTrackPosition(percent, animate = true){
-      photoTrack.style.transition = animate ? 'transform .62s cubic-bezier(.16,1,.3,1)' : 'none';
+      photoTrack.style.transition = animate ? 'transform .72s cubic-bezier(.22,1.18,.36,1)' : 'none';
       photoTrack.style.transform = `translate3d(${percent}%,0,0)`;
     }
 
@@ -2353,16 +2370,17 @@ body:before{
         slide.style.flexBasis = `${100 / count}%`;
       });
       photoTrack.querySelectorAll('img').forEach(img => {
-        const fit = () => {
+        const markLoaded = () => {
+          img.classList.add('is-loaded');
           const slide = img.closest('.photo-slide');
           if (slide && window.__fitPhotoFrame) window.__fitPhotoFrame(slide, img);
         };
 
-        if (img.complete && img.naturalWidth) fit();
-        img.addEventListener('load', fit, { once:true });
+        if (img.complete && img.naturalWidth) markLoaded();
+        else img.addEventListener('load', markLoaded, { once:true });
 
         img.addEventListener('error', () => {
-          img.classList.add('is-broken');
+          img.classList.add('is-broken', 'is-loaded');
           img.alt = '图片暂时无法加载';
           const slide = img.closest('.photo-slide');
           if (slide && window.__fitPhotoFrame) {
@@ -3128,6 +3146,8 @@ body::after{
 }
 
 .gallery-item{
+  content-visibility: auto;
+  contain-intrinsic-size: 280px;
   --photo-ratio: 4 / 3;
   position: relative;
   aspect-ratio: 4 / 3 !important;
@@ -3139,6 +3159,10 @@ body::after{
   border-radius: 24px;
   padding: 0;
   background: rgba(255,255,255,.12);
+  transition:
+    transform .7s cubic-bezier(.22,1.2,.36,1),
+    box-shadow .55s cubic-bezier(.22,1,.36,1),
+    opacity .7s cubic-bezier(.22,1.15,.36,1);
 }
 
 .gallery-item.wide{
@@ -3165,7 +3189,7 @@ body::after{
   background-image: var(--photo-bg);
   background-position: center;
   background-size: cover;
-  filter: blur(24px) saturate(1.35);
+  filter: blur(18px) saturate(1.25);
   transform: scale(1.08);
   opacity: .58;
 }
@@ -3211,10 +3235,12 @@ body::after{
   object-position: center;
   border-radius: inherit;
   background: rgba(255,255,255,.04);
-  transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0) scale(1);
   transition:
-    transform .72s cubic-bezier(.22,1,.36,1),
-    filter .5s ease;
+    transform .85s cubic-bezier(.22,1.2,.36,1),
+    filter .5s ease,
+    opacity .55s cubic-bezier(.22,1,.36,1);
+  will-change: transform, opacity;
 }
 
 .gallery-item:not(.ratio-ready) .gallery-photo-frame{
@@ -3235,6 +3261,41 @@ body::after{
   background: rgba(255,255,255,.10);
 }
 
+/* ---- 图片加载骨架 + 果感淡入 ---- */
+.gallery-photo-frame img{
+  opacity: 0;
+}
+.gallery-photo-frame img.is-loaded{
+  opacity: 1;
+  transition: opacity .55s cubic-bezier(.22,1,.36,1), transform .72s cubic-bezier(.22,1.15,.36,1);
+}
+.gallery-item:not(.ratio-ready) .gallery-photo-frame::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    110deg,
+    rgba(255,255,255,.06) 0%,
+    rgba(255,255,255,.28) 40%,
+    rgba(255,255,255,.06) 80%
+  );
+  background-size: 200% 100%;
+  animation: galleryShimmer 1.35s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+@keyframes galleryShimmer{
+  0%{ background-position: 120% 0; }
+  100%{ background-position: -80% 0; }
+}
+.gallery-item.ratio-ready .gallery-photo-frame::after{
+  opacity: 0;
+  transition: opacity .35s ease;
+}
+
+
+
 /* 缩略图文字玻璃层 */
 .gallery-overlay{
   z-index:3;
@@ -3242,8 +3303,16 @@ body::after{
   flex-direction:column;
   gap:2px;
   padding:52px 16px 14px;
-  background:linear-gradient(transparent,rgba(0,0,0,.62));
+  background:linear-gradient(transparent 10%,rgba(0,0,0,.55) 70%,rgba(0,0,0,.72));
   opacity:0;
+  transition: opacity .45s cubic-bezier(.22,1,.36,1), transform .5s cubic-bezier(.22,1.15,.36,1);
+  transform: translateY(6px);
+}
+.gallery-item:hover .gallery-overlay,
+.gallery-item:focus-within .gallery-overlay,
+.gallery-item.is-touch-active .gallery-overlay{
+  opacity:1;
+  transform: translateY(0);
 }
 
 .gallery-overlay strong{
@@ -3473,6 +3542,7 @@ body::after{
     item.style.setProperty('--photo-bg', `url("${img.currentSrc || img.src}")`);
     item.dataset.photoShape = classifyRatio(ratio);
     item.classList.add('ratio-ready');
+    img.classList.add('is-loaded');
   }
 
   document.querySelectorAll('.gallery-item').forEach(item => {
@@ -3940,7 +4010,7 @@ body::after{
   <div class="music-capsule-icon" aria-hidden="true"></div>
 
   <div class="music-capsule-panel">
-    <img class="music-cover" src="/assets/img/class01.webp" alt="我们的青春封面" width="56" height="56">
+    <img class="music-cover" src="/assets/music/cover.webp" alt="我们的青春封面" width="56" height="56">
 
     <div class="music-info">
       <div class="music-title">我们的青春</div>
@@ -3964,19 +4034,19 @@ body::after{
       title: '我们的青春',
       artist: '2026 Graduation',
       src: '/assets/music/youth.mp3',
-      cover: '/assets/img/class01.webp'
+      cover: '/assets/music/cover.webp'
     },
     {
       title: '毕业',
       artist: 'Memory',
       src: '/assets/music/graduation.mp3',
-      cover: '/assets/img/class01.webp'
+      cover: '/assets/music/cover.webp'
     },
     {
       title: '未来可期',
       artist: 'Class 2026',
       src: '/assets/music/memory.mp3',
-      cover: '/assets/img/class01.webp'
+      cover: '/assets/music/cover.webp'
     }
   ];
 
@@ -4104,7 +4174,7 @@ body::after{
         title: song.title,
         artist: song.artist,
         album: '2026 Graduation',
-        artwork: [{ src: song.cover || '/assets/img/class01.webp', sizes: '512x512', type: 'image/webp' }]
+        artwork: [{ src: song.cover || '/assets/music/cover.webp', sizes: '512x512', type: 'image/webp' }]
       });
       navigator.mediaSession.setActionHandler('play', function () { playMusic(); });
       navigator.mediaSession.setActionHandler('pause', function () { pauseMusic(); });
