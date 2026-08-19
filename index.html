@@ -3812,6 +3812,13 @@ body::after{
     border-radius: 50%;
     cursor: pointer;
     color: rgba(25,25,25,.86);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+    /* 禁止把符号渲染成彩色 emoji */
+    font-variant-emoji: text;
+    font-style: normal;
     background:
       radial-gradient(circle at 30% 20%, rgba(255,255,255,.76), transparent 42%),
       rgba(255,255,255,.40);
@@ -4004,7 +4011,7 @@ body::after{
     capsule.setAttribute('aria-expanded', String(isOpen));
   }
 
-  /** 统一驱动按钮图标：加载中显示 …，否则按播放状态显示 ▶ / ⏸ */
+  /** 统一驱动按钮图标：加载中 …，播放 ▶，暂停双竖杠 Ⅱ（避免手机渲染成 ⏸️ emoji） */
   function setPlayingUI(playing) {
     capsule.classList.toggle('is-playing', playing);
     playButton.setAttribute('aria-label', playing ? '暂停音乐' : '播放音乐');
@@ -4012,8 +4019,8 @@ body::after{
     if (isLoading) {
       playButton.textContent = '…';
     } else {
-      // ⏸ 暂停；▶ 播放（不要用 Ⅱ，部分字体看起来像省略/更多）
-      playButton.textContent = playing ? '⏸' : '▶';
+      // Ⅱ = 双竖杠；不要用 ⏸（Android 常变成彩色 ⏸️）
+      playButton.textContent = playing ? 'Ⅱ' : '▶';
     }
   }
 
@@ -4064,7 +4071,7 @@ body::after{
       await audio.play();
       // 必须先结束 loading，再刷新图标，否则会一直停在 …
       isLoading = false;
-      setPlayingUI(true); // → ⏸
+      setPlayingUI(true); // → Ⅱ
       setStatus('正在播放 · ' + song.title);
     } catch (err) {
       console.warn('[Music Capsule] play failed:', err);
@@ -4144,7 +4151,7 @@ body::after{
   });
   audio.addEventListener('playing', function () {
     isLoading = false;
-    setPlayingUI(true); // 真正出声后一定切到 ⏸
+    setPlayingUI(true); // 真正出声后一定切到 Ⅱ
     setStatus('正在播放 · ' + playlist[currentIndex].title);
   });
   audio.addEventListener('error', function () {
