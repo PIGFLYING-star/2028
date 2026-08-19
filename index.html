@@ -13,6 +13,8 @@
     Noto Serif SC：正文衬线字体
     Ma Shan Zheng：马善政手写书法字体（班训、签名、页脚）
   -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
   <style>
     /* ====================== 全局重置与CSS变量 ====================== */
@@ -299,12 +301,13 @@
     }
     /* ====================== 弹幕留言墙模块 ====================== */
     .wall-section {
-      padding: 40px 20px 60px;
+      padding: 40px 16px 60px;
       background: #fff;
       border-radius: 24px 24px 0 0;
       box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
       max-width: 1200px;
       margin: 0 auto;
+      overflow: hidden; /* 防止子元素横向溢出导致按钮被裁切 */
     }
     .wall-header {
       text-align: center;
@@ -364,14 +367,18 @@
     /* 留言输入区域 iOS修复 font-size:16px，防止输入时页面自动放大 */
     .wall-input-area {
       display: flex;
+      align-items: center;
       gap: 10px;
       margin-top: 24px;
       max-width: 700px;
       margin-left: auto;
       margin-right: auto;
+      width: 100%;
+      box-sizing: border-box;
     }
     .wall-input {
-      flex: 1;
+      flex: 1 1 auto;
+      min-width: 0; /* 防止 flex 子项溢出导致按钮被挤出视口 */
       padding: 12px 16px;
       border: 1.5px solid var(--border);
       border-radius: 12px;
@@ -385,7 +392,8 @@
       border-color: var(--gold);
     }
     .wall-btn {
-      padding: 12px 24px;
+      flex: 0 0 auto;
+      padding: 12px 20px;
       background: var(--gold);
       color: #fff;
       border: none;
@@ -396,6 +404,7 @@
       transition: var(--transition);
       white-space: nowrap;
       -webkit-appearance: none;
+      min-width: 68px;
     }
     .wall-btn:active {
       transform: scale(0.96);
@@ -1198,10 +1207,25 @@ body::after{
   gap:12px!important;
  }
 
- .wall-btn,
- .open-my-msg-btn{
-  width:100%;
-  min-height:52px;
+ /* 修复：发布按钮在部分机型（如 vivo Y52s）显示不全
+    不要强制 wall-btn 100% 宽，保持与输入框并排，按钮固定宽度 */
+ .wall-input-area {
+   gap: 8px;
+   padding: 0 2px;
+   max-width: 100%;
+ }
+ .wall-btn {
+   width: auto !important;
+   flex: 0 0 auto;
+   min-width: 72px;
+   max-width: 96px;
+   min-height: 48px;
+   padding: 12px 16px;
+   white-space: nowrap;
+ }
+ .open-my-msg-btn {
+   width: 100%;
+   min-height: 48px;
  }
 
  .liquid-light-orb{
@@ -2006,16 +2030,47 @@ body:before{
         .replace(/'/g, "&#039;");
     }
     /**
-     * 获取浏览器本地唯一客户端ID，用来区分是谁发布的留言，存在localStorage
+     * 获取浏览器本地唯一客户端ID，用来区分是谁发布的留言
+     * 优先 localStorage；在沙箱/无 allow-same-origin / 隐私模式等无法访问时回退到内存 ID
      * @returns {string} clientId 唯一标识
      */
     function getClientId() {
-      let clientId = localStorage.getItem('class_book_client_id');
-      if (!clientId) {
-        clientId = 'uid_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
-        localStorage.setItem('class_book_client_id', clientId);
+      const STORAGE_KEY = 'class_book_client_id';
+      const makeId = () => 'uid_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
+
+      // 沙箱 iframe（无 allow-same-origin）访问 localStorage 会抛 SecurityError
+      try {
+        if (typeof localStorage !== 'undefined') {
+          let clientId = localStorage.getItem(STORAGE_KEY);
+          if (!clientId) {
+            clientId = makeId();
+            localStorage.setItem(STORAGE_KEY, clientId);
+          }
+          return clientId;
+        }
+      } catch (e) {
+        // SecurityError / QuotaExceededError 等：忽略，走回退
       }
-      return clientId;
+
+      // 次选 sessionStorage（部分环境可用）
+      try {
+        if (typeof sessionStorage !== 'undefined') {
+          let clientId = sessionStorage.getItem(STORAGE_KEY);
+          if (!clientId) {
+            clientId = makeId();
+            sessionStorage.setItem(STORAGE_KEY, clientId);
+          }
+          return clientId;
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      // 最终回退：本次页面会话内存 ID（刷新后会变，但不会崩溃）
+      if (!window.__classBookClientId) {
+        window.__classBookClientId = makeId();
+      }
+      return window.__classBookClientId;
     }
     const CLIENT_ID = getClientId();
     /**
@@ -2414,7 +2469,12 @@ body:before{
       setTimeout(() => petal.remove(), 10000);
     }
     function startPetal() {
-      if (!petalTimer) petalTimer = setInterval(createPetal, 2500);
+      if (petalTimer) return;
+      // 低端机 / 移动端降低花瓣频率，减轻首屏与滚动压力
+      const isMobile = window.matchMedia('(max-width: 768px)').matches ||
+        /Android|iPhone|iPad|iPod|vivo|HUAWEI|Harmony/i.test(navigator.userAgent);
+      const gap = isMobile ? 4500 : 2500;
+      petalTimer = setInterval(createPetal, gap);
     }
     function stopPetal() {
       if (petalTimer) {
@@ -2610,29 +2670,40 @@ body:before{
      */
     async function loadMessages() {
       try {
-        const res = await fetch(API_URL);
-        if (!res.ok) throw new Error('请求失败');
+        const res = await fetch(API_URL, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' },
+          cache: 'no-store'
+        });
+        if (!res.ok) {
+          throw new Error('HTTP ' + res.status);
+        }
         const data = await res.json();
-        //【修改点】轮询触发，标记全部本地虚拟弹幕为待销毁，DOM不立刻删除，等待弹幕滑出容器后再清理
+        // 轮询触发：标记本地虚拟弹幕待销毁，等滑出后再清理
         markAllVirtualDanmakuNeedDestroy();
-        // 后端返回空数组，数据库已经没有留言，强制清空内存与页面真实弹幕DOM
-        if(Array.isArray(data) && data.length === 0){
+        if (Array.isArray(data) && data.length === 0) {
           allMessages = [];
           playIndex = 0;
-          danmakuContainer.querySelectorAll('.danmaku-item:not([data-local-virtual])').forEach(el=>el.remove());
+          danmakuContainer.querySelectorAll('.danmaku-item:not([data-local-virtual])').forEach(el => el.remove());
           wallTip.style.display = 'block';
           wallTip.textContent = '暂无留言，快来发布第一条回忆吧✨';
           wallTip.className = 'wall-tip';
-        }else{
+        } else if (Array.isArray(data)) {
           allMessages = data;
+          wallTip.style.display = 'none';
+        } else {
+          throw new Error('返回数据格式错误');
         }
         renderMyMessages(allMessages);
       } catch (err) {
-        console.error('加载留言失败:', err);
-        // 如果还没有任何留言数据，展示错误提示
+        // Failed to fetch：常见于本地预览、Functions 未部署、目录名写错（必须是 functions）
+        const isNetwork = err && (err.name === 'TypeError' || /Failed to fetch|NetworkError/i.test(String(err.message)));
+        console.warn('加载留言失败:', err);
         if (allMessages.length === 0) {
           wallTip.style.display = 'block';
-          wallTip.textContent = '加载失败，请刷新页面重试';
+          wallTip.textContent = isNetwork
+            ? '留言服务暂不可用（请确认已部署 Cloudflare Functions 且绑定 D1）'
+            : '加载失败，请刷新页面重试';
           wallTip.className = 'wall-tip error';
         }
       }
@@ -2688,18 +2759,27 @@ body:before{
         wallTip.style.display = 'none';
       });
       try {
-        // POST提交到云端数据库
         const res = await fetch(API_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
           body: JSON.stringify({ content: text, client_id: CLIENT_ID })
         });
-        const ret = await res.json();
-        if (!res.ok || ret.error) throw new Error(ret.error || '发布失败');
+        let ret = null;
+        try {
+          ret = await res.json();
+        } catch (_) {
+          ret = null;
+        }
+        if (!res.ok || (ret && ret.error)) {
+          throw new Error((ret && ret.error) || ('发布失败 HTTP ' + res.status));
+        }
         msgInput.value = '';
-        // 不手动修改allMessages；等待8秒轮询loadMessages()拉取真实数据
+        // 不手动改 allMessages，等轮询拉取真实数据
       } catch (err) {
-        alert('发布失败：' + err.message);
+        const isNetwork = err && (err.name === 'TypeError' || /Failed to fetch|NetworkError/i.test(String(err.message)));
+        alert(isNetwork
+          ? '发布失败：无法连接留言服务。请确认已部署到 Cloudflare Pages，且 functions/api/messages.js 与 D1 绑定（DB）配置正确。'
+          : ('发布失败：' + (err.message || err)));
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = '发布';
@@ -3815,16 +3895,50 @@ body::after{
   }
 </style>
 
-<audio id="audio-player" preload="metadata">
-  <source src="assets/music/youth.mp3" type="audio/mpeg">
-  你的浏览器不支持 HTML5 音频播放。
-</audio>
+
+<style>
+/* ========== 动画性能收敛：移动端降模糊、关装饰光球 ========== */
+@media (max-width: 768px) {
+  body::after,
+  body::before,
+  .liquid-light-orb {
+    display: none !important;
+    animation: none !important;
+  }
+  .danmaku-item,
+  .my-msg-modal-box {
+    backdrop-filter: blur(10px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(140%) !important;
+  }
+  /* 低端机减少入场 blur，保留透明度位移即可 */
+  .gallery-item:not(.visible),
+  .about-section:not(.visible),
+  .gallery-header:not(.visible),
+  .blessings:not(.visible),
+  .memory-section:not(.visible) {
+    filter: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .petal,
+  .danmaku-item,
+  .blessing-year,
+  body::after,
+  body::before,
+  .music-cover {
+    animation: none !important;
+  }
+}
+</style>
+
+<audio id="audio-player" preload="auto" playsinline></audio>
 
 <div id="musicCapsule" aria-label="音乐播放器" aria-expanded="false">
   <div class="music-capsule-icon" aria-hidden="true"></div>
 
   <div class="music-capsule-panel">
-    <img class="music-cover" src="assets/img/class01.jpg" alt="我们的青春封面">
+    <img class="music-cover" src="/assets/img/class01.jpg" alt="我们的青春封面" width="56" height="56">
 
     <div class="music-info">
       <div class="music-title">我们的青春</div>
@@ -3836,98 +3950,236 @@ body::after{
 </div>
 
 <script>
+/**
+ * iOS 26 Liquid Glass Music Capsule（内联，不依赖外部 js 文件）
+ * 播放列表 · 自动下一首 · 加载反馈 · Media Session
+ */
 (() => {
   'use strict';
 
+  const playlist = [
+    {
+      title: '我们的青春',
+      artist: '2026 Graduation',
+      src: 'assets/music/youth.mp3',
+      cover: 'assets/img/class01.jpg'
+    },
+    {
+      title: '毕业',
+      artist: 'Memory',
+      src: 'assets/music/graduation.mp3',
+      cover: 'assets/img/class01.jpg'
+    },
+    {
+      title: '未来可期',
+      artist: 'Class 2026',
+      src: 'assets/music/memory.mp3',
+      cover: 'assets/img/class01.jpg'
+    }
+  ];
+
+  const audio = document.getElementById('audio-player');
   const capsule = document.getElementById('musicCapsule');
   const playButton = document.getElementById('musicPlay');
-  const audio = document.getElementById('audio-player');
-  const status = document.getElementById('musicStatus');
+  const titleEl = document.querySelector('#musicCapsule .music-title');
+  const statusEl = document.getElementById('musicStatus');
+  const coverEl = document.querySelector('#musicCapsule .music-cover');
 
-  if (!capsule || !playButton || !audio) return;
+  if (!audio || !capsule || !playButton) {
+    console.warn('[Music Capsule] DOM missing');
+    return;
+  }
+
+  let currentIndex = 0;
+  let isLoading = false;
+  let isOpen = false;
 
   audio.volume = 0.8;
+  audio.setAttribute('playsinline', '');
+  audio.preload = 'auto';
 
-  const setOpen = (open) => {
-    capsule.classList.toggle('is-open', open);
-    capsule.setAttribute('aria-expanded', String(open));
-  };
+  function setOpen(next) {
+    isOpen = !!next;
+    capsule.classList.toggle('is-open', isOpen);
+    capsule.setAttribute('aria-expanded', String(isOpen));
+  }
 
-  const setPlayingUI = (playing) => {
+  function setPlayingUI(playing) {
     capsule.classList.toggle('is-playing', playing);
-    playButton.textContent = playing ? 'Ⅱ' : '▶';
+    if (!isLoading) {
+      playButton.textContent = playing ? 'Ⅱ' : '▶';
+    }
     playButton.setAttribute('aria-label', playing ? '暂停音乐' : '播放音乐');
     playButton.setAttribute('aria-pressed', String(playing));
+  }
 
-    if (status) {
-      status.textContent = playing ? '正在播放 · 我们的青春' : '2026 Graduation';
+  function setStatus(text) {
+    if (statusEl) statusEl.textContent = text;
+  }
+
+  function loadSong(index, autoplay) {
+    currentIndex = ((index % playlist.length) + playlist.length) % playlist.length;
+    const song = playlist[currentIndex];
+    audio.src = song.src;
+    if (titleEl) titleEl.textContent = song.title;
+    if (coverEl && song.cover) {
+      coverEl.src = song.cover;
+      coverEl.alt = song.title + ' 封面';
     }
-  };
+    setStatus(song.artist);
+    updateMediaSession();
+    if (autoplay) playMusic();
+  }
 
-  capsule.addEventListener('click', (event) => {
-    if (event.target.closest('#musicPlay')) return;
-    setOpen(!capsule.classList.contains('is-open'));
-  });
+  function waitForCanPlay(timeoutMs) {
+    timeoutMs = timeoutMs || 2500;
+    if (audio.readyState >= 3) return Promise.resolve();
+    return Promise.race([
+      new Promise(function (resolve) {
+        function done() {
+          audio.removeEventListener('canplay', done);
+          audio.removeEventListener('canplaythrough', done);
+          resolve();
+        }
+        audio.addEventListener('canplay', done, { once: true });
+        audio.addEventListener('canplaythrough', done, { once: true });
+      }),
+      new Promise(function (resolve) { setTimeout(resolve, timeoutMs); })
+    ]);
+  }
 
-  playButton.addEventListener('click', async (event) => {
-    event.stopPropagation();
-
+  async function playMusic() {
+    const song = playlist[currentIndex];
     try {
-      if (audio.paused) {
-        await audio.play();
-        setPlayingUI(true);
-      } else {
-        audio.pause();
-        setPlayingUI(false);
-      }
-    } catch (error) {
-      console.warn('[Music Capsule] 音乐播放失败：', error);
+      isLoading = true;
+      playButton.textContent = '…';
+      playButton.disabled = true;
+      setStatus('正在加载…');
+      if (audio.readyState < 2) audio.load();
+      await waitForCanPlay();
+      await audio.play();
+      setPlayingUI(true);
+      setStatus('正在播放 · ' + song.title);
+    } catch (err) {
+      console.warn('[Music Capsule] play failed:', err);
       setPlayingUI(false);
-      if (status) status.textContent = '无法播放，请检查 assets/music/youth.mp3';
+      setStatus('无法播放，请检查音频文件');
+    } finally {
+      isLoading = false;
+      playButton.disabled = false;
+      if (audio.paused) {
+        playButton.textContent = '▶';
+        setStatus(song.artist);
+      }
+    }
+  }
+
+  function pauseMusic() {
+    audio.pause();
+    setPlayingUI(false);
+    setStatus(playlist[currentIndex].artist);
+  }
+
+  function nextSong() {
+    loadSong(currentIndex + 1, true);
+  }
+
+  function prevSong() {
+    loadSong(currentIndex - 1, true);
+  }
+
+  function updateMediaSession() {
+    if (!('mediaSession' in navigator)) return;
+    const song = playlist[currentIndex];
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: song.title,
+        artist: song.artist,
+        album: '2026 Graduation',
+        artwork: [{ src: song.cover || 'assets/img/class01.jpg', sizes: '512x512', type: 'image/jpeg' }]
+      });
+      navigator.mediaSession.setActionHandler('play', function () { playMusic(); });
+      navigator.mediaSession.setActionHandler('pause', function () { pauseMusic(); });
+      navigator.mediaSession.setActionHandler('nexttrack', function () { nextSong(); });
+      navigator.mediaSession.setActionHandler('previoustrack', function () { prevSong(); });
+    } catch (err) {
+      console.warn('[Music Capsule] Media Session error:', err);
+    }
+  }
+
+  // 点击胶囊展开/收起（不要用 document 捕获阶段抢先关闭）
+  capsule.addEventListener('click', function (e) {
+    if (e.target.closest('#musicPlay')) return;
+    e.stopPropagation();
+    setOpen(!isOpen);
+  });
+
+  playButton.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (audio.paused) playMusic();
+    else pauseMusic();
+  });
+
+  audio.addEventListener('play', function () { setPlayingUI(true); });
+  audio.addEventListener('pause', function () {
+    if (!isLoading) setPlayingUI(false);
+  });
+  audio.addEventListener('ended', function () { nextSong(); });
+  audio.addEventListener('waiting', function () {
+    if (!audio.paused) setStatus('缓冲中…');
+  });
+  audio.addEventListener('playing', function () {
+    setStatus('正在播放 · ' + playlist[currentIndex].title);
+  });
+  audio.addEventListener('error', function () {
+    console.error('[Music Capsule] load error:', audio.src);
+    setPlayingUI(false);
+    setStatus('加载失败 · 自动跳过');
+    if (playlist.length > 1) {
+      setTimeout(function () { nextSong(); }, 800);
     }
   });
 
-  audio.addEventListener('play', () => setPlayingUI(true));
-  audio.addEventListener('pause', () => setPlayingUI(false));
-  audio.addEventListener('ended', () => {
-    setPlayingUI(false);
-    audio.currentTime = 0;
+  // 点击外部收起：用 click 冒泡阶段，避免与展开同一次 pointerdown 冲突
+  document.addEventListener('click', function (e) {
+    if (!capsule.contains(e.target)) setOpen(false);
   });
 
-  document.addEventListener('pointerdown', (event) => {
-    if (!capsule.contains(event.target)) setOpen(false);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') setOpen(false);
   });
 
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') setOpen(false);
-  });
-
-  capsule.addEventListener('pointerdown', () => {
+  capsule.addEventListener('pointerdown', function () {
     capsule.classList.add('is-pressed');
   });
-
-  const clearPressed = () => capsule.classList.remove('is-pressed');
+  function clearPressed() { capsule.classList.remove('is-pressed'); }
   capsule.addEventListener('pointerup', clearPressed);
   capsule.addEventListener('pointercancel', clearPressed);
   capsule.addEventListener('pointerleave', clearPressed);
 
-  let scrollTimer = null;
-  window.addEventListener('scroll', () => {
+  var scrollTimer = null;
+  window.addEventListener('scroll', function () {
     capsule.classList.toggle('is-dimmed', window.scrollY > 160);
     clearTimeout(scrollTimer);
-    scrollTimer = setTimeout(() => capsule.classList.remove('is-dimmed'), 500);
+    scrollTimer = setTimeout(function () {
+      capsule.classList.remove('is-dimmed');
+    }, 500);
   }, { passive: true });
 
-  capsule.addEventListener('pointermove', (event) => {
-    const rect = capsule.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width) * 100;
-    const y = ((event.clientY - rect.top) / rect.height) * 100;
-    capsule.style.setProperty('--glass-x', `${x}%`);
-    capsule.style.setProperty('--glass-y', `${y}%`);
+  capsule.addEventListener('pointermove', function (e) {
+    var rect = capsule.getBoundingClientRect();
+    var x = ((e.clientX - rect.left) / rect.width) * 100;
+    var y = ((e.clientY - rect.top) / rect.height) * 100;
+    capsule.style.setProperty('--glass-x', x + '%');
+    capsule.style.setProperty('--glass-y', y + '%');
   });
 
+  loadSong(0, false);
   setOpen(false);
   setPlayingUI(false);
+  window.__musicCapsuleReady = true;
+  console.log('🎵 Music Capsule Ready ·', playlist.length, 'tracks');
 })();
 </script>
 </body>
