@@ -1774,7 +1774,8 @@ body:before{
 }
 .photo-track-viewport{
   width:min(82vw, 1120px);
-  height:min(76vh, 760px);
+  height:min(76dvh, calc(100dvh - 170px));
+  max-height:calc(100dvh - 170px);
   min-width:0;
   overflow:hidden;
   touch-action:pan-y;
@@ -1799,11 +1800,12 @@ body:before{
   box-sizing:border-box;
 }
 .photo-slide img{
+  width:100%;
+  height:100%;
   max-width:100%;
   max-height:100%;
-  width:auto;
-  height:auto;
   object-fit:contain;
+  object-position:center;
   border-radius:24px;
   user-select:none;
   -webkit-user-drag:none;
@@ -1873,7 +1875,7 @@ body:before{
 }
 .photo-nav-prev span{ transform:rotate(-135deg) translate(-1px,-1px); }
 .photo-nav-next span{ transform:rotate(45deg) translate(-1px,-1px); }
-.photo-nav.is-disabled{ opacity:.24; pointer-events:none; }
+.photo-nav.is-disabled{ opacity:.24; pointer-events:auto; cursor:default; }
 .photo-viewer-hint{
   position:absolute;
   left:50%;
@@ -1909,8 +1911,8 @@ body:before{
   }
   .photo-track-viewport{
     width:calc(100vw - 24px);
-    height:calc(100dvh - 170px);
-    max-height:74vh;
+    height:calc(100dvh - 150px);
+    max-height:76dvh;
     border-radius:24px;
   }
   .photo-slide{ padding:8px; }
@@ -2361,16 +2363,31 @@ body:before{
 
     photoPrev.addEventListener('click', event => {
       event.stopPropagation();
+      if (activeIndex <= 0 || photoPrev.classList.contains('is-disabled')) return;
       goToPhoto(activeIndex - 1);
     });
 
     photoNext.addEventListener('click', event => {
       event.stopPropagation();
+      if (activeIndex >= activeGallery.length - 1 || photoNext.classList.contains('is-disabled')) return;
       goToPhoto(activeIndex + 1);
     });
 
     photoClose.addEventListener('click', closeGallery);
     photoViewer.querySelector('.photo-viewer-backdrop').addEventListener('click', closeGallery);
+
+    /* 点击图库中的“空白区域”直接退出：
+     * - 点击图片本身不会关闭；
+     * - 点击左右按钮不会关闭；
+     * - 点击顶部标题/关闭按钮不会被这里重复处理；
+     * - 点击图片周围的空白区域（包括桌面端图片上下左右留白）会关闭图库。
+     */
+    photoStage.addEventListener('click', event => {
+      if (isDraggingPhoto) return;
+      if (event.target.closest('.photo-nav')) return;
+      if (event.target.closest('img')) return;
+      closeGallery();
+    });
 
     document.addEventListener('keydown', event => {
       if (!photoViewer.classList.contains('is-open')) return;
