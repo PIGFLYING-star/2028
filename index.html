@@ -2297,7 +2297,7 @@ body:before{
       让努力成为一种常态<br>
       让优秀成为一种习惯
     </div>
-    <div class="signature">——黄欢</div>
+    <div class="signature">黄欢</div>
     <div class="divider-gold"></div>
   </div>
   <!-- ====================== 关于我们 ====================== -->
@@ -2403,13 +2403,13 @@ body:before{
       </div>
 
       <!-- 操场训练 → class04 系列 -->
-      <div class="gallery-item" data-gallery-group="training" data-gallery-title="砺训竞驰"
+      <div class="gallery-item" data-gallery-group="training" data-gallery-title="操场训练"
            data-gallery-images="/assets/img/class04.webp|/assets/img/class04-2.webp|/assets/img/class04-3.webp|/assets/img/class04-4.webp">
         <div class="gallery-glass-backdrop" aria-hidden="true"></div>
         <div class="gallery-photo-frame">
-          <img src="/assets/img/class04.webp" alt="砺训竞驰" loading="lazy" decoding="async">
+          <img src="/assets/img/class04.webp" alt="操场训练" loading="lazy" decoding="async">
         </div>
-        <div class="gallery-overlay"><strong>砺训竞驰</strong><span>汗水与坚持</span></div>
+        <div class="gallery-overlay"><strong>操场训练</strong><span>汗水与坚持</span></div>
       </div>
 
       <!-- 集体活动 → class05 系列 -->
@@ -2547,10 +2547,12 @@ body:before{
      * 全局配置常量
      * ============================================== */
     const API_URL = "/api/messages";     // Cloudflare Pages Functions留言接口地址
+    const _isMobilePerf = window.matchMedia('(max-width: 768px)').matches ||
+      /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
     const POLL_INTERVAL = 8000;          // 轮询后端获取留言间隔(毫秒)，用于同步其他用户消息
-    const MAX_LIVE_DANMAKU = 12;         // 屏幕上同时最多存在弹幕数量，防止DOM爆炸
-    const DANMAKU_GAP = 1200;            // 调度器生成一条弹幕的时间间隔（毫秒）
-    const VIRT_DANMAKU_SPEED = 120;      //【本地虚拟弹幕】像素/秒，向左滚动速度
+    const MAX_LIVE_DANMAKU = 12;         // 同屏最多弹幕数
+    const DANMAKU_GAP = 2000;            // 生成间隔 2s
+    const VIRT_DANMAKU_SPEED = _isMobilePerf ? 100 : 120;
     /* ==============================================
      * 工具函数模块
      * ============================================== */
@@ -2979,7 +2981,7 @@ body:before{
 
         img.addEventListener('error', () => {
           img.classList.add('is-broken', 'is-loaded');
-          img.alt = '图片暂时无法加载，请检查您的网络状况';
+          img.alt = '图片暂时无法加载';
           const slide = img.closest('.photo-slide');
           if (slide && window.__fitPhotoFrame) {
             slide.style.setProperty('--frame-width', '420px');
@@ -3089,7 +3091,7 @@ body:before{
       // 低端机 / 移动端降低花瓣频率，减轻首屏与滚动压力
       const isMobile = window.matchMedia('(max-width: 768px)').matches ||
         /Android|iPhone|iPad|iPod|vivo|HUAWEI|Harmony/i.test(navigator.userAgent);
-      const gap = isMobile ? 4500 : 2500;
+      const gap = isMobile ? 7000 : 2500;
       petalTimer = setInterval(createPetal, gap);
     }
     function stopPetal() {
@@ -4211,9 +4213,9 @@ body::after{
     --music-ease: cubic-bezier(0.32, 0.72, 0, 1);
     --music-spring: cubic-bezier(0.22, 1.2, 0.28, 1);
     --music-width: 360px;
-    --music-height: 74px;
+    --music-height: 78px;
     --music-width-full: min(380px, calc(100vw - 24px));
-    --music-height-full: 248px;
+    --music-height-full: 258px;
     --music-mini: 64px;
     --music-left: 28px;
     --music-bottom: 28px;
@@ -4529,7 +4531,7 @@ body::after{
   }
   @media (max-width: 768px) {
     :root {
-      --music-height-full: 240px;
+      --music-height-full: 250px;
     }
     #musicCapsule.is-open.is-expanded {
       border-radius: 26px;
@@ -4662,6 +4664,58 @@ body::after{
     overflow: hidden;
   }
 
+
+  
+  #musicCapsule.is-open:not(.is-expanded) .music-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0;
+    min-width: 0;
+  }
+  #musicCapsule.is-open:not(.is-expanded) .music-title {
+    font-size: 13px;
+    line-height: 1.2;
+  }
+  #musicCapsule.is-open:not(.is-expanded) .music-sub {
+    font-size: 10px;
+    line-height: 1.15;
+  }
+  #musicCapsule.is-open:not(.is-expanded) .music-artist {
+    font-size: 10px;
+    line-height: 1.15;
+  }
+
+.music-artist {
+    font-size: 10px;
+    line-height: 1.2;
+    color: rgba(20,20,20,.45);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    margin-top: 1px;
+  }
+  #musicCapsule.is-expanded .music-artist {
+    font-size: 10px;
+    color: rgba(20,20,20,.5);
+  }
+  #musicCapsule.is-expanded .music-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1px;
+    min-width: 0;
+  }
+  #musicCapsule.is-expanded .music-title {
+    font-size: 14px;
+    line-height: 1.2;
+  }
+  #musicCapsule.is-expanded .music-sub {
+    font-size: 11px;
+    line-height: 1.2;
+  }
+
   .music-title {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -4759,7 +4813,7 @@ body::after{
 
     #musicCapsule.is-open:not(.is-expanded) {
       width: calc(100vw - 32px);
-      height: 68px;
+      height: 76px;
     }
 
     #musicCapsule.is-open.is-expanded {
@@ -4841,6 +4895,7 @@ body::after{
       <div class="music-info">
         <div class="music-title">臻辉少年行</div>
         <div class="music-sub" id="musicStatus">2028 Graduation</div>
+        <div class="music-artist" id="musicArtist">欧雨馨，吴承恩，XXX</div>
       </div>
       <button class="music-play" id="musicPlay" type="button" aria-label="播放音乐" aria-pressed="false">▶</button>
     </div>
@@ -4886,21 +4941,21 @@ body::after{
   const playlist = [
     {
       title: '臻辉少年行',
-      artist: '2028 Graduation',
+      artist: '欧雨馨/吴承恩/钟历诚',
       src: '/assets/music/臻辉少年行.mp3',
       cover: '/assets/music/cover.webp',
       lrc: 'media/臻辉少年行.lrc'
     },
     {
       title: '再见',
-      artist: '2028 Graduation',
+      artist: '张震岳',
       src: '/assets/music/再见.mp3',
       cover: '/assets/music/cover.webp',
       lrc: 'media/再见.lrc'
     },
     {
       title: '未来可期',
-      artist: 'Class 2028',
+      artist: 'VØJ;',
       src: '/assets/music/memory.mp3',
       cover: '/assets/music/cover.webp',
       lrc: 'media/memory.lrc'
@@ -4913,6 +4968,7 @@ body::after{
   const playMain = document.getElementById('musicPlayMain');
   const titleEl = document.querySelector('#musicCapsule .music-title');
   const statusEl = document.getElementById('musicStatus');
+  const artistEl = document.getElementById('musicArtist');
   const coverEl = document.querySelector('#musicCapsule .music-cover');
   const progressEl = document.getElementById('musicProgress');
   const timeCurEl = document.getElementById('musicTimeCur');
@@ -5036,6 +5092,7 @@ body::after{
     const song = playlist[currentIndex];
     audio.src = song.src;
     if (titleEl) titleEl.textContent = song.title;
+    if (artistEl) artistEl.textContent = song.artist || '';
     if (coverEl && song.cover) {
       coverEl.src = song.cover;
       coverEl.alt = song.title + ' 封面';
@@ -5304,7 +5361,7 @@ body::after{
   // —— 功能2：时间卡片 → 弹窗（对齐「我的留言」） ——
   var MONTH_EVENTS = {
     2026: [
-      '班级组建，第一次班会', '定班训与班徽', '开学典礼合影', '春季运动会',
+      '班级组建，第一次军训，第一次班会', '定班训与班徽', '开学典礼合影', '春季运动会',
       '期中复习互助', '班级聚餐', '暑期社会实践', '返校军训回顾',
       '中秋班级晚会', '秋季运动会', '期末冲刺周', '年度总结表彰'
     ],
@@ -5386,6 +5443,80 @@ body::after{
   });
 })();
 </script>
+
+<style id="mobile-perf-opt">
+/* 移动端性能优化：不改功能/视觉逻辑，只降 GPU 与主线程压力 */
+@media (max-width: 768px) {
+  .about-section,
+  .gallery-grid,
+  .blessings,
+  .memory-section,
+  .timeline,
+  .wall-section,
+  .footer {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 280px;
+  }
+  .tl-card,
+  .gallery-item,
+  .message-card,
+  .wall-panel,
+  .danmaku-item {
+    contain: layout style;
+  }
+  /* 玻璃模糊略降，观感仍在，合成成本明显下降 */
+  .tl-card {
+    backdrop-filter: blur(12px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(150%) !important;
+  }
+  #musicCapsule {
+    backdrop-filter: blur(18px) saturate(160%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(160%) !important;
+  }
+  body::before,
+  body::after,
+  .liquid-light-orb,
+  .hero::after {
+    opacity: 0.35 !important;
+    animation-duration: 24s !important;
+  }
+  .gallery-item,
+  .tl-item,
+  .message-card {
+    will-change: auto;
+  }
+  .gallery-item.visible:hover,
+  .tl-item.is-active .tl-card {
+    transform: none;
+  }
+  /* 滚动入场：更轻 */
+  .about-section,
+  .gallery-header,
+  .gallery-item,
+  .blessings,
+  .memory-section,
+  .timeline-header {
+    filter: blur(2px) !important;
+    transform: translateY(28px) scale(0.98) !important;
+  }
+  .about-section.visible,
+  .gallery-header.visible,
+  .gallery-item.visible,
+  .blessings.visible,
+  .memory-section.visible,
+  .timeline-header.visible {
+    filter: blur(0) !important;
+    transform: none !important;
+  }
+}
+@media (max-width: 768px) and (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>
+
 </body>
 </html>
 
