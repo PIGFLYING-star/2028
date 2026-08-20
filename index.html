@@ -121,15 +121,16 @@
       letter-spacing: 8px;
       text-transform: uppercase;
     }
-    /* ====================== 时间线模块 ====================== */
+    /* ====================== 时间线 · iOS Liquid Glass 果味版 ====================== */
     .timeline-section {
-      padding: 20px 20px 50px;
-      max-width: 720px;
+      padding: 32px 20px 72px;
+      max-width: 780px;
       margin: 0 auto;
+      position: relative;
     }
     .timeline-header {
       text-align: center;
-      margin-bottom: 28px;
+      margin-bottom: 40px;
       opacity: 0;
       transform: translateY(30px);
       transition: opacity 0.8s ease, transform 0.8s ease;
@@ -151,60 +152,287 @@
     }
     .timeline {
       position: relative;
-      padding: 8px 0 8px 28px;
+      padding: 8px 0;
     }
-    .timeline::before {
-      content: '';
+    /* 轨道 */
+    .timeline-track {
       position: absolute;
-      left: 7px;
-      top: 8px;
-      bottom: 8px;
+      left: 29px;
+      top: 32px;
+      bottom: 32px;
       width: 2px;
-      background: linear-gradient(180deg, var(--gold), rgba(201,168,76,0.15));
-      border-radius: 1px;
+      border-radius: 999px;
+      background: rgba(201,168,76,0.14);
+      overflow: hidden;
+      z-index: 0;
     }
+    .timeline-progress {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 0%;
+      border-radius: inherit;
+      background: linear-gradient(180deg, #f0e0b0 0%, var(--gold) 45%, #a67c2a 100%);
+      box-shadow: 0 0 10px rgba(201,168,76,0.5), 0 0 22px rgba(201,168,76,0.22);
+      will-change: height;
+    }
+    /* 条目：独立果味弹簧，不走全局 blur 入场 */
     .tl-item {
       position: relative;
-      padding: 0 0 36px 20px;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 60px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 0 0 36px 0;
       opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 0.8s ease, transform 0.8s ease;
+      transform: translate3d(0, 56px, 0) scale(0.92);
+      filter: blur(0);
+      will-change: transform, opacity;
     }
+    .tl-item:last-child { padding-bottom: 0; }
     .tl-item.visible {
+      animation: tlFruitIn 0.95s cubic-bezier(0.22, 1.25, 0.36, 1) both;
+    }
+    .tl-item:nth-child(2 of .tl-item).visible,
+    .tl-item[data-tl-index="0"].visible { animation-delay: 0.04s; }
+    .tl-item[data-tl-index="1"].visible { animation-delay: 0.16s; }
+    .tl-item[data-tl-index="2"].visible { animation-delay: 0.28s; }
+    @keyframes tlFruitIn {
+      0% {
+        opacity: 0;
+        transform: translate3d(0, 52px, 0) scale(0.9);
+      }
+      55% {
+        opacity: 1;
+        transform: translate3d(0, -7px, 0) scale(1.025);
+      }
+      78% {
+        transform: translate3d(0, 2px, 0) scale(0.992);
+      }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+    }
+    /* 节点 */
+    .tl-dot {
+      position: relative;
+      width: 60px;
+      height: 60px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .tl-dot-core {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 32% 28%, #fff6d6 0%, #e8d5a3 28%, var(--gold) 62%, #9a7428 100%);
+      border: 1.5px solid rgba(255,255,255,0.85);
+      box-shadow:
+        0 0 0 5px rgba(201,168,76,0.14),
+        0 4px 14px rgba(201,168,76,0.38),
+        inset 0 1px 2px rgba(255,255,255,0.9);
+      z-index: 2;
+      transition:
+        transform 0.65s cubic-bezier(0.22, 1.4, 0.36, 1),
+        box-shadow 0.5s ease;
+    }
+    .tl-dot-ring {
+      position: absolute;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(201,168,76,0.4);
+      opacity: 0;
+      transform: scale(0.5);
+      transition:
+        opacity 0.55s ease,
+        transform 0.7s cubic-bezier(0.22, 1.3, 0.36, 1);
+    }
+    .tl-item.visible .tl-dot-core {
+      transform: scale(1);
+    }
+    .tl-item.visible .tl-dot-ring {
+      opacity: 0.85;
+      transform: scale(1);
+    }
+    .tl-item.is-active .tl-dot-core {
+      transform: scale(1.22);
+      box-shadow:
+        0 0 0 7px rgba(201,168,76,0.2),
+        0 0 20px rgba(201,168,76,0.45),
+        0 6px 18px rgba(201,168,76,0.35),
+        inset 0 1px 2px rgba(255,255,255,0.95);
+    }
+    .tl-item.is-active .tl-dot-ring {
       opacity: 1;
-      transform: translateY(0);
+      animation: tlRingBreath 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
-    .tl-item:last-child {
-      padding-bottom: 0;
+    @keyframes tlRingBreath {
+      0%, 100% { transform: scale(1); opacity: 0.75; border-color: rgba(201,168,76,0.45); }
+      50% { transform: scale(1.35); opacity: 0.15; border-color: rgba(201,168,76,0.15); }
     }
-    .tl-item::before {
+    /* ========== Liquid Glass 卡片 · 多层折射 ========== */
+    .tl-card {
+      position: relative;
+      padding: 20px 22px 20px 24px;
+      border-radius: 26px;
+      isolation: isolate;
+      overflow: hidden;
+      /* 透亮玻璃主体 */
+      background:
+        linear-gradient(
+          155deg,
+          rgba(255,255,255,0.72) 0%,
+          rgba(255,255,255,0.38) 38%,
+          rgba(255,255,255,0.16) 72%,
+          rgba(255,248,230,0.22) 100%
+        );
+      border: 1px solid rgba(255,255,255,0.62);
+      backdrop-filter: blur(36px) saturate(185%) brightness(1.05);
+      -webkit-backdrop-filter: blur(36px) saturate(185%) brightness(1.05);
+      box-shadow:
+        0 20px 50px rgba(0,0,0,0.07),
+        0 4px 14px rgba(0,0,0,0.04),
+        inset 0 1.5px 0 rgba(255,255,255,0.95),
+        inset 0 -1px 0 rgba(255,255,255,0.25),
+        inset 0 0 0 1px rgba(255,255,255,0.12);
+      transform: translate3d(0, 0, 0) scale(1);
+      transform-origin: left center;
+      transition:
+        transform 0.7s cubic-bezier(0.22, 1.35, 0.36, 1),
+        box-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 0.4s ease,
+        background 0.45s ease;
+    }
+    /* 顶缘高光折射 */
+    .tl-card::before {
       content: '';
       position: absolute;
-      left: -21px;
-      top: 6px;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: var(--gold);
-      box-shadow: 0 0 0 4px rgba(201,168,76,0.15);
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      background:
+        radial-gradient(90% 60% at 18% -5%, rgba(255,255,255,0.85), transparent 48%),
+        radial-gradient(50% 40% at 85% 100%, rgba(201,168,76,0.1), transparent 55%),
+        linear-gradient(125deg, rgba(255,255,255,0.35) 0%, transparent 28%, transparent 70%, rgba(255,255,255,0.12) 100%);
+      opacity: 1;
+      z-index: 0;
+    }
+    /* 内缘 specular 描边 */
+    .tl-card::after {
+      content: '';
+      position: absolute;
+      inset: 1px;
+      border-radius: calc(26px - 1px);
+      pointer-events: none;
+      border: 1px solid rgba(255,255,255,0.35);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
+      z-index: 0;
+    }
+    .tl-card > * {
+      position: relative;
+      z-index: 1;
+    }
+    /* 激活：果味上弹 */
+    .tl-item.is-active .tl-card {
+      transform: translate3d(0, -5px, 0) scale(1.018);
+      border-color: rgba(255,255,255,0.75);
+      background:
+        linear-gradient(
+          155deg,
+          rgba(255,255,255,0.82) 0%,
+          rgba(255,255,255,0.48) 40%,
+          rgba(255,248,230,0.32) 100%
+        );
+      box-shadow:
+        0 28px 64px rgba(201,168,76,0.16),
+        0 12px 28px rgba(0,0,0,0.06),
+        0 0 0 1px rgba(201,168,76,0.18),
+        inset 0 1.5px 0 rgba(255,255,255,1),
+        inset 0 -1px 0 rgba(255,255,255,0.3);
+    }
+    @media (hover: hover) {
+      .tl-item.visible .tl-card:hover {
+        transform: translate3d(0, -6px, 0) scale(1.022);
+        box-shadow:
+          0 30px 70px rgba(0,0,0,0.1),
+          0 10px 24px rgba(201,168,76,0.12),
+          inset 0 1.5px 0 rgba(255,255,255,1),
+          inset 0 -1px 0 rgba(255,255,255,0.28);
+      }
+      .tl-item.is-active .tl-card:hover {
+        transform: translate3d(0, -8px, 0) scale(1.028);
+      }
     }
     .tl-year {
-      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      font-size: 11px;
       font-weight: 700;
-      color: var(--gold);
-      letter-spacing: 0.12em;
-      margin-bottom: 4px;
+      color: #9a7428;
+      letter-spacing: 0.16em;
+      margin-bottom: 10px;
+      padding: 4px 11px;
+      border-radius: 999px;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.7), rgba(201,168,76,0.18));
+      border: 1px solid rgba(201,168,76,0.28);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
     }
     .tl-title {
-      font-size: 17px;
+      font-size: clamp(16px, 3.6vw, 19px);
       font-weight: 700;
       color: var(--dark);
-      margin-bottom: 4px;
+      margin-bottom: 8px;
+      letter-spacing: 0.06em;
+      line-height: 1.35;
     }
     .tl-desc {
       font-size: 14px;
-      color: #666;
-      line-height: 1.7;
+      color: #5a5a5a;
+      line-height: 1.8;
+    }
+    @media (max-width: 768px) {
+      .timeline-track { left: 25px; }
+      .tl-item {
+        grid-template-columns: 52px 1fr;
+        gap: 8px;
+        padding-bottom: 28px;
+      }
+      .tl-dot { width: 52px; height: 52px; }
+      .tl-dot-core { width: 14px; height: 14px; }
+      .tl-dot-ring { width: 30px; height: 30px; }
+      .tl-card {
+        padding: 16px 16px 16px 18px;
+        border-radius: 22px;
+        backdrop-filter: blur(24px) saturate(170%);
+        -webkit-backdrop-filter: blur(24px) saturate(170%);
+      }
+      .tl-card::after { border-radius: 21px; }
+      .tl-item.is-active .tl-card {
+        transform: translate3d(0, -3px, 0) scale(1.012);
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .tl-item,
+      .tl-item.visible,
+      .tl-dot-core,
+      .tl-dot-ring,
+      .tl-card,
+      .timeline-progress {
+        animation: none !important;
+        transition: none !important;
+        filter: none !important;
+        transform: none !important;
+        opacity: 1 !important;
+      }
     }
     /* ====================== 班级相册模块 ====================== */
     .gallery-section {
@@ -1041,8 +1269,7 @@ body{
 .gallery-item,
 .blessings,
 .memory-section,
-.timeline-header,
-.tl-item{
+.timeline-header{
   transform:
     translateY(80px)
     scale(.92)!important;
@@ -1058,8 +1285,7 @@ body{
 .gallery-item.visible,
 .blessings.visible,
 .memory-section.visible,
-.timeline-header.visible,
-.tl-item.visible{
+.timeline-header.visible{
   transform:
     translateY(0)
     scale(1)!important;
@@ -1941,21 +2167,45 @@ body:before{
       <div class="timeline-title">我们的时光</div>
       <div class="timeline-sub">/ TIMELINE</div>
     </div>
-    <div class="timeline">
-      <div class="tl-item">
-        <div class="tl-year">2026</div>
-        <div class="tl-title">初识 · 启程</div>
-        <div class="tl-desc">从陌生到熟悉，教室里第一次响起「臻辉班」的名字。努力，从这一天开始成为日常。</div>
+    <div class="timeline" id="timelineRoot">
+      <div class="timeline-track" aria-hidden="true">
+        <div class="timeline-progress" id="timelineProgress"></div>
       </div>
-      <div class="tl-item">
-        <div class="tl-year">2027</div>
-        <div class="tl-title">并肩 · 成长</div>
-        <div class="tl-desc">课堂、操场、活动与一次次考试。汗水、笑声、互相打气——我们把优秀养成了习惯。</div>
+
+      <div class="tl-item" data-tl-index="0">
+        <div class="tl-dot" aria-hidden="true">
+          <span class="tl-dot-ring"></span>
+          <span class="tl-dot-core"></span>
+        </div>
+        <div class="tl-card">
+          <div class="tl-year">2026</div>
+          <div class="tl-title">初识 · 启程</div>
+          <div class="tl-desc">从陌生到熟悉，教室里第一次响起「臻辉班」的名字。努力，从这一天开始成为日常。</div>
+        </div>
       </div>
-      <div class="tl-item">
-        <div class="tl-year">2028</div>
-        <div class="tl-title">启封 · 远行</div>
-        <div class="tl-desc">新岁启封，华章再续。愿我们顶峰相见，学业精进，未来璀璨。</div>
+
+      <div class="tl-item" data-tl-index="1">
+        <div class="tl-dot" aria-hidden="true">
+          <span class="tl-dot-ring"></span>
+          <span class="tl-dot-core"></span>
+        </div>
+        <div class="tl-card">
+          <div class="tl-year">2027</div>
+          <div class="tl-title">并肩 · 成长</div>
+          <div class="tl-desc">课堂、操场、活动与一次次考试。汗水、笑声、互相打气——我们把优秀养成了习惯。</div>
+        </div>
+      </div>
+
+      <div class="tl-item" data-tl-index="2">
+        <div class="tl-dot" aria-hidden="true">
+          <span class="tl-dot-ring"></span>
+          <span class="tl-dot-core"></span>
+        </div>
+        <div class="tl-card">
+          <div class="tl-year">2028</div>
+          <div class="tl-title">启封 · 远行</div>
+          <div class="tl-desc">新岁启封，华章再续。愿我们顶峰相见，学业精进，未来璀璨。</div>
+        </div>
       </div>
     </div>
   </div>
@@ -2322,6 +2572,75 @@ body:before{
     // 将需要滚动入场的DOM全部注册观察
     document.querySelectorAll('.about-section, .gallery-header, .gallery-item, .blessings, .memory-section, .timeline-header, .tl-item')
       .forEach(el => observer.observe(el));
+
+    /* ==============================================
+     * 时间线：滚动进度线（缓动插值）+ 当前节点高亮
+     * ============================================== */
+    (function initTimelineScroll() {
+      const root = document.getElementById('timelineRoot');
+      const progress = document.getElementById('timelineProgress');
+      if (!root || !progress) return;
+
+      const items = Array.from(root.querySelectorAll('.tl-item'));
+      if (!items.length) return;
+
+      let current = 0;
+      let target = 0;
+      let rafId = 0;
+      let activeIdx = -1;
+
+      function computeTarget() {
+        const rootRect = root.getBoundingClientRect();
+        const vh = window.innerHeight || document.documentElement.clientHeight;
+        const startY = vh * 0.52;
+        const travel = Math.max(rootRect.height - vh * 0.2, 1);
+        const scrolled = startY - rootRect.top;
+        target = Math.max(0, Math.min(1, scrolled / travel));
+
+        const center = vh * 0.42;
+        let best = -1;
+        let bestDist = Infinity;
+        items.forEach((item, i) => {
+          const r = item.getBoundingClientRect();
+          const mid = r.top + r.height * 0.3;
+          const dist = Math.abs(mid - center);
+          if (r.top < vh * 0.75 && r.bottom > vh * 0.15 && dist < bestDist) {
+            bestDist = dist;
+            best = i;
+          }
+        });
+        if (best !== activeIdx) {
+          activeIdx = best;
+          items.forEach((item, i) => item.classList.toggle('is-active', i === best));
+        }
+      }
+
+      function tick() {
+        // 果味缓动：接近目标时减速
+        const diff = target - current;
+        current += diff * 0.12;
+        if (Math.abs(diff) < 0.0008) current = target;
+        progress.style.height = (current * 100).toFixed(3) + '%';
+        if (Math.abs(target - current) > 0.0008) {
+          rafId = requestAnimationFrame(tick);
+        } else {
+          rafId = 0;
+        }
+      }
+
+      function onScroll() {
+        computeTarget();
+        if (!rafId) rafId = requestAnimationFrame(tick);
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+      computeTarget();
+      current = target;
+      progress.style.height = (current * 100).toFixed(3) + '%';
+      setTimeout(onScroll, 350);
+    })();
+
     /* ==============================================
      * iOS Photos 风格独立图库查看器
      * 每一个 .gallery-item 都有自己的图库数组，
@@ -3162,8 +3481,7 @@ body::after{
 .gallery-header,
 .blessings,
 .memory-section,
-.timeline-header,
-.tl-item{
+.timeline-header{
  will-change:transform,opacity,filter;
 }
 
@@ -3172,8 +3490,7 @@ body::after{
 .gallery-header.visible,
 .blessings.visible,
 .memory-section.visible,
-.timeline-header.visible,
-.tl-item.visible{
+.timeline-header.visible{
  animation:iosSpring .9s var(--glass-ease) both;
 }
 
@@ -4133,7 +4450,7 @@ body::after{
 
     <div class="music-info">
       <div class="music-title">我们的青春</div>
-      <div class="music-sub" id="musicStatus">2028 Graduation</div>
+      <div class="music-sub" id="musicStatus">2026 Graduation</div>
     </div>
 
     <button class="music-play" id="musicPlay" type="button" aria-label="播放音乐" aria-pressed="false">▶</button>
@@ -4151,7 +4468,7 @@ body::after{
   const playlist = [
     {
       title: '我们的青春',
-      artist: '2028 Graduation',
+      artist: '2026 Graduation',
       src: '/assets/music/youth.mp3',
       cover: '/assets/music/cover.webp'
     },
@@ -4163,7 +4480,7 @@ body::after{
     },
     {
       title: '未来可期',
-      artist: 'Class 2028',
+      artist: 'Class 2026',
       src: '/assets/music/memory.mp3',
       cover: '/assets/music/cover.webp'
     }
