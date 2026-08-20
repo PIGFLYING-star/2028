@@ -121,6 +121,91 @@
       letter-spacing: 8px;
       text-transform: uppercase;
     }
+    /* ====================== 时间线模块 ====================== */
+    .timeline-section {
+      padding: 20px 20px 50px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .timeline-header {
+      text-align: center;
+      margin-bottom: 28px;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .timeline-header.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .timeline-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 6px;
+    }
+    .timeline-sub {
+      font-size: 12px;
+      color: var(--text-sub);
+      letter-spacing: 3px;
+    }
+    .timeline {
+      position: relative;
+      padding: 8px 0 8px 28px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      background: linear-gradient(180deg, var(--gold), rgba(201,168,76,0.15));
+      border-radius: 1px;
+    }
+    .tl-item {
+      position: relative;
+      padding: 0 0 36px 20px;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .tl-item.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .tl-item:last-child {
+      padding-bottom: 0;
+    }
+    .tl-item::before {
+      content: '';
+      position: absolute;
+      left: -21px;
+      top: 6px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 0 4px rgba(201,168,76,0.15);
+    }
+    .tl-year {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.12em;
+      margin-bottom: 4px;
+    }
+    .tl-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 4px;
+    }
+    .tl-desc {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.7;
+    }
     /* ====================== 班级相册模块 ====================== */
     .gallery-section {
       padding: 20px 20px 60px;
@@ -955,7 +1040,9 @@ body{
 .gallery-header,
 .gallery-item,
 .blessings,
-.memory-section{
+.memory-section,
+.timeline-header,
+.tl-item{
   transform:
     translateY(80px)
     scale(.92)!important;
@@ -970,7 +1057,9 @@ body{
 .gallery-header.visible,
 .gallery-item.visible,
 .blessings.visible,
-.memory-section.visible{
+.memory-section.visible,
+.timeline-header.visible,
+.tl-item.visible{
   transform:
     translateY(0)
     scale(1)!important;
@@ -1846,6 +1935,30 @@ body:before{
     <div class="about-title">关于我们</div>
     <div class="about-sub">ABOUT US</div>
   </div>
+  <!-- ====================== 时间线 ====================== -->
+  <div class="timeline-section" id="timeline">
+    <div class="timeline-header">
+      <div class="timeline-title">我们的时光</div>
+      <div class="timeline-sub">/ TIMELINE</div>
+    </div>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-year">2026</div>
+        <div class="tl-title">初识 · 启程</div>
+        <div class="tl-desc">从陌生到熟悉，教室里第一次响起「臻辉班」的名字。努力，从这一天开始成为日常。</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-year">2027</div>
+        <div class="tl-title">并肩 · 成长</div>
+        <div class="tl-desc">课堂、操场、活动与一次次考试。汗水、笑声、互相打气——我们把优秀养成了习惯。</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-year">2028</div>
+        <div class="tl-title">启封 · 远行</div>
+        <div class="tl-desc">新岁启封，华章再续。愿我们顶峰相见，学业精进，未来璀璨。</div>
+      </div>
+    </div>
+  </div>
   <!-- ====================== 班级相册，本地图片 assets/img/ ====================== -->
   <div class="gallery-section">
     <div class="gallery-header">
@@ -2207,7 +2320,7 @@ body:before{
       });
     }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
     // 将需要滚动入场的DOM全部注册观察
-    document.querySelectorAll('.about-section, .gallery-header, .gallery-item, .blessings, .memory-section')
+    document.querySelectorAll('.about-section, .gallery-header, .gallery-item, .blessings, .memory-section, .timeline-header, .tl-item')
       .forEach(el => observer.observe(el));
     /* ==============================================
      * iOS Photos 风格独立图库查看器
@@ -3048,7 +3161,9 @@ body::after{
 .about-section,
 .gallery-header,
 .blessings,
-.memory-section{
+.memory-section,
+.timeline-header,
+.tl-item{
  will-change:transform,opacity,filter;
 }
 
@@ -3056,7 +3171,9 @@ body::after{
 .about-section.visible,
 .gallery-header.visible,
 .blessings.visible,
-.memory-section.visible{
+.memory-section.visible,
+.timeline-header.visible,
+.tl-item.visible{
  animation:iosSpring .9s var(--glass-ease) both;
 }
 
@@ -3987,7 +4104,9 @@ body::after{
   .about-section:not(.visible),
   .gallery-header:not(.visible),
   .blessings:not(.visible),
-  .memory-section:not(.visible) {
+  .memory-section:not(.visible),
+  .timeline-header:not(.visible),
+  .tl-item:not(.visible) {
     filter: none !important;
   }
 }
@@ -4014,7 +4133,7 @@ body::after{
 
     <div class="music-info">
       <div class="music-title">我们的青春</div>
-      <div class="music-sub" id="musicStatus">2026 Graduation</div>
+      <div class="music-sub" id="musicStatus">2028 Graduation</div>
     </div>
 
     <button class="music-play" id="musicPlay" type="button" aria-label="播放音乐" aria-pressed="false">▶</button>
@@ -4032,7 +4151,7 @@ body::after{
   const playlist = [
     {
       title: '我们的青春',
-      artist: '2026 Graduation',
+      artist: '2028 Graduation',
       src: '/assets/music/youth.mp3',
       cover: '/assets/music/cover.webp'
     },
@@ -4044,7 +4163,7 @@ body::after{
     },
     {
       title: '未来可期',
-      artist: 'Class 2026',
+      artist: 'Class 2028',
       src: '/assets/music/memory.mp3',
       cover: '/assets/music/cover.webp'
     }
