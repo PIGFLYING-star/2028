@@ -399,6 +399,102 @@
       color: #5a5a5a;
       line-height: 1.8;
     }
+    /* 【功能2】时间卡片：提示文字 + 弹窗（对齐「我的留言」交互） */
+    .tl-hint {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--gold);
+      letter-spacing: 0.12em;
+      opacity: 1;
+      font-weight: 600;
+    }
+    .tl-card {
+      cursor: pointer;
+    }
+    /* 月度时间轴弹窗：复用 my-msg-modal 交互模式 */
+    .tl-month-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 920;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      background: rgba(0,0,0,0.45);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    .tl-month-modal.active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+    .tl-month-modal-box {
+      width: 100%;
+      max-width: 620px;
+      max-height: 80vh;
+      background: #fafafa;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      transform: translateY(20px) scale(0.97);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .tl-month-modal.active .tl-month-modal-box {
+      transform: translateY(0) scale(1);
+    }
+    .tl-month-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      background: linear-gradient(90deg, rgba(201,168,76,0.08), transparent);
+      border-bottom: 1px solid var(--border);
+    }
+    .tl-month-modal-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    .tl-month-modal-close {
+      border: none;
+      background: none;
+      font-size: 22px;
+      color: var(--text-sub);
+      cursor: pointer;
+      line-height: 1;
+      padding: 2px 6px;
+      border-radius: 6px;
+      -webkit-appearance: none;
+    }
+    .tl-month-modal-body {
+      overflow-y: auto;
+      flex: 1;
+      -webkit-overflow-scrolling: touch;
+      padding: 8px 0 16px;
+    }
+    .tl-month {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 12px;
+      padding: 12px 20px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .tl-month:last-child { border-bottom: none; }
+    .tl-month-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+    .tl-month-event {
+      font-size: 14px;
+      color: var(--text-main);
+      line-height: 1.5;
+    }
     @media (max-width: 768px) {
       .timeline-track { left: 25px; }
       .tl-item {
@@ -583,11 +679,40 @@
       background: rgba(201,168,76,0.08);
       transition: var(--transition);
     }
+    /* 【功能3】祝福语标签滚动入场 */
+    .bless-tag[data-bless-enter] {
+      opacity: 0 !important;
+      transform: translateY(22px) scale(0.9) !important;
+      transition:
+        opacity 0.75s cubic-bezier(0.22, 1.2, 0.36, 1),
+        transform 0.8s cubic-bezier(0.22, 1.3, 0.36, 1),
+        background 0.3s ease,
+        color 0.3s ease !important;
+    }
+    .bless-tag[data-bless-enter].is-in {
+      opacity: 1 !important;
+      transform: translateY(0) scale(1) !important;
+    }
+    .bless-tag[data-bless-enter]:nth-child(1) { transition-delay: 0.05s !important; }
+    .bless-tag[data-bless-enter]:nth-child(2) { transition-delay: 0.12s !important; }
+    .bless-tag[data-bless-enter]:nth-child(3) { transition-delay: 0.19s !important; }
+    .bless-tag[data-bless-enter]:nth-child(4) { transition-delay: 0.26s !important; }
+    .bless-tag[data-bless-enter]:nth-child(5) { transition-delay: 0.33s !important; }
     @media (hover: hover) {
       .bless-tag:hover {
         background: var(--gold);
         color: #fff;
         transform: translateY(-2px);
+      }
+      .bless-tag[data-bless-enter].is-in:hover {
+        transform: translateY(-2px) scale(1) !important;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .bless-tag[data-bless-enter] {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
       }
     }
     /* ====================== 回忆标题区块 ====================== */
@@ -2177,10 +2302,11 @@ body:before{
           <span class="tl-dot-ring"></span>
           <span class="tl-dot-core"></span>
         </div>
-        <div class="tl-card">
+        <div class="tl-card" data-tl-year="2026" role="button" tabindex="0">
           <div class="tl-year">2026</div>
           <div class="tl-title">初识 · 启程</div>
           <div class="tl-desc">从陌生到熟悉，教室里第一次响起「臻辉班」的名字。努力，从这一天开始成为日常。</div>
+          <div class="tl-hint">点击查看更多</div>
         </div>
       </div>
 
@@ -2189,10 +2315,11 @@ body:before{
           <span class="tl-dot-ring"></span>
           <span class="tl-dot-core"></span>
         </div>
-        <div class="tl-card">
+        <div class="tl-card" data-tl-year="2027" role="button" tabindex="0">
           <div class="tl-year">2027</div>
           <div class="tl-title">并肩 · 成长</div>
           <div class="tl-desc">课堂、操场、活动与一次次考试。汗水、笑声、互相打气——我们把优秀养成了习惯。</div>
+          <div class="tl-hint">点击查看更多</div>
         </div>
       </div>
 
@@ -2201,10 +2328,11 @@ body:before{
           <span class="tl-dot-ring"></span>
           <span class="tl-dot-core"></span>
         </div>
-        <div class="tl-card">
+        <div class="tl-card" data-tl-year="2028" role="button" tabindex="0">
           <div class="tl-year">2028</div>
           <div class="tl-title">启封 · 远行</div>
           <div class="tl-desc">新岁启封，华章再续。愿我们顶峰相见，学业精进，未来璀璨。</div>
+          <div class="tl-hint">点击查看更多</div>
         </div>
       </div>
     </div>
@@ -2288,11 +2416,11 @@ body:before{
     <div class="blessing-line">同心聚力，续写荣光</div>
     <div class="blessing-year">2026</div>
     <div class="blessing-tags">
-      <span class="bless-tag">骐骥驰骋</span>
-      <span class="bless-tag">势不可挡</span>
-      <span class="bless-tag">平安喜乐</span>
-      <span class="bless-tag">前程似锦</span>
-      <span class="bless-tag">万事胜意</span>
+      <span class="bless-tag" data-bless-enter>骐骥驰骋</span>
+      <span class="bless-tag" data-bless-enter>势不可挡</span>
+      <span class="bless-tag" data-bless-enter>平安喜乐</span>
+      <span class="bless-tag" data-bless-enter>前程似锦</span>
+      <span class="bless-tag" data-bless-enter>万事胜意</span>
     </div>
   </div>
   <!-- ====================== 回忆标题 ====================== -->
@@ -2342,6 +2470,17 @@ body:before{
       <div class="my-msg-modal-body" id="modalMyMsgBody">
         <div class="my-msg-empty">暂无留言，发布第一条吧✨</div>
       </div>
+    </div>
+  </div>
+
+  <!-- 【功能2】时间卡片月度纪事弹窗（交互对齐「我的留言」） -->
+  <div class="tl-month-modal" id="tlMonthModal" aria-hidden="true">
+    <div class="tl-month-modal-box">
+      <div class="tl-month-modal-header">
+        <div class="tl-month-modal-title" id="tlMonthModalTitle">月度纪事</div>
+        <button type="button" class="tl-month-modal-close" id="tlMonthModalClose" aria-label="关闭">&times;</button>
+      </div>
+      <div class="tl-month-modal-body" id="tlMonthModalBody"></div>
     </div>
   </div>
 
@@ -4045,6 +4184,8 @@ body::after{
     --music-spring: cubic-bezier(.22, 1.18, .36, 1);
     --music-width: 360px;
     --music-height: 74px;
+    --music-width-full: min(380px, calc(100vw - 24px));
+    --music-height-full: 198px;
     --music-mini: 64px;
     --music-left: 28px;
     --music-bottom: 28px;
@@ -4164,9 +4305,182 @@ body::after{
       inset 0 0 0 1px rgba(255,255,255,.15);
   }
 
+  /* 【功能1】胶囊2 · iOS 风格完整播放器 */
+  #musicCapsule.is-open.is-expanded,
+  #musicCapsule.is-expanded {
+    width: var(--music-width-full) !important;
+    height: var(--music-height-full) !important;
+    border-radius: 32px;
+    align-items: stretch;
+    justify-content: stretch;
+  }
+
   #musicCapsule.is-open::before {
     opacity: .9;
     transform: translate3d(0,0,0) scale(1.04);
+  }
+
+  #musicCapsule.is-expanded .music-capsule-panel {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    align-content: stretch;
+    gap: 0;
+    padding: 14px 16px 12px;
+  }
+  /* 胶囊2：顶栏封面+信息；侧边小播放键隐藏 */
+  #musicCapsule.is-expanded .music-cover {
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+    border-radius: 12px;
+  }
+  #musicCapsule.is-expanded .music-info {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  #musicCapsule.is-expanded #musicPlay {
+    display: none !important;
+  }
+  /* 顶行：封面+信息 */
+  #musicCapsule.is-expanded .music-top-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+  }
+  .music-player-extra {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+  }
+  #musicCapsule.is-expanded .music-player-extra {
+    display: flex;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    transition: opacity 0.4s ease 0.12s, transform 0.5s var(--music-spring) 0.1s;
+  }
+  .music-progress-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+  }
+  .music-progress {
+    width: 100%;
+    height: 5px;
+    border-radius: 999px;
+    appearance: none;
+    -webkit-appearance: none;
+    background: rgba(0,0,0,.1);
+    outline: none;
+    cursor: pointer;
+  }
+  .music-progress::-webkit-slider-runnable-track {
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(0,0,0,.1);
+  }
+  .music-progress::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    margin-top: -4.5px;
+    border-radius: 50%;
+    background: #1c1c1e;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,.25);
+  }
+  .music-progress::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #1c1c1e;
+    border: 2px solid #fff;
+  }
+  .music-time-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: rgba(20,20,20,.42);
+    font-variant-numeric: tabular-nums;
+    padding: 0 1px;
+  }
+  /* iOS 三键：上一曲 | 播放/暂停 | 下一曲 */
+  .music-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    padding: 2px 0 0;
+  }
+  .music-nav-btn {
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #1c1c1e;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: transform 0.22s var(--music-spring), opacity 0.2s;
+    padding: 0;
+  }
+  .music-nav-btn:active {
+    transform: scale(0.88);
+    opacity: 0.7;
+  }
+  .music-nav-btn svg {
+    width: 22px;
+    height: 22px;
+    display: block;
+  }
+  .music-nav-btn.music-play-main {
+    width: 52px;
+    height: 52px;
+  }
+  .music-nav-btn.music-play-main svg {
+    width: 28px;
+    height: 28px;
+  }
+  .music-lyrics {
+    min-height: 34px;
+    text-align: center;
+    line-height: 1.35;
+    padding: 0 4px;
+  }
+  .music-lyric-cur {
+    font-size: 13px;
+    color: rgba(20,20,20,.9);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .music-lyric-next {
+    font-size: 11px;
+    color: rgba(20,20,20,.38);
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  @media (max-width: 768px) {
+    :root {
+      --music-height-full: 190px;
+    }
+    #musicCapsule.is-open.is-expanded {
+      border-radius: 28px;
+    }
+    .music-controls { gap: 22px; }
   }
 
   /* 仅按压时轻微缩放，不改变位置。 */
@@ -4233,8 +4547,10 @@ body::after{
     inset: 0;
     z-index: 2;
     display: flex;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 0;
     padding: 9px 10px;
     box-sizing: border-box;
     opacity: 0;
@@ -4246,6 +4562,14 @@ body::after{
       opacity .32s ease,
       transform .66s var(--music-ease),
       filter .48s var(--music-ease);
+  }
+
+  .music-top-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-width: 0;
   }
 
   #musicCapsule.is-open .music-capsule-panel {
@@ -4374,9 +4698,15 @@ body::after{
       height: 60px;
     }
 
-    #musicCapsule.is-open {
+    #musicCapsule.is-open:not(.is-expanded) {
       width: calc(100vw - 32px);
       height: 68px;
+    }
+
+    #musicCapsule.is-open.is-expanded {
+      width: calc(100vw - 28px) !important;
+      height: var(--music-height-full) !important;
+      border-radius: 24px;
     }
 
     .music-cover {
@@ -4442,25 +4772,54 @@ body::after{
 
 <audio id="audio-player" preload="auto" playsinline></audio>
 
-<div id="musicCapsule" aria-label="音乐播放器" aria-expanded="false">
+<div id="musicCapsule" aria-label="音乐播放器" aria-expanded="false" data-music-state="0">
   <div class="music-capsule-icon" aria-hidden="true"></div>
 
   <div class="music-capsule-panel">
-    <img class="music-cover" src="/assets/music/cover.webp" alt="我们的青春封面" width="56" height="56">
-
-    <div class="music-info">
-      <div class="music-title">我们的青春</div>
-      <div class="music-sub" id="musicStatus">2026 Graduation</div>
+    <!-- 胶囊1 / 顶栏：封面 + 信息 + 小播放键 -->
+    <div class="music-top-row">
+      <img class="music-cover" src="/assets/music/cover.webp" alt="我们的青春封面" width="56" height="56">
+      <div class="music-info">
+        <div class="music-title">我们的青春</div>
+        <div class="music-sub" id="musicStatus">2028 Graduation</div>
+      </div>
+      <button class="music-play" id="musicPlay" type="button" aria-label="播放音乐" aria-pressed="false">▶</button>
     </div>
 
-    <button class="music-play" id="musicPlay" type="button" aria-label="播放音乐" aria-pressed="false">▶</button>
+    <!-- 【功能1】胶囊2：iOS 风格完整控件 -->
+    <div class="music-player-extra" id="musicPlayerExtra">
+      <div class="music-progress-wrap">
+        <input class="music-progress" id="musicProgress" type="range" min="0" max="1000" value="0" step="1" aria-label="播放进度">
+        <div class="music-time-row">
+          <span id="musicTimeCur">0:00</span>
+          <span id="musicTimeEnd">0:00</span>
+        </div>
+      </div>
+      <div class="music-controls">
+        <button type="button" class="music-nav-btn" id="musicPrev" aria-label="上一曲">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 6h2v12H6V6zm3.5 6 8.5 6V6l-8.5 6z"/></svg>
+        </button>
+        <button type="button" class="music-nav-btn music-play-main" id="musicPlayMain" aria-label="播放">
+          <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7L8 5z"/></svg>
+          <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="display:none"><path d="M6 5h4v14H6V5zm8 0h4v14h-4V5z"/></svg>
+        </button>
+        <button type="button" class="music-nav-btn" id="musicNext" aria-label="下一曲">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 6h2v12h-2V6zM5 18l8.5-6L5 6v12z"/></svg>
+        </button>
+      </div>
+      <div class="music-lyrics" id="musicLyrics" aria-live="polite">
+        <div class="music-lyric-cur" id="lyricCur">—</div>
+        <div class="music-lyric-next" id="lyricNext">—</div>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
 /**
- * iOS 26 Liquid Glass Music Capsule（内联，不依赖外部 js 文件）
- * 播放列表 · 自动下一首 · 加载反馈 · Media Session
+ * 【功能1】iOS 26 Liquid Glass Music Capsule
+ * 三态：0 折叠圆 / 1 简要展开 / 2 完整播放器
+ * 歌词从 media/*.lrc 动态 fetch 解析，不硬编码
  */
 (() => {
   'use strict';
@@ -4468,30 +4827,41 @@ body::after{
   const playlist = [
     {
       title: '我们的青春',
-      artist: '2026 Graduation',
+      artist: '2028 Graduation',
       src: '/assets/music/youth.mp3',
-      cover: '/assets/music/cover.webp'
+      cover: '/assets/music/cover.webp',
+      lrc: 'media/youth.lrc'
     },
     {
       title: '毕业',
       artist: 'Memory',
       src: '/assets/music/graduation.mp3',
-      cover: '/assets/music/cover.webp'
+      cover: '/assets/music/cover.webp',
+      lrc: 'media/graduation.lrc'
     },
     {
       title: '未来可期',
-      artist: 'Class 2026',
+      artist: 'Class 2028',
       src: '/assets/music/memory.mp3',
-      cover: '/assets/music/cover.webp'
+      cover: '/assets/music/cover.webp',
+      lrc: 'media/memory.lrc'
     }
   ];
 
   const audio = document.getElementById('audio-player');
   const capsule = document.getElementById('musicCapsule');
   const playButton = document.getElementById('musicPlay');
+  const playMain = document.getElementById('musicPlayMain');
   const titleEl = document.querySelector('#musicCapsule .music-title');
   const statusEl = document.getElementById('musicStatus');
   const coverEl = document.querySelector('#musicCapsule .music-cover');
+  const progressEl = document.getElementById('musicProgress');
+  const timeCurEl = document.getElementById('musicTimeCur');
+  const timeEndEl = document.getElementById('musicTimeEnd');
+  const lyricCurEl = document.getElementById('lyricCur');
+  const lyricNextEl = document.getElementById('lyricNext');
+  const prevBtn = document.getElementById('musicPrev');
+  const nextBtn = document.getElementById('musicNext');
 
   if (!audio || !capsule || !playButton) {
     console.warn('[Music Capsule] DOM missing');
@@ -4500,28 +4870,98 @@ body::after{
 
   let currentIndex = 0;
   let isLoading = false;
-  let isOpen = false;
+  /** 0 折叠 / 1 胶囊1 / 2 胶囊2 */
+  let musicState = 0;
+  let lyrics = [];
+  let lyricIndex = -1;
+  let seeking = false;
+  const lrcCache = Object.create(null);
 
   audio.volume = 0.8;
   audio.setAttribute('playsinline', '');
   audio.preload = 'auto';
 
-  function setOpen(next) {
-    isOpen = !!next;
-    capsule.classList.toggle('is-open', isOpen);
-    capsule.setAttribute('aria-expanded', String(isOpen));
+  function formatTime(sec) {
+    if (!isFinite(sec) || sec < 0) return '0:00';
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return m + ':' + String(s).padStart(2, '0');
   }
 
-  /** 统一驱动按钮图标：加载中 …，播放 ▶，暂停双竖杠 Ⅱ（避免手机渲染成 ⏸️ emoji） */
+  /** 解析标准 LRC */
+  function parseLrc(text) {
+    const lines = [];
+    String(text || '').split(/\r?\n/).forEach(function (raw) {
+      const m = raw.match(/\[(\d{1,2}):(\d{1,2})(?:\.(\d{1,3}))?\](.*)/);
+      if (!m) return;
+      const t = parseInt(m[1], 10) * 60 + parseInt(m[2], 10) + (m[3] ? parseInt(m[3].padEnd(3, '0').slice(0, 3), 10) / 1000 : 0);
+      const content = (m[4] || '').trim();
+      if (content) lines.push({ t: t, text: content });
+    });
+    lines.sort(function (a, b) { return a.t - b.t; });
+    return lines;
+  }
+
+  async function loadLyrics(path) {
+    if (lrcCache[path]) {
+      lyrics = lrcCache[path];
+      lyricIndex = -1;
+      updateLyrics(audio.currentTime || 0);
+      return;
+    }
+    try {
+      const res = await fetch(path, { cache: 'force-cache' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      lyrics = parseLrc(text);
+      lrcCache[path] = lyrics;
+    } catch (err) {
+      console.warn('[Music Capsule] LRC load failed:', path, err);
+      lyrics = [];
+    }
+    lyricIndex = -1;
+    updateLyrics(audio.currentTime || 0);
+  }
+
+  function updateLyrics(t) {
+    if (!lyricCurEl || !lyricNextEl) return;
+    if (!lyrics.length) {
+      lyricCurEl.textContent = '暂无歌词';
+      lyricNextEl.textContent = '—';
+      return;
+    }
+    let idx = -1;
+    for (let i = 0; i < lyrics.length; i++) {
+      if (lyrics[i].t <= t) idx = i;
+      else break;
+    }
+    if (idx === lyricIndex) return;
+    lyricIndex = idx;
+    lyricCurEl.textContent = idx >= 0 ? lyrics[idx].text : (lyrics[0] ? lyrics[0].text : '—');
+    lyricNextEl.textContent = idx + 1 < lyrics.length ? lyrics[idx + 1].text : '—';
+  }
+
+  function applyMusicState(state) {
+    musicState = state;
+    capsule.classList.toggle('is-open', state >= 1);
+    capsule.classList.toggle('is-expanded', state === 2);
+    capsule.setAttribute('aria-expanded', String(state >= 1));
+    capsule.dataset.musicState = String(state);
+  }
+
   function setPlayingUI(playing) {
     capsule.classList.toggle('is-playing', playing);
     playButton.setAttribute('aria-label', playing ? '暂停音乐' : '播放音乐');
     playButton.setAttribute('aria-pressed', String(!!playing));
-    if (isLoading) {
-      playButton.textContent = '…';
-    } else {
-      // Ⅱ = 双竖杠；不要用 ⏸（Android 常变成彩色 ⏸️）
-      playButton.textContent = playing ? 'Ⅱ' : '▶';
+    if (isLoading) playButton.textContent = '…';
+    else playButton.textContent = playing ? 'Ⅱ' : '▶';
+    // 胶囊2 中央大按钮 SVG
+    if (playMain) {
+      playMain.setAttribute('aria-label', playing ? '暂停' : '播放');
+      var ip = playMain.querySelector('.icon-play');
+      var iu = playMain.querySelector('.icon-pause');
+      if (ip) ip.style.display = playing ? 'none' : 'block';
+      if (iu) iu.style.display = playing ? 'block' : 'none';
     }
   }
 
@@ -4539,6 +4979,10 @@ body::after{
       coverEl.alt = song.title + ' 封面';
     }
     setStatus(song.artist);
+    if (progressEl) progressEl.value = 0;
+    if (timeCurEl) timeCurEl.textContent = '0:00';
+    if (timeEndEl) timeEndEl.textContent = '0:00';
+    loadLyrics(song.lrc);
     updateMediaSession();
     if (autoplay) playMusic();
   }
@@ -4565,24 +5009,22 @@ body::after{
     try {
       isLoading = true;
       playButton.disabled = true;
-      setPlayingUI(false); // isLoading=true → 显示 …
+      setPlayingUI(false);
       setStatus('正在加载…');
       if (audio.readyState < 2) audio.load();
       await waitForCanPlay();
       await audio.play();
-      // 必须先结束 loading，再刷新图标，否则会一直停在 …
       isLoading = false;
-      setPlayingUI(true); // → Ⅱ
+      setPlayingUI(true);
       setStatus('正在播放 · ' + song.title);
     } catch (err) {
       console.warn('[Music Capsule] play failed:', err);
       isLoading = false;
-      setPlayingUI(false); // → ▶
+      setPlayingUI(false);
       setStatus('无法播放，请检查音频文件');
     } finally {
       isLoading = false;
       playButton.disabled = false;
-      // 最终再同步一次，防止 play 事件与 isLoading 竞态
       setPlayingUI(!audio.paused);
     }
   }
@@ -4594,13 +5036,8 @@ body::after{
     setStatus(playlist[currentIndex].artist);
   }
 
-  function nextSong() {
-    loadSong(currentIndex + 1, true);
-  }
-
-  function prevSong() {
-    loadSong(currentIndex - 1, true);
-  }
+  function nextSong() { loadSong(currentIndex + 1, true); }
+  function prevSong() { loadSong(currentIndex - 1, true); }
 
   function updateMediaSession() {
     if (!('mediaSession' in navigator)) return;
@@ -4609,7 +5046,7 @@ body::after{
       navigator.mediaSession.metadata = new MediaMetadata({
         title: song.title,
         artist: song.artist,
-        album: '2026 Graduation',
+        album: '2028 Graduation',
         artwork: [{ src: song.cover || '/assets/music/cover.webp', sizes: '512x512', type: 'image/webp' }]
       });
       navigator.mediaSession.setActionHandler('play', function () { playMusic(); });
@@ -4621,38 +5058,96 @@ body::after{
     }
   }
 
-  // 点击胶囊展开/收起（不要用 document 捕获阶段抢先关闭）
-  capsule.addEventListener('click', function (e) {
-    if (e.target.closest('#musicPlay')) return;
-    e.stopPropagation();
-    setOpen(!isOpen);
-  });
+  function syncProgress() {
+    if (seeking) return;
+    const d = audio.duration;
+    const t = audio.currentTime || 0;
+    if (timeCurEl) timeCurEl.textContent = formatTime(t);
+    if (timeEndEl) timeEndEl.textContent = formatTime(d);
+    if (progressEl && isFinite(d) && d > 0) {
+      progressEl.value = String(Math.round((t / d) * 1000));
+    }
+    updateLyrics(t);
+  }
 
-  playButton.addEventListener('click', function (e) {
+  // 胶囊本体点击：严格 0→1→2→1（点控件不切换状态）
+  var suppressOutsideUntil = 0;
+  function isControlTarget(t) {
+    return !!(t && t.closest && t.closest(
+      '#musicPlay, #musicPlayMain, #musicPrev, #musicNext, #musicProgress, .music-progress-wrap, .music-controls, .music-lyrics, .music-player-extra, .music-time-row'
+    ));
+  }
+  capsule.addEventListener('click', function (e) {
+    if (isControlTarget(e.target)) {
+      e.stopPropagation();
+      return;
+    }
     e.preventDefault();
     e.stopPropagation();
-    if (audio.paused) playMusic();
-    else pauseMusic();
+    suppressOutsideUntil = performance.now() + 400;
+    // 状态机：0→1→2→1
+    if (musicState === 0) applyMusicState(1);
+    else if (musicState === 1) applyMusicState(2);
+    else applyMusicState(1);
   });
 
-  audio.addEventListener('play', function () {
-    // 加载中保持 …；加载结束后才显示暂停键
-    if (!isLoading) setPlayingUI(true);
+  function togglePlay(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    if (audio.paused) playMusic();
+    else pauseMusic();
+  }
+  playButton.addEventListener('click', togglePlay);
+  if (playMain) playMain.addEventListener('click', togglePlay);
+
+  if (prevBtn) prevBtn.addEventListener('click', function (e) {
+    e.preventDefault(); e.stopPropagation(); prevSong();
   });
-  audio.addEventListener('pause', function () {
-    if (!isLoading) setPlayingUI(false);
+  if (nextBtn) nextBtn.addEventListener('click', function (e) {
+    e.preventDefault(); e.stopPropagation(); nextSong();
   });
+
+  if (progressEl) {
+    progressEl.addEventListener('pointerdown', function (e) {
+      e.stopPropagation();
+      seeking = true;
+    });
+    progressEl.addEventListener('input', function (e) {
+      e.stopPropagation();
+      const d = audio.duration;
+      if (!isFinite(d) || d <= 0) return;
+      const t = (Number(progressEl.value) / 1000) * d;
+      if (timeCurEl) timeCurEl.textContent = formatTime(t);
+      updateLyrics(t);
+    });
+    const endSeek = function (e) {
+      e && e.stopPropagation();
+      const d = audio.duration;
+      if (isFinite(d) && d > 0) {
+        audio.currentTime = (Number(progressEl.value) / 1000) * d;
+      }
+      seeking = false;
+      syncProgress();
+    };
+    progressEl.addEventListener('change', endSeek);
+    progressEl.addEventListener('pointerup', endSeek);
+    progressEl.addEventListener('click', function (e) { e.stopPropagation(); });
+  }
+
+  audio.addEventListener('play', function () { if (!isLoading) setPlayingUI(true); });
+  audio.addEventListener('pause', function () { if (!isLoading) setPlayingUI(false); });
   audio.addEventListener('ended', function () { nextSong(); });
+  audio.addEventListener('timeupdate', syncProgress);
+  audio.addEventListener('loadedmetadata', syncProgress);
   audio.addEventListener('waiting', function () {
     if (!audio.paused) {
       isLoading = true;
-      setPlayingUI(true); // 缓冲中显示 …
+      setPlayingUI(true);
       setStatus('缓冲中…');
     }
   });
   audio.addEventListener('playing', function () {
     isLoading = false;
-    setPlayingUI(true); // 真正出声后一定切到 Ⅱ
+    setPlayingUI(true);
     setStatus('正在播放 · ' + playlist[currentIndex].title);
   });
   audio.addEventListener('error', function () {
@@ -4660,23 +5155,20 @@ body::after{
     isLoading = false;
     setPlayingUI(false);
     setStatus('加载失败 · 自动跳过');
-    if (playlist.length > 1) {
-      setTimeout(function () { nextSong(); }, 800);
-    }
+    if (playlist.length > 1) setTimeout(function () { nextSong(); }, 800);
   });
 
-  // 点击外部收起：用 click 冒泡阶段，避免与展开同一次 pointerdown 冲突
+  // 空白区域：胶囊1/2 一律收回初始小圆
   document.addEventListener('click', function (e) {
-    if (!capsule.contains(e.target)) setOpen(false);
+    if (performance.now() < suppressOutsideUntil) return;
+    if (capsule.contains(e.target)) return;
+    if (musicState !== 0) applyMusicState(0);
   });
-
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') setOpen(false);
+    if (e.key === 'Escape' && musicState !== 0) applyMusicState(0);
   });
 
-  capsule.addEventListener('pointerdown', function () {
-    capsule.classList.add('is-pressed');
-  });
+  capsule.addEventListener('pointerdown', function () { capsule.classList.add('is-pressed'); });
   function clearPressed() { capsule.classList.remove('is-pressed'); }
   capsule.addEventListener('pointerup', clearPressed);
   capsule.addEventListener('pointercancel', clearPressed);
@@ -4686,9 +5178,7 @@ body::after{
   window.addEventListener('scroll', function () {
     capsule.classList.toggle('is-dimmed', window.scrollY > 160);
     clearTimeout(scrollTimer);
-    scrollTimer = setTimeout(function () {
-      capsule.classList.remove('is-dimmed');
-    }, 500);
+    scrollTimer = setTimeout(function () { capsule.classList.remove('is-dimmed'); }, 500);
   }, { passive: true });
 
   capsule.addEventListener('pointermove', function (e) {
@@ -4700,11 +5190,140 @@ body::after{
   });
 
   loadSong(0, false);
-  setOpen(false);
+  applyMusicState(0);
   setPlayingUI(false);
   window.__musicCapsuleReady = true;
   console.log('🎵 Music Capsule Ready ·', playlist.length, 'tracks');
 })();
 </script>
+
+<script>
+/* 【功能2】时间卡片弹窗 · 【功能3】祝福入场 · 【功能4】动态年份 */
+(function () {
+  'use strict';
+
+  // —— 功能4：大字号年份 = 客户端系统年份 ——
+  var yearEl = document.querySelector('.blessing-year');
+  if (yearEl) yearEl.textContent = String(new Date().getFullYear());
+
+  // —— 功能3：祝福标签滚动入场（观察整个标签容器，只触发一次） ——
+  (function () {
+    var tags = document.querySelectorAll('.bless-tag[data-bless-enter]');
+    var box = document.querySelector('.blessing-tags');
+    if (!tags.length) return;
+    function showAll() {
+      tags.forEach(function (t) { t.classList.add('is-in'); });
+    }
+    if (!('IntersectionObserver' in window)) {
+      showAll();
+      return;
+    }
+    var target = box || tags[0];
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) {
+          showAll();
+          obs.disconnect();
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -10% 0px' });
+    obs.observe(target);
+    // 若首屏已在视口内，补一次检测
+    requestAnimationFrame(function () {
+      var r = target.getBoundingClientRect();
+      if (r.top < window.innerHeight && r.bottom > 0) {
+        showAll();
+        obs.disconnect();
+      }
+    });
+  })();
+
+  // —— 功能2：时间卡片 → 弹窗（对齐「我的留言」） ——
+  var MONTH_EVENTS = {
+    2026: [
+      '班级组建，第一次班会', '定班训与班徽', '开学典礼合影', '春季运动会',
+      '期中复习互助', '班级聚餐', '暑期社会实践', '返校军训回顾',
+      '中秋班级晚会', '秋季运动会', '期末冲刺周', '年度总结表彰'
+    ],
+    2027: [
+      '新年目标分享', '元宵猜灯谜', '学雷锋志愿服务', '春游踏青',
+      '五四主题团日', '高考倒计时启动', '暑期家访', '开学典礼',
+      '教师节感恩', '班级辩论赛', '艺术节展演', '岁末联欢'
+    ],
+    2028: [
+      '元旦跨年祝福', '寒假作业打卡', '返校动员会', '模拟考试周',
+      '五一志愿活动', '毕业季启动', '毕业合影拍摄', '散学典礼彩排',
+      '中秋寄语墙', '校庆接力跑', '毕业纪念册征集', '毕业典礼 · 启航'
+    ]
+  };
+  var MONTH_LABELS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  var modal = document.getElementById('tlMonthModal');
+  var modalTitle = document.getElementById('tlMonthModalTitle');
+  var modalBody = document.getElementById('tlMonthModalBody');
+  var modalClose = document.getElementById('tlMonthModalClose');
+  var built = Object.create(null);
+
+  function renderMonths(year) {
+    if (!modalBody) return;
+    if (built[year]) {
+      modalBody.innerHTML = built[year];
+      return;
+    }
+    var events = MONTH_EVENTS[year] || [];
+    var html = '';
+    for (var i = 0; i < 12; i++) {
+      html += '<div class="tl-month">' +
+        '<div class="tl-month-label">' + MONTH_LABELS[i] + '</div>' +
+        '<div class="tl-month-event">' + (events[i] || '记录成长点滴') + '</div>' +
+        '</div>';
+    }
+    built[year] = html;
+    modalBody.innerHTML = html;
+  }
+
+  function openTlModal(year) {
+    if (!modal) return;
+    if (modalTitle) modalTitle.textContent = year + ' · 月度纪事';
+    renderMonths(year);
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeTlModal() {
+    if (!modal) return;
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('.tl-card[data-tl-year]').forEach(function (card) {
+    card.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      openTlModal(card.getAttribute('data-tl-year'));
+    });
+    card.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openTlModal(card.getAttribute('data-tl-year'));
+      }
+    });
+  });
+
+  if (modalClose) modalClose.addEventListener('click', function (e) {
+    e.stopPropagation();
+    closeTlModal();
+  });
+  if (modal) modal.addEventListener('click', function (e) {
+    if (e.target === modal) closeTlModal();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && modal && modal.classList.contains('active')) closeTlModal();
+  });
+})();
+</script>
 </body>
 </html>
+
+
