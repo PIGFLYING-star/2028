@@ -3734,6 +3734,7 @@ body::after{
   display:none;
  }
 }
+</style>
 
 <style>
 /* ============================================================
@@ -4894,7 +4895,7 @@ body::after{
       <img class="music-cover" src="/assets/music/cover.webp" alt="封面" width="56" height="56">
       <div class="music-info">
         <div class="music-title">臻辉少年行</div>
-        <div class="music-sub" id="musicStatus">2028 Graduation</div>
+        <div class="music-sub" id="musicStatus">已暂停播放</div>
         <div class="music-artist" id="musicArtist">欧雨馨，吴承恩，XXX</div>
       </div>
       <button class="music-play" id="musicPlay" type="button" aria-label="播放音乐" aria-pressed="false">▶</button>
@@ -5097,7 +5098,7 @@ body::after{
       coverEl.src = song.cover;
       coverEl.alt = song.title + ' 封面';
     }
-    setStatus(song.artist);
+    setStatus('已暂停播放');
     if (progressEl) progressEl.value = 0;
     if (timeCurEl) timeCurEl.textContent = '0:00';
     if (timeEndEl) timeEndEl.textContent = '0:00';
@@ -5135,7 +5136,7 @@ body::after{
       await audio.play();
       isLoading = false;
       setPlayingUI(true);
-      setStatus('正在播放 · ' + song.title);
+      setStatus('正在播放·' + song.title);
     } catch (err) {
       console.warn('[Music Capsule] play failed:', err);
       isLoading = false;
@@ -5152,7 +5153,7 @@ body::after{
     audio.pause();
     isLoading = false;
     setPlayingUI(false);
-    setStatus(playlist[currentIndex].artist);
+    setStatus('已暂停播放');
   }
 
   function nextSong() { loadSong(currentIndex + 1, true); }
@@ -5268,7 +5269,7 @@ body::after{
   audio.addEventListener('playing', function () {
     isLoading = false;
     setPlayingUI(true);
-    setStatus('正在播放 · ' + playlist[currentIndex].title);
+    setStatus('正在播放·' + playlist[currentIndex].title);
   });
   audio.addEventListener('error', function () {
     console.error('[Music Capsule] load error:', audio.src);
@@ -5361,7 +5362,7 @@ body::after{
   // —— 功能2：时间卡片 → 弹窗（对齐「我的留言」） ——
   var MONTH_EVENTS = {
     2026: [
-      '班级组建，第一次军训，第一次班会', '定班训与班徽', '开学典礼合影', '春季运动会',
+      '班级组建·第一次军训·第一次班会', '定班训与班徽', '开学典礼合影', '春季运动会',
       '期中复习互助', '班级聚餐', '暑期社会实践', '返校军训回顾',
       '中秋班级晚会', '秋季运动会', '期末冲刺周', '年度总结表彰'
     ],
