@@ -171,11 +171,13 @@
       left: 0;
       top: 0;
       width: 100%;
-      height: 0%;
+      height: 100%;
       border-radius: inherit;
       background: linear-gradient(180deg, #f0e0b0 0%, var(--gold) 45%, #a67c2a 100%);
-      box-shadow: 0 0 10px rgba(201,168,76,0.5), 0 0 22px rgba(201,168,76,0.22);
-      will-change: height;
+      transform: scaleY(0);
+      transform-origin: top center;
+      will-change: transform;
+      /* 去掉滚动中的大范围阴影，减轻合成层压力 */
     }
     /* 条目：独立果味弹簧，不走全局 blur 入场 */
     .tl-item {
@@ -475,14 +477,20 @@
       overflow-y: auto;
       flex: 1;
       -webkit-overflow-scrolling: touch;
-      padding: 8px 0 16px;
+      overscroll-behavior: contain;
+      padding: 4px 0 12px;
+      /* 滚动性能：独立合成层 + 避免不必要重绘 */
+      transform: translateZ(0);
+      contain: content;
     }
     .tl-month {
       display: grid;
       grid-template-columns: 48px 1fr;
       gap: 12px;
-      padding: 12px 20px;
+      padding: 11px 20px;
       border-bottom: 1px solid #f0f0f0;
+      content-visibility: auto;
+      contain-intrinsic-size: auto 48px;
     }
     .tl-month:last-child { border-bottom: none; }
     .tl-month-label {
@@ -508,12 +516,17 @@
       .tl-card {
         padding: 16px 16px 16px 18px;
         border-radius: 22px;
-        backdrop-filter: blur(24px) saturate(170%);
-        -webkit-backdrop-filter: blur(24px) saturate(170%);
+        /* 移动端降低模糊半径，减轻滚动卡顿 */
+        backdrop-filter: blur(14px) saturate(150%);
+        -webkit-backdrop-filter: blur(14px) saturate(150%);
       }
       .tl-card::after { border-radius: 21px; }
       .tl-item.is-active .tl-card {
-        transform: translate3d(0, -3px, 0) scale(1.012);
+        transform: translate3d(0, -2px, 0);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+      }
+      .tl-dot-ring {
+        animation: none !important;
       }
     }
     @media (prefers-reduced-motion: reduce) {
@@ -2727,6 +2740,7 @@ body:before{
       let target = 0;
       let rafId = 0;
       let activeIdx = -1;
+      let scrollQueued = false;
 
       function computeTarget() {
         const rootRect = root.getBoundingClientRect();
@@ -2736,31 +2750,33 @@ body:before{
         const scrolled = startY - rootRect.top;
         target = Math.max(0, Math.min(1, scrolled / travel));
 
+        // 只在 active 变化时改 class，避免每帧 toggle
         const center = vh * 0.42;
         let best = -1;
         let bestDist = Infinity;
-        items.forEach((item, i) => {
-          const r = item.getBoundingClientRect();
+        for (let i = 0; i < items.length; i++) {
+          const r = items[i].getBoundingClientRect();
           const mid = r.top + r.height * 0.3;
           const dist = Math.abs(mid - center);
           if (r.top < vh * 0.75 && r.bottom > vh * 0.15 && dist < bestDist) {
             bestDist = dist;
             best = i;
           }
-        });
+        }
         if (best !== activeIdx) {
+          if (activeIdx >= 0 && items[activeIdx]) items[activeIdx].classList.remove('is-active');
           activeIdx = best;
-          items.forEach((item, i) => item.classList.toggle('is-active', i === best));
+          if (best >= 0 && items[best]) items[best].classList.add('is-active');
         }
       }
 
       function tick() {
-        // 果味缓动：接近目标时减速
         const diff = target - current;
-        current += diff * 0.12;
-        if (Math.abs(diff) < 0.0008) current = target;
-        progress.style.height = (current * 100).toFixed(3) + '%';
-        if (Math.abs(target - current) > 0.0008) {
+        current += diff * 0.18;
+        if (Math.abs(diff) < 0.001) current = target;
+        // 用 scaleY 代替改 height，只触发合成，不触发布局
+        progress.style.transform = 'scaleY(' + current.toFixed(4) + ')';
+        if (Math.abs(target - current) > 0.001) {
           rafId = requestAnimationFrame(tick);
         } else {
           rafId = 0;
@@ -2768,15 +2784,20 @@ body:before{
       }
 
       function onScroll() {
-        computeTarget();
-        if (!rafId) rafId = requestAnimationFrame(tick);
+        if (scrollQueued) return;
+        scrollQueued = true;
+        requestAnimationFrame(function () {
+          scrollQueued = false;
+          computeTarget();
+          if (!rafId) rafId = requestAnimationFrame(tick);
+        });
       }
 
       window.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('resize', onScroll, { passive: true });
       computeTarget();
       current = target;
-      progress.style.height = (current * 100).toFixed(3) + '%';
+      progress.style.transform = 'scaleY(' + current + ')';
       setTimeout(onScroll, 350);
     })();
 
@@ -4180,12 +4201,14 @@ body::after{
 ========================================================= -->
 <style>
   :root {
-    --music-ease: cubic-bezier(.16, 1, .3, 1);
-    --music-spring: cubic-bezier(.22, 1.18, .36, 1);
+    /* iOS 17 Continuous / Spring */
+    --music-ease: cubic-bezier(0.32, 0.72, 0, 1);
+    --music-spring: cubic-bezier(0.22, 1.15, 0.28, 1);
     --music-width: 360px;
     --music-height: 74px;
     --music-width-full: min(380px, calc(100vw - 24px));
-    --music-height-full: 198px;
+    /* 固定高度才能做顺滑插值（auto 无法过渡） */
+    --music-height-full: 236px;
     --music-mini: 64px;
     --music-left: 28px;
     --music-bottom: 28px;
@@ -4246,11 +4269,12 @@ body::after{
       inset 0 0 0 1px rgba(255,255,255,.12);
 
     transition:
-      width .72s var(--music-spring),
-      height .72s var(--music-spring),
-      box-shadow .55s var(--music-ease),
-      transform .28s var(--music-ease),
-      opacity .3s ease;
+      width 0.68s var(--music-ease),
+      height 0.68s var(--music-ease),
+      border-radius 0.68s var(--music-ease),
+      box-shadow 0.5s ease,
+      transform 0.28s var(--music-ease),
+      opacity 0.3s ease;
   }
 
   /* 第一层：移动中的玻璃高光。 */
@@ -4305,14 +4329,15 @@ body::after{
       inset 0 0 0 1px rgba(255,255,255,.15);
   }
 
-  /* 【功能1】胶囊2 · iOS 风格完整播放器 */
+  /* 【功能1】胶囊2 · 固定高度插值，iOS 17 连续动画 */
   #musicCapsule.is-open.is-expanded,
   #musicCapsule.is-expanded {
     width: var(--music-width-full) !important;
     height: var(--music-height-full) !important;
-    border-radius: 32px;
+    border-radius: 28px;
     align-items: stretch;
     justify-content: stretch;
+    overflow: hidden;
   }
 
   #musicCapsule.is-open::before {
@@ -4321,50 +4346,71 @@ body::after{
   }
 
   #musicCapsule.is-expanded .music-capsule-panel {
+    position: absolute;
+    inset: 0;
     flex-direction: column;
     flex-wrap: nowrap;
     align-items: stretch;
     align-content: stretch;
+    justify-content: flex-start;
     gap: 0;
-    padding: 14px 16px 12px;
+    padding: 12px 14px 10px;
   }
-  /* 胶囊2：顶栏封面+信息；侧边小播放键隐藏 */
+  /* 胶囊2：顶栏封面+信息；侧边小播放键淡出 */
   #musicCapsule.is-expanded .music-cover {
-    width: 48px;
-    height: 48px;
-    flex: 0 0 48px;
+    width: 46px;
+    height: 46px;
+    flex: 0 0 46px;
     border-radius: 12px;
+    transition: width 0.55s var(--music-ease), height 0.55s var(--music-ease), border-radius 0.55s var(--music-ease);
   }
   #musicCapsule.is-expanded .music-info {
     flex: 1 1 auto;
     min-width: 0;
   }
   #musicCapsule.is-expanded #musicPlay {
-    display: none !important;
+    opacity: 0;
+    transform: scale(0.6);
+    pointer-events: none;
+    width: 0 !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    overflow: hidden;
+    transition: opacity 0.25s ease, transform 0.35s var(--music-ease), width 0.45s var(--music-ease);
   }
-  /* 顶行：封面+信息 */
   #musicCapsule.is-expanded .music-top-row {
     display: flex;
     align-items: center;
     gap: 12px;
     width: 100%;
+    flex: 0 0 auto;
   }
+  /* 用 max-height 过渡，避免 display:none 打断动画 */
   .music-player-extra {
-    display: none;
-    width: 100%;
+    display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-top: 10px;
+    gap: 8px;
+    width: 100%;
+    max-height: 0;
+    margin-top: 0;
     opacity: 0;
-    transform: translateY(8px);
+    transform: translate3d(0, 12px, 0);
+    overflow: hidden;
     pointer-events: none;
+    transition:
+      max-height 0.62s var(--music-ease),
+      opacity 0.4s ease 0.08s,
+      transform 0.55s var(--music-spring) 0.06s,
+      margin-top 0.5s var(--music-ease);
   }
   #musicCapsule.is-expanded .music-player-extra {
-    display: flex;
+    max-height: 170px;
+    margin-top: 8px;
     opacity: 1;
-    transform: none;
+    transform: translate3d(0, 0, 0);
     pointer-events: auto;
-    transition: opacity 0.4s ease 0.12s, transform 0.5s var(--music-spring) 0.1s;
   }
   .music-progress-wrap {
     display: flex;
@@ -4475,10 +4521,12 @@ body::after{
   }
   @media (max-width: 768px) {
     :root {
-      --music-height-full: 190px;
+      --music-height-full: 228px;
     }
     #musicCapsule.is-open.is-expanded {
-      border-radius: 28px;
+      border-radius: 26px;
+      width: calc(100vw - 24px) !important;
+      height: var(--music-height-full) !important;
     }
     .music-controls { gap: 22px; }
   }
@@ -4704,9 +4752,9 @@ body::after{
     }
 
     #musicCapsule.is-open.is-expanded {
-      width: calc(100vw - 28px) !important;
+      width: calc(100vw - 24px) !important;
       height: var(--music-height-full) !important;
-      border-radius: 24px;
+      border-radius: 26px;
     }
 
     .music-cover {
@@ -4943,10 +4991,13 @@ body::after{
 
   function applyMusicState(state) {
     musicState = state;
+    // 先切 class，由 CSS 固定宽高插值完成 iOS 连续动画
     capsule.classList.toggle('is-open', state >= 1);
     capsule.classList.toggle('is-expanded', state === 2);
     capsule.setAttribute('aria-expanded', String(state >= 1));
     capsule.dataset.musicState = String(state);
+    // 触发布局一次，避免部分 WebKit 跳过过渡
+    void capsule.offsetWidth;
   }
 
   function setPlayingUI(playing) {
@@ -5072,9 +5123,10 @@ body::after{
 
   // 胶囊本体点击：严格 0→1→2→1（点控件不切换状态）
   var suppressOutsideUntil = 0;
+  /* 仅真正的控件不切换状态；其余整块胶囊区域都可点 */
   function isControlTarget(t) {
     return !!(t && t.closest && t.closest(
-      '#musicPlay, #musicPlayMain, #musicPrev, #musicNext, #musicProgress, .music-progress-wrap, .music-controls, .music-lyrics, .music-player-extra, .music-time-row'
+      'button, input[type="range"], #musicPlay, #musicPlayMain, #musicPrev, #musicNext, #musicProgress'
     ));
   }
   capsule.addEventListener('click', function (e) {
