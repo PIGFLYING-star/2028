@@ -422,32 +422,38 @@
       justify-content: center;
       align-items: center;
       padding: 16px;
-      background: rgba(0,0,0,0.45);
+      background: rgba(0,0,0,0);
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
-      transition: opacity 0.3s ease, visibility 0.3s ease;
+      transition: opacity 0.35s ease, visibility 0.35s ease, background 0.35s ease;
     }
     .tl-month-modal.active {
       opacity: 1;
       visibility: visible;
       pointer-events: auto;
+      background: rgba(0,0,0,0.42);
     }
     .tl-month-modal-box {
       width: 100%;
       max-width: 620px;
       max-height: 80vh;
       background: #fafafa;
-      border-radius: 18px;
+      border-radius: 20px;
       border: 1px solid var(--border);
-      transform: translateY(20px) scale(0.97);
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: translateY(36px) scale(0.88);
+      opacity: 0.6;
+      transition:
+        transform 0.55s cubic-bezier(0.22, 1.35, 0.36, 1),
+        opacity 0.4s ease;
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.18);
     }
     .tl-month-modal.active .tl-month-modal-box {
       transform: translateY(0) scale(1);
+      opacity: 1;
     }
     .tl-month-modal-header {
       display: flex;
@@ -1238,11 +1244,11 @@ body{
  animation:iosZoom .5s var(--ios-ease);
 }
 @keyframes iosHeroIn{
- from{opacity:0;transform:translateY(50px) scale(.94);filter:blur(18px)}
+ from{opacity:0;transform:translateY(36px) scale(.96);filter:blur(4px)}
  to{opacity:1;transform:none;filter:blur(0)}
 }
 @keyframes iosCardIn{
- from{opacity:0;transform:translateY(70px) scale(.86);filter:blur(12px)}
+ from{opacity:0;transform:translateY(40px) scale(.94);filter:blur(3px)}
  to{opacity:1;transform:none;filter:blur(0)}
 }
 @keyframes iosFloat{
@@ -1401,7 +1407,7 @@ body{
     cubic-bezier(.22,1,.36,1)!important;
 }
 
-/* 页面滚动进入：Apple 官网式空间动画 */
+/* 页面滚动进入：减弱模糊，更轻盈 */
 .about-section,
 .gallery-header,
 .gallery-item,
@@ -1409,13 +1415,13 @@ body{
 .memory-section,
 .timeline-header{
   transform:
-    translateY(80px)
-    scale(.92)!important;
-  filter:blur(12px);
+    translateY(40px)
+    scale(.97)!important;
+  filter:blur(3px);
   transition:
-    opacity 1s cubic-bezier(.22,1,.36,1),
-    transform 1s cubic-bezier(.22,1,.36,1),
-    filter 1s ease!important;
+    opacity 0.75s cubic-bezier(.22,1,.36,1),
+    transform 0.75s cubic-bezier(.22,1,.36,1),
+    filter 0.65s ease!important;
 }
 
 .about-section.visible,
@@ -4201,14 +4207,13 @@ body::after{
 ========================================================= -->
 <style>
   :root {
-    /* iOS 17 Continuous / Spring */
+    /* iOS 17 Continuous — 略加快 */
     --music-ease: cubic-bezier(0.32, 0.72, 0, 1);
-    --music-spring: cubic-bezier(0.22, 1.15, 0.28, 1);
+    --music-spring: cubic-bezier(0.22, 1.2, 0.28, 1);
     --music-width: 360px;
     --music-height: 74px;
     --music-width-full: min(380px, calc(100vw - 24px));
-    /* 固定高度才能做顺滑插值（auto 无法过渡） */
-    --music-height-full: 236px;
+    --music-height-full: 248px;
     --music-mini: 64px;
     --music-left: 28px;
     --music-bottom: 28px;
@@ -4269,12 +4274,12 @@ body::after{
       inset 0 0 0 1px rgba(255,255,255,.12);
 
     transition:
-      width 0.68s var(--music-ease),
-      height 0.68s var(--music-ease),
-      border-radius 0.68s var(--music-ease),
-      box-shadow 0.5s ease,
-      transform 0.28s var(--music-ease),
-      opacity 0.3s ease;
+      width 0.48s var(--music-ease),
+      height 0.48s var(--music-ease),
+      border-radius 0.48s var(--music-ease),
+      box-shadow 0.4s ease,
+      transform 0.22s var(--music-ease),
+      opacity 0.25s ease;
   }
 
   /* 第一层：移动中的玻璃高光。 */
@@ -4354,7 +4359,7 @@ body::after{
     align-content: stretch;
     justify-content: flex-start;
     gap: 0;
-    padding: 12px 14px 10px;
+    padding: 12px 14px 12px;
   }
   /* 胶囊2：顶栏封面+信息；侧边小播放键淡出 */
   #musicCapsule.is-expanded .music-cover {
@@ -4387,27 +4392,30 @@ body::after{
     width: 100%;
     flex: 0 0 auto;
   }
-  /* 用 max-height 过渡，避免 display:none 打断动画 */
+  /* 用 max-height 过渡；加大 margin 避免进度条圆点被封面遮挡 */
   .music-player-extra {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
     width: 100%;
     max-height: 0;
     margin-top: 0;
+    padding-top: 0;
     opacity: 0;
-    transform: translate3d(0, 12px, 0);
+    transform: translate3d(0, 10px, 0);
     overflow: hidden;
     pointer-events: none;
     transition:
-      max-height 0.62s var(--music-ease),
-      opacity 0.4s ease 0.08s,
-      transform 0.55s var(--music-spring) 0.06s,
-      margin-top 0.5s var(--music-ease);
+      max-height 0.45s var(--music-ease),
+      opacity 0.32s ease 0.05s,
+      transform 0.4s var(--music-spring) 0.04s,
+      margin-top 0.4s var(--music-ease),
+      padding-top 0.4s var(--music-ease);
   }
   #musicCapsule.is-expanded .music-player-extra {
-    max-height: 170px;
-    margin-top: 8px;
+    max-height: 180px;
+    margin-top: 14px;
+    padding-top: 4px;
     opacity: 1;
     transform: translate3d(0, 0, 0);
     pointer-events: auto;
@@ -4521,7 +4529,7 @@ body::after{
   }
   @media (max-width: 768px) {
     :root {
-      --music-height-full: 228px;
+      --music-height-full: 240px;
     }
     #musicCapsule.is-open.is-expanded {
       border-radius: 26px;
@@ -4529,6 +4537,9 @@ body::after{
       height: var(--music-height-full) !important;
     }
     .music-controls { gap: 22px; }
+    #musicCapsule.is-expanded .music-player-extra {
+      margin-top: 12px;
+    }
   }
 
   /* 仅按压时轻微缩放，不改变位置。 */
