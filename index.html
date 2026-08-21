@@ -2259,8 +2259,8 @@ body:before{
   opacity:1;
   transform:translate3d(0,0,0) scale(1);
 }
-/* 打开时的果感弹簧 */
-.photo-viewer.is-open .photo-slide.is-current img.is-loaded{
+/* 打开时的果感弹簧：仅首次出现播一次，避免 1↔2 来回切换重复播放导致闪烁 */
+.photo-viewer.is-open .photo-slide.is-current img.is-loaded.is-reveal{
   animation:iosPhotoReveal .78s cubic-bezier(.22,1.2,.36,1) both;
 }
 @keyframes iosPhotoReveal{
@@ -2996,8 +2996,17 @@ body:before{
         slide.style.flexBasis = `${100 / count}%`;
       });
       photoTrack.querySelectorAll('img').forEach(img => {
+        /* 【相册闪烁修复】入场动画只播一次，切回已加载图不再重播 */
         const markLoaded = () => {
           img.classList.add('is-loaded');
+          if (!img.dataset.revealed) {
+            img.dataset.revealed = '1';
+            img.classList.add('is-reveal');
+            const clearReveal = () => img.classList.remove('is-reveal');
+            img.addEventListener('animationend', clearReveal, { once: true });
+            // 兜底：动画结束后清理，防止部分浏览器不触发 animationend
+            setTimeout(clearReveal, 900);
+          }
           const slide = img.closest('.photo-slide');
           if (slide && window.__fitPhotoFrame) window.__fitPhotoFrame(slide, img);
         };
@@ -4242,7 +4251,7 @@ body::after{
     --music-width: 360px;
     --music-height: 78px;
     --music-width-full: min(380px, calc(100vw - 24px));
-    --music-height-full: 258px;
+    --music-height-full: 268px;
     --music-mini: 64px;
     --music-left: 28px;
     --music-bottom: 28px;
@@ -4442,9 +4451,9 @@ body::after{
       padding-top 0.4s var(--music-ease);
   }
   #musicCapsule.is-expanded .music-player-extra {
-    max-height: 180px;
-    margin-top: 14px;
-    padding-top: 4px;
+    max-height: 188px;
+    margin-top: 18px;
+    padding-top: 8px;
     opacity: 1;
     transform: translate3d(0, 0, 0);
     pointer-events: auto;
@@ -4454,6 +4463,7 @@ body::after{
     flex-direction: column;
     gap: 4px;
     width: 100%;
+    padding-top: 6px; /* 【进度条】给滑块圆点留出空间，避免被顶栏遮挡 */
   }
   .music-progress {
     width: 100%;
@@ -4558,7 +4568,7 @@ body::after{
   }
   @media (max-width: 768px) {
     :root {
-      --music-height-full: 250px;
+      --music-height-full: 260px;
     }
     #musicCapsule.is-open.is-expanded {
       border-radius: 26px;
@@ -4567,7 +4577,8 @@ body::after{
     }
     .music-controls { gap: 22px; }
     #musicCapsule.is-expanded .music-player-extra {
-      margin-top: 12px;
+      margin-top: 18px;
+      padding-top: 6px;
     }
   }
 
@@ -4910,7 +4921,7 @@ body::after{
 }
 </style>
 
-<audio id="audio-player" preload="auto" playsinline></audio>
+<audio id="audio-player" preload="auto" playsinline webkit-playsinline x-webkit-airplay="allow"></audio>
 
 <div id="musicCapsule" aria-label="音乐播放器" aria-expanded="false" data-music-state="0">
   <div class="music-capsule-icon" aria-hidden="true"></div>
@@ -4969,16 +4980,16 @@ body::after{
     {
       title: '臻辉少年行',
       artist: '欧雨馨/吴承恩/钟历诚',
-      src: '/assets/music/臻辉少年行.mp3',
+      src: encodeURI('/assets/music/zhenhui.mp3'),
       cover: '/assets/music/cover.webp',
-      lrc: 'media/臻辉少年行.lrc'
+      lrc: encodeURI('media/臻辉少年行.lrc')
     },
     {
       title: '再见',
       artist: '张震岳',
-      src: '/assets/music/再见.mp3',
+      src: encodeURI('/assets/music/zaijian.mp3'),
       cover: '/assets/music/cover.webp',
-      lrc: 'media/再见.lrc'
+      lrc: encodeURI('media/再见.lrc')
     },
     {
       title: '未来可期',
@@ -5021,7 +5032,11 @@ body::after{
 
   audio.volume = 0.8;
   audio.setAttribute('playsinline', '');
+  audio.setAttribute('webkit-playsinline', '');
   audio.preload = 'auto';
+  // 【系统浏览器缓冲优化】保持单一加载会话，避免频繁 load() 清空已缓冲数据
+  var lastSrc = '';
+  var playToken = 0;
 
   function formatTime(sec) {
     if (!isFinite(sec) || sec < 0) return '0:00';
@@ -5117,7 +5132,13 @@ body::after{
   function loadSong(index, autoplay) {
     currentIndex = ((index % playlist.length) + playlist.length) % playlist.length;
     const song = playlist[currentIndex];
-    audio.src = song.src;
+    // 仅在换曲时改 src，避免重复赋值中断缓冲
+    if (lastSrc !== song.src) {
+      lastSrc = song.src;
+      audio.src = song.src;
+      // 主动开始缓冲（不调用 load() 强制重启，部分系统浏览器会清空缓存）
+      try { audio.load(); } catch (e) {}
+    }
     if (titleEl) titleEl.textContent = song.title;
     if (artistEl) artistEl.textContent = song.artist || '';
     if (coverEl && song.cover) {
@@ -5134,17 +5155,28 @@ body::after{
   }
 
   function waitForCanPlay(timeoutMs) {
-    timeoutMs = timeoutMs || 2500;
-    if (audio.readyState >= 3) return Promise.resolve();
+    // 系统浏览器给更长等待，优先等 canplaythrough（缓冲更足）
+    timeoutMs = timeoutMs || 8000;
+    if (audio.readyState >= 4) return Promise.resolve(); // HAVE_ENOUGH_DATA
+    if (audio.readyState >= 3) return Promise.resolve(); // HAVE_FUTURE_DATA
     return Promise.race([
       new Promise(function (resolve) {
+        var settled = false;
         function done() {
-          audio.removeEventListener('canplay', done);
+          if (settled) return;
+          settled = true;
+          audio.removeEventListener('canplay', onCanPlay);
           audio.removeEventListener('canplaythrough', done);
+          audio.removeEventListener('loadeddata', onCanPlay);
           resolve();
         }
-        audio.addEventListener('canplay', done, { once: true });
-        audio.addEventListener('canplaythrough', done, { once: true });
+        function onCanPlay() {
+          // 有可播放数据即可先起播，同时继续后台缓冲
+          if (audio.readyState >= 3) done();
+        }
+        audio.addEventListener('canplay', onCanPlay);
+        audio.addEventListener('canplaythrough', done);
+        audio.addEventListener('loadeddata', onCanPlay);
       }),
       new Promise(function (resolve) { setTimeout(resolve, timeoutMs); })
     ]);
@@ -5152,26 +5184,39 @@ body::after{
 
   async function playMusic() {
     const song = playlist[currentIndex];
+    const token = ++playToken;
     try {
       isLoading = true;
       playButton.disabled = true;
       setPlayingUI(false);
       setStatus('正在加载…');
-      if (audio.readyState < 2) audio.load();
-      await waitForCanPlay();
+      // 确保当前曲目 src 正确且在缓冲（不在已有数据时盲目 load）
+      if (lastSrc !== song.src) {
+        lastSrc = song.src;
+        audio.src = song.src;
+        try { audio.load(); } catch (e) {}
+      } else if (audio.readyState === 0) {
+        try { audio.load(); } catch (e) {}
+      }
+      await waitForCanPlay(10000);
+      if (token !== playToken) return; // 已被新的播放请求取代
       await audio.play();
+      if (token !== playToken) return;
       isLoading = false;
       setPlayingUI(true);
       setStatus('正在播放·' + song.title);
     } catch (err) {
       console.warn('[Music Capsule] play failed:', err);
+      if (token !== playToken) return;
       isLoading = false;
       setPlayingUI(false);
       setStatus('无法播放，请检查音频文件');
     } finally {
-      isLoading = false;
-      playButton.disabled = false;
-      setPlayingUI(!audio.paused);
+      if (token === playToken) {
+        isLoading = false;
+        playButton.disabled = false;
+        setPlayingUI(!audio.paused);
+      }
     }
   }
 
@@ -5339,6 +5384,21 @@ body::after{
   loadSong(0, false);
   applyMusicState(0);
   setPlayingUI(false);
+  // 【系统浏览器】空闲时预缓冲首曲，缩短首次点击「正在加载」时间
+  function preloadFirstTrack() {
+    try {
+      if (!audio.src && playlist[0]) {
+        lastSrc = playlist[0].src;
+        audio.src = playlist[0].src;
+      }
+      if (audio.readyState < 2) audio.load();
+    } catch (e) {}
+  }
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(preloadFirstTrack, { timeout: 2500 });
+  } else {
+    setTimeout(preloadFirstTrack, 1200);
+  }
   window.__musicCapsuleReady = true;
   console.log('🎵 Music Capsule Ready ·', playlist.length, 'tracks');
 })();
