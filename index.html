@@ -15,6 +15,11 @@
   -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+  <!-- 【兼容修复】同源静态资源预连接，改善部分系统浏览器调度 -->
+  <link rel="preconnect" href="/" crossorigin>
+  <link rel="dns-prefetch" href="/">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
   <style>
     /* ====================== 全局重置与CSS变量 ====================== */
@@ -2377,7 +2382,7 @@ body:before{
            data-gallery-images="/assets/img/class01.webp|/assets/img/class01-2.webp|/assets/img/class01-3.webp|/assets/img/class01-4.webp">
         <div class="gallery-glass-backdrop" aria-hidden="true"></div>
         <div class="gallery-photo-frame">
-          <img src="/assets/img/class01.webp" alt="班级合影" loading="eager" fetchpriority="high" decoding="async">
+          <img src="/assets/img/class01.webp" alt="班级合影" width="800" height="600" loading="eager" fetchpriority="high" decoding="async">
         </div>
         <div class="gallery-overlay"><strong>班级合影</strong><span>最珍贵的记忆</span></div>
       </div>
@@ -2387,7 +2392,7 @@ body:before{
            data-gallery-images="/assets/img/class02.webp|/assets/img/class02-2.webp|/assets/img/class02-3.webp|/assets/img/class02-4.webp|/assets/img/class02-5.webp">
         <div class="gallery-glass-backdrop" aria-hidden="true"></div>
         <div class="gallery-photo-frame">
-          <img src="/assets/img/class02.webp" alt="课堂学习" loading="lazy" decoding="async">
+          <img src="/assets/img/class02.webp" alt="课堂学习" width="800" height="600" loading="lazy" decoding="async">
         </div>
         <div class="gallery-overlay"><strong>课堂学习</strong><span>专注的每一刻</span></div>
       </div>
@@ -2397,7 +2402,7 @@ body:before{
            data-gallery-images="/assets/img/class03.webp|/assets/img/class03-2.webp|/assets/img/class03-3.webp|/assets/img/class03-4.webp">
         <div class="gallery-glass-backdrop" aria-hidden="true"></div>
         <div class="gallery-photo-frame">
-          <img src="/assets/img/class03.webp" alt="校园活动" loading="lazy" decoding="async">
+          <img src="/assets/img/class03.webp" alt="校园活动" width="800" height="600" loading="lazy" decoding="async">
         </div>
         <div class="gallery-overlay"><strong>校园活动</strong><span>校园里的青春</span></div>
       </div>
@@ -2407,7 +2412,7 @@ body:before{
            data-gallery-images="/assets/img/class04.webp|/assets/img/class04-2.webp|/assets/img/class04-3.webp|/assets/img/class04-4.webp">
         <div class="gallery-glass-backdrop" aria-hidden="true"></div>
         <div class="gallery-photo-frame">
-          <img src="/assets/img/class04.webp" alt="操场训练" loading="lazy" decoding="async">
+          <img src="/assets/img/class04.webp" alt="操场训练" width="800" height="600" loading="lazy" decoding="async">
         </div>
         <div class="gallery-overlay"><strong>操场训练</strong><span>汗水与坚持</span></div>
       </div>
@@ -2417,7 +2422,7 @@ body:before{
            data-gallery-images="/assets/img/class05.webp|/assets/img/class05-2.webp|/assets/img/class05-3.webp|/assets/img/class05-4.webp|/assets/img/class05-5.webp">
         <div class="gallery-glass-backdrop" aria-hidden="true"></div>
         <div class="gallery-photo-frame">
-          <img src="/assets/img/class05.webp" alt="集体活动" loading="lazy" decoding="async">
+          <img src="/assets/img/class05.webp" alt="集体活动" width="800" height="600" loading="lazy" decoding="async">
         </div>
         <div class="gallery-overlay"><strong>集体活动</strong><span>一起留下的回忆</span></div>
       </div>
@@ -2729,9 +2734,30 @@ body:before{
         }
       });
     }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
-    // 将需要滚动入场的DOM全部注册观察
-    document.querySelectorAll('.about-section, .gallery-header, .gallery-item, .blessings, .memory-section, .timeline-header, .tl-item')
+    // 将需要滚动入场的DOM全部注册观察（相册单独提前观察）
+    document.querySelectorAll('.about-section, .gallery-header, .blessings, .memory-section, .timeline-header, .tl-item')
       .forEach(el => observer.observe(el));
+    /* 【相册空白修复】提前较大距离触发 visible + 图片加载，避免滑入后长时间空白 */
+    const galleryObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          // 靠近视口即请求图片（兼容原生 lazy 阈值偏晚的系统浏览器）
+          const img = entry.target.querySelector('img');
+          if (img) {
+            if (img.dataset.src && !img.getAttribute('src')) {
+              img.src = img.dataset.src;
+            }
+            try { img.loading = 'eager'; } catch (e) {}
+            if (typeof img.decode === 'function') {
+              img.decode().catch(function () {});
+            }
+          }
+          galleryObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.01, rootMargin: "280px 0px 280px 0px" });
+    document.querySelectorAll('.gallery-item').forEach(el => galleryObserver.observe(el));
 
     /* ==============================================
      * 时间线：滚动进度线（缓动插值）+ 当前节点高亮
@@ -4892,7 +4918,7 @@ body::after{
   <div class="music-capsule-panel">
     <!-- 胶囊1 / 顶栏：封面 + 信息 + 小播放键 -->
     <div class="music-top-row">
-      <img class="music-cover" src="/assets/music/cover.webp" alt="封面" width="56" height="56">
+      <img class="music-cover" src="/assets/music/cover.webp" alt="封面" width="56" height="56" decoding="async">
       <div class="music-info">
         <div class="music-title">臻辉少年行</div>
         <div class="music-sub" id="musicStatus">已暂停播放</div>
@@ -5327,7 +5353,7 @@ body::after{
   var yearEl = document.querySelector('.blessing-year');
   if (yearEl) yearEl.textContent = String(new Date().getFullYear());
 
-  // —— 功能3：祝福标签滚动入场（观察整个标签容器，只触发一次） ——
+  // —— 功能3：祝福标签滚动入场（离开视口可重置，再次进入可重播） ——
   (function () {
     var tags = document.querySelectorAll('.bless-tag[data-bless-enter]');
     var box = document.querySelector('.blessing-tags');
@@ -5335,28 +5361,25 @@ body::after{
     function showAll() {
       tags.forEach(function (t) { t.classList.add('is-in'); });
     }
+    function resetAll() {
+      tags.forEach(function (t) { t.classList.remove('is-in'); });
+    }
     if (!('IntersectionObserver' in window)) {
       showAll();
       return;
     }
     var target = box || tags[0];
+    // 进入：播放；完全离开：重置，便于再次进入重播（不用 scroll 监听）
     var obs = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
         if (en.isIntersecting) {
           showAll();
-          obs.disconnect();
+        } else if (en.intersectionRatio === 0) {
+          resetAll();
         }
       });
-    }, { threshold: 0.15, rootMargin: '0px 0px -10% 0px' });
+    }, { threshold: [0, 0.15], rootMargin: '0px 0px -8% 0px' });
     obs.observe(target);
-    // 若首屏已在视口内，补一次检测
-    requestAnimationFrame(function () {
-      var r = target.getBoundingClientRect();
-      if (r.top < window.innerHeight && r.bottom > 0) {
-        showAll();
-        obs.disconnect();
-      }
-    });
   })();
 
   // —— 功能2：时间卡片 → 弹窗（对齐「我的留言」） ——
@@ -5449,7 +5472,6 @@ body::after{
 /* 移动端性能优化：不改功能/视觉逻辑，只降 GPU 与主线程压力 */
 @media (max-width: 768px) {
   .about-section,
-  .gallery-grid,
   .blessings,
   .memory-section,
   .timeline,
@@ -5457,6 +5479,10 @@ body::after{
   .footer {
     content-visibility: auto;
     contain-intrinsic-size: auto 280px;
+  }
+  /* 相册不使用 content-visibility，避免滑入空白延迟 */
+  .gallery-grid {
+    content-visibility: visible;
   }
   .tl-card,
   .gallery-item,
