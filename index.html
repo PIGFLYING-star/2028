@@ -2293,6 +2293,11 @@ body:before{
 </style>
   <link rel="preload" as="image" href="/assets/music/cover.webp" type="image/webp">
   <link rel="preload" as="image" href="/assets/img/class01.webp" type="image/webp">
+  <!--
+    【图片加载兼容修复】
+    只预连接/预加载 class01 的主图，不在首屏一次性下载所有相册大图。
+    class01-2 / class01-3 会在打开相册时立即 eager 加载，并带自动重试。
+  -->
 </head>
 <body>
   <!-- ====================== 头部Hero区域 ====================== -->
@@ -2861,25 +2866,66 @@ body:before{
     let dragMoved = false;
     let suppressPhotoCloseUntil = 0;
 
+    /*
+     * 【图片加载兼容修复】
+     * 原代码虽然把路径写成 /assets/img/xxx.webp，但这是“网站根目录绝对路径”。
+     * 如果网站部署在子目录、CDN/Pages 命中旧缓存，或者浏览器保留了旧 404，
+     * 同一张图就可能出现“手机能开、电脑打不开”或“始终打不开”的情况。
+     *
+     * 这里保留原路径，同时生成：
+     * 1. 原始绝对路径
+     * 2. 相对当前页面目录的路径
+     * 3. 当前页面 baseURI 解析后的路径
+     * 并在图片 error 时自动依次尝试。
+     */
+    function normalizeGalleryPath(src){
+      src = String(src || '').trim().replace(/\\/g, '/');
+      if (!src) return '';
+      try {
+        return src.split('/').map(function (seg) {
+          if (!seg) return '';
+          try { return encodeURIComponent(decodeURIComponent(seg)); }
+          catch (e) { return encodeURIComponent(seg); }
+        }).join('/');
+      } catch (e) {
+        return src;
+      }
+    }
+
     function parseGalleryImages(item){
-      /* 规范化路径：去空白、统一斜杠，并对非 ASCII 文件名做 encodeURI（不编码 /） */
       return (item.dataset.galleryImages || item.dataset.src || '')
         .split('|')
-        .map(function (src) {
-          src = String(src || '').trim().replace(/\\/g, '/');
-          if (!src) return '';
-          try {
-            // 已编码则保持；否则对路径分段编码，避免中文/特殊字符问题
-            return src.split('/').map(function (seg, i) {
-              if (!seg) return '';
-              try { return encodeURIComponent(decodeURIComponent(seg)); }
-              catch (e) { return encodeURIComponent(seg); }
-            }).join('/');
-          } catch (e) {
-            return src;
-          }
-        })
+        .map(normalizeGalleryPath)
         .filter(Boolean);
+    }
+
+    function getGalleryImageCandidates(src){
+      const clean = normalizeGalleryPath(src);
+      if (!clean) return [];
+
+      const candidates = [];
+      const add = function (url) {
+        if (!url) return;
+        if (candidates.indexOf(url) === -1) candidates.push(url);
+      };
+
+      // ① 原代码路径：优先保持不变
+      add(clean);
+
+      // ② 如果网站运行在子目录，尝试相对路径
+      if (clean.charAt(0) === '/') {
+        add(clean.slice(1));
+        try {
+          add(new URL(clean.slice(1), document.baseURI).href);
+        } catch (e) {}
+      }
+
+      // ③ 当前页面所在目录下的 assets/img
+      try {
+        add(new URL(clean.replace(/^\//, ''), document.baseURI).href);
+      } catch (e) {}
+
+      return candidates;
     }
 
     function openGallery(item){
@@ -3001,7 +3047,12 @@ body:before{
     function renderPhotoSlides(){
       photoTrack.innerHTML = activeGallery.map((src,index) => `
         <div class="photo-slide" data-index="${index}">
-          <img src="${src}" alt="${escapeHtml(activeGalleryTitle)} · 第 ${index + 1} 张" draggable="false" decoding="async">
+          <img src="${src}"
+               alt="${escapeHtml(activeGalleryTitle)} · 第 ${index + 1} 张"
+               draggable="false"
+               loading="eager"
+               fetchpriority="${index === 0 ? 'high' : 'auto'}"
+               decoding="async">
         </div>
       `).join('');
 
@@ -3011,11 +3062,33 @@ body:before{
         slide.style.width = `${100 / count}%`;
         slide.style.flexBasis = `${100 / count}%`;
       });
-      photoTrack.querySelectorAll('img').forEach(img => {
-        /* 【相册闪烁修复】入场动画只播一次，切回已加载图不再重播 */
+
+      photoTrack.querySelectorAll('img').forEach((img, index) => {
+        const originalSrc = img.getAttribute('src') || '';
+        const candidates = getGalleryImageCandidates(originalSrc);
+        let candidateIndex = 0;
+        let retryCount = 0;
+
+        /*
+         * 【关键修复】
+         * 旧逻辑只会对同一个 URL 加一次 ?t=时间戳。
+         * 如果服务器/CDN 对这个 URL 返回 404，第二次还是同一个地址，
+         * 因此 class01-2 / class01-3 这类图片会一直失败。
+         *
+         * 新逻辑：
+         *   当前地址失败
+         *      ↓
+         *   cache-bust 重试
+         *      ↓
+         *   切换到相对路径候选
+         *      ↓
+         *   最后才显示失败状态
+         */
         const markLoaded = () => {
+          retryCount = 0;
           img.classList.remove('is-broken');
           img.classList.add('is-loaded');
+
           if (!img.dataset.revealed) {
             img.dataset.revealed = '1';
             img.classList.add('is-reveal');
@@ -3023,18 +3096,12 @@ body:before{
             img.addEventListener('animationend', clearReveal, { once: true });
             setTimeout(clearReveal, 900);
           }
+
           const slide = img.closest('.photo-slide');
           if (slide && window.__fitPhotoFrame) window.__fitPhotoFrame(slide, img);
         };
 
-        const failOrRetry = () => {
-          // 缓存了旧 404 时 complete=true 且 naturalWidth=0，不会再触发 error，需主动重试
-          if (!img.dataset.retry) {
-            img.dataset.retry = '1';
-            var base = (img.getAttribute('src') || '').split('?')[0];
-            img.src = base + (base.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now();
-            return;
-          }
+        const showBroken = () => {
           img.classList.add('is-broken', 'is-loaded');
           img.alt = '图片暂时无法加载';
           const slide = img.closest('.photo-slide');
@@ -3042,15 +3109,38 @@ body:before{
             slide.style.setProperty('--frame-width', '420px');
             slide.style.setProperty('--frame-height', '300px');
           }
+          console.error('[Gallery] image load failed:', originalSrc, candidates);
+        };
+
+        const tryNextCandidate = () => {
+          const current = candidates[candidateIndex] || originalSrc;
+
+          // 第一次失败先对当前地址做一次缓存穿透。
+          if (retryCount === 0) {
+            retryCount = 1;
+            img.src = current + (current.indexOf('?') >= 0 ? '&' : '?') + 'gallery_retry=' + Date.now();
+            return;
+          }
+
+          // 缓存穿透仍失败，切换下一个候选 URL。
+          candidateIndex += 1;
+          retryCount = 0;
+
+          if (candidateIndex < candidates.length) {
+            img.src = candidates[candidateIndex];
+            return;
+          }
+
+          showBroken();
         };
 
         img.addEventListener('load', markLoaded);
-        img.addEventListener('error', failOrRetry);
+        img.addEventListener('error', tryNextCandidate);
 
-        // 已完成加载：成功 or 失败（含缓存 404）
+        // 已完成加载：成功或失败（包括浏览器缓存的旧 404）。
         if (img.complete) {
           if (img.naturalWidth > 0) markLoaded();
-          else failOrRetry();
+          else tryNextCandidate();
         }
       });
     }
@@ -5734,5 +5824,4 @@ body::after{
 
 </body>
 </html>
-
 
