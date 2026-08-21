@@ -2862,8 +2862,24 @@ body:before{
     let suppressPhotoCloseUntil = 0;
 
     function parseGalleryImages(item){
+      /* 规范化路径：去空白、统一斜杠，并对非 ASCII 文件名做 encodeURI（不编码 /） */
       return (item.dataset.galleryImages || item.dataset.src || '')
-        .split('|').map(src => src.trim()).filter(Boolean);
+        .split('|')
+        .map(function (src) {
+          src = String(src || '').trim().replace(/\\/g, '/');
+          if (!src) return '';
+          try {
+            // 已编码则保持；否则对路径分段编码，避免中文/特殊字符问题
+            return src.split('/').map(function (seg, i) {
+              if (!seg) return '';
+              try { return encodeURIComponent(decodeURIComponent(seg)); }
+              catch (e) { return encodeURIComponent(seg); }
+            }).join('/');
+          } catch (e) {
+            return src;
+          }
+        })
+        .filter(Boolean);
     }
 
     function openGallery(item){
@@ -2998,23 +3014,27 @@ body:before{
       photoTrack.querySelectorAll('img').forEach(img => {
         /* 【相册闪烁修复】入场动画只播一次，切回已加载图不再重播 */
         const markLoaded = () => {
+          img.classList.remove('is-broken');
           img.classList.add('is-loaded');
           if (!img.dataset.revealed) {
             img.dataset.revealed = '1';
             img.classList.add('is-reveal');
             const clearReveal = () => img.classList.remove('is-reveal');
             img.addEventListener('animationend', clearReveal, { once: true });
-            // 兜底：动画结束后清理，防止部分浏览器不触发 animationend
             setTimeout(clearReveal, 900);
           }
           const slide = img.closest('.photo-slide');
           if (slide && window.__fitPhotoFrame) window.__fitPhotoFrame(slide, img);
         };
 
-        if (img.complete && img.naturalWidth) markLoaded();
-        else img.addEventListener('load', markLoaded, { once:true });
-
-        img.addEventListener('error', () => {
+        const failOrRetry = () => {
+          // 缓存了旧 404 时 complete=true 且 naturalWidth=0，不会再触发 error，需主动重试
+          if (!img.dataset.retry) {
+            img.dataset.retry = '1';
+            var base = (img.getAttribute('src') || '').split('?')[0];
+            img.src = base + (base.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now();
+            return;
+          }
           img.classList.add('is-broken', 'is-loaded');
           img.alt = '图片暂时无法加载';
           const slide = img.closest('.photo-slide');
@@ -3022,7 +3042,16 @@ body:before{
             slide.style.setProperty('--frame-width', '420px');
             slide.style.setProperty('--frame-height', '300px');
           }
-        }, { once:true });
+        };
+
+        img.addEventListener('load', markLoaded);
+        img.addEventListener('error', failOrRetry);
+
+        // 已完成加载：成功 or 失败（含缓存 404）
+        if (img.complete) {
+          if (img.naturalWidth > 0) markLoaded();
+          else failOrRetry();
+        }
       });
     }
 
