@@ -5176,11 +5176,45 @@ body::after{
   audio.volume = 0.8;
   audio.setAttribute('playsinline', '');
   audio.setAttribute('webkit-playsinline', '');
-  audio.preload = 'metadata';
-  // 【系统浏览器缓冲优化】保持单一加载会话，避免频繁 load() 清空已缓冲数据
-  // 照片与音频均不走强缓存；换曲时再按需缓冲
-  var lastSrc = '';
+  audio.preload = 'auto';
+  // 用 Blob URL 播放：规避服务器未返回 Accept-Ranges 时
+  // Chrome/Edge/华为对部分 MP3（尤其 VBR）seek 会静默回到 0 的问题
+  var lastSrcKey = '';
   var playToken = 0;
+  var blobUrlCache = Object.create(null);
+
+  async function resolvePlayableSrc(song) {
+    var key = song.src;
+    if (blobUrlCache[key]) return blobUrlCache[key];
+    try {
+      var res = await fetch(key, { cache: 'force-cache', credentials: 'same-origin' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      var blob = await res.blob();
+      // 强制 audio/mpeg，避免部分环境 MIME 不准
+      if (blob.type && blob.type.indexOf('audio') !== 0) {
+        blob = new Blob([blob], { type: 'audio/mpeg' });
+      }
+      var url = URL.createObjectURL(blob);
+      blobUrlCache[key] = url;
+      return url;
+    } catch (err) {
+      console.warn('[Music Capsule] blob fetch failed, fallback direct src:', key, err);
+      return key;
+    }
+  }
+
+  async function ensureSongSource(song) {
+    var playable = await resolvePlayableSrc(song);
+    if (lastSrcKey !== song.src) {
+      lastSrcKey = song.src;
+      audio.src = playable;
+      try { audio.load(); } catch (e) {}
+    } else if (!audio.src) {
+      audio.src = playable;
+      try { audio.load(); } catch (e) {}
+    }
+    return playable;
+  }
 
   function formatTime(sec) {
     if (!isFinite(sec) || sec < 0) return '0:00';
@@ -5307,11 +5341,6 @@ body::after{
       clearTimeout(seekUnlockTimer);
       seekUnlockTimer = null;
     }
-    if (lastSrc !== song.src) {
-      lastSrc = song.src;
-      audio.src = song.src;
-      try { audio.load(); } catch (e) {}
-    }
     if (titleEl) titleEl.textContent = song.title;
     if (artistEl) artistEl.textContent = song.artist || '';
     if (coverEl && song.cover) {
@@ -5324,32 +5353,33 @@ body::after{
     if (timeEndEl) timeEndEl.textContent = '0:00';
     loadLyrics(song.lrc);
     updateMediaSession();
+    // 异步拉取 Blob，保证后续可任意 seek（不阻塞 UI）
+    ensureSongSource(song).then(function () {
+      if (playlist[currentIndex] !== song) return;
+      if (!seeking) syncProgress();
+    }).catch(function () {});
     if (autoplay) playMusic();
   }
 
   function waitForCanPlay(timeoutMs) {
-    // 系统浏览器给更长等待，优先等 canplaythrough（缓冲更足）
-    timeoutMs = timeoutMs || 8000;
-    if (audio.readyState >= 4) return Promise.resolve(); // HAVE_ENOUGH_DATA
-    if (audio.readyState >= 3) return Promise.resolve(); // HAVE_FUTURE_DATA
+    timeoutMs = timeoutMs || 12000;
+    if (audio.readyState >= 3) return Promise.resolve();
     return Promise.race([
       new Promise(function (resolve) {
         var settled = false;
         function done() {
           if (settled) return;
           settled = true;
-          audio.removeEventListener('canplay', onCanPlay);
+          audio.removeEventListener('canplay', done);
           audio.removeEventListener('canplaythrough', done);
-          audio.removeEventListener('loadeddata', onCanPlay);
+          audio.removeEventListener('loadeddata', done);
+          audio.removeEventListener('loadedmetadata', done);
           resolve();
         }
-        function onCanPlay() {
-          // 有可播放数据即可先起播，同时继续后台缓冲
-          if (audio.readyState >= 3) done();
-        }
-        audio.addEventListener('canplay', onCanPlay);
+        audio.addEventListener('canplay', done);
         audio.addEventListener('canplaythrough', done);
-        audio.addEventListener('loadeddata', onCanPlay);
+        audio.addEventListener('loadeddata', done);
+        audio.addEventListener('loadedmetadata', done);
       }),
       new Promise(function (resolve) { setTimeout(resolve, timeoutMs); })
     ]);
@@ -5363,16 +5393,10 @@ body::after{
       playButton.disabled = true;
       setPlayingUI(false);
       setStatus('正在加载…');
-      // 确保当前曲目 src 正确且在缓冲（不在已有数据时盲目 load）
-      if (lastSrc !== song.src) {
-        lastSrc = song.src;
-        audio.src = song.src;
-        try { audio.load(); } catch (e) {}
-      } else if (audio.readyState === 0) {
-        try { audio.load(); } catch (e) {}
-      }
-      await waitForCanPlay(10000);
-      if (token !== playToken) return; // 已被新的播放请求取代
+      await ensureSongSource(song);
+      if (token !== playToken) return;
+      await waitForCanPlay(12000);
+      if (token !== playToken) return;
       await audio.play();
       if (token !== playToken) return;
       isLoading = false;
@@ -5447,10 +5471,10 @@ body::after{
   }
 
   /**
-   * 全浏览器可靠跳转（Chrome / Edge / Safari / Firefox / 华为 / 各类 WebView）
-   * - Safari：优先 fastSeek
-   * - Edge/华为：pause 后写 currentTime 并重试，防止静默丢弃
-   * - duration 未就绪：由调用方排队，此处只做写入与确认
+   * 可靠跳转
+   * 关键点：不要为了 seek 主动 pause——在未支持 Range / 部分 VBR 文件上，
+   * pause + 失败的 currentTime 赋值会变成「暂停一瞬再从 0 播放」。
+   * Blob URL 已让文件本地可随机访问；此处只写 currentTime 并确认。
    */
   function hardSeekTo(timeSec) {
     var d = getEffectiveDuration();
@@ -5464,12 +5488,11 @@ body::after{
     var wasPlaying = !audio.paused;
     var target = t;
     var settled = false;
-    var token = ++playToken; // 换曲则作废本次 seek 收尾
+    var seekGen = playToken; // 仅换曲时 playToken 变化，不在此处 ++，避免误伤播放
 
     function applyOnce() {
       try {
         if (audio.readyState < 1) return false;
-        // Safari / iOS 对 fastSeek 更友好
         if (typeof audio.fastSeek === 'function') {
           try {
             audio.fastSeek(target);
@@ -5488,15 +5511,15 @@ body::after{
       if (settled) return;
       settled = true;
       try { audio.removeEventListener('seeked', onSeeked); } catch (e) {}
-      if (token !== playToken) {
+      if (seekGen !== playToken) {
         unlockSeeking();
         return;
       }
+      // 若因内核异常被暂停且用户原本在播，再拉起（不主动 pause）
       if (wasPlaying && audio.paused) {
         var p = audio.play();
         if (p && typeof p.catch === 'function') p.catch(function () {});
       }
-      // 成功后立刻用真实 currentTime 刷新 UI，避免视觉回弹
       var cur = audio.currentTime || 0;
       var dur = getEffectiveDuration();
       if (progressEl && dur > 0) {
@@ -5508,53 +5531,51 @@ body::after{
     }
 
     function onSeeked() {
-      if (token !== playToken) return;
-      if (Math.abs((audio.currentTime || 0) - target) < 1.25) {
+      if (seekGen !== playToken) return;
+      // Blob 下 seek 一般一次成功；允许关键帧误差
+      if (Math.abs((audio.currentTime || 0) - target) < 1.5) {
         finishOk();
       }
     }
     audio.addEventListener('seeked', onSeeked);
 
-    // Edge / 华为 / 部分 Chromium WebView：播放中直接改 currentTime 易被丢弃
-    try {
-      if (wasPlaying) audio.pause();
-    } catch (err) {}
-
     applyOnce();
-    // 下一帧再写一次（Safari / 部分安卓需要）
     try {
       requestAnimationFrame(function () {
-        if (!settled && token === playToken) applyOnce();
+        if (!settled && seekGen === playToken) applyOnce();
       });
     } catch (e) {
-      setTimeout(function () { if (!settled && token === playToken) applyOnce(); }, 16);
+      setTimeout(function () { if (!settled && seekGen === playToken) applyOnce(); }, 16);
     }
 
     var tries = 0;
-    var maxTries = 10;
+    var maxTries = 8;
     function poll() {
-      if (settled || token !== playToken) return;
+      if (settled || seekGen !== playToken) return;
       tries++;
       var cur = audio.currentTime || 0;
-      if (Math.abs(cur - target) < 0.45) {
+      if (Math.abs(cur - target) < 0.5) {
         finishOk();
         return;
       }
       if (tries <= maxTries) {
         applyOnce();
-        setTimeout(poll, 35 + tries * 28);
+        setTimeout(poll, 40 + tries * 30);
       } else {
-        applyOnce();
+        // 仍未到位：保持 UI 在目标位置，避免弹回 0 的观感；继续播当前真实位置
+        if (progressEl && d > 0) {
+          progressEl.value = String(Math.round((target / d) * 1000));
+        }
         finishOk();
       }
     }
-    setTimeout(poll, 28);
+    setTimeout(poll, 30);
 
     if (seekUnlockTimer) clearTimeout(seekUnlockTimer);
     seekUnlockTimer = setTimeout(function () {
       try { audio.removeEventListener('seeked', onSeeked); } catch (e) {}
       if (!settled) finishOk();
-    }, 2200);
+    }, 2500);
 
     return true;
   }
@@ -5880,14 +5901,10 @@ body::after{
   loadSong(0, false);
   applyMusicState(0);
   setPlayingUI(false);
-  // 空闲时仅设置 src（metadata），不强制 load()，减少音频被浏览器强缓存
+  // 空闲时预拉第一首为 Blob，首播即可任意拖动进度
   function preloadFirstTrack() {
-    try {
-      if (!audio.src && playlist[0]) {
-        lastSrc = playlist[0].src;
-        audio.src = playlist[0].src;
-      }
-    } catch (e) {}
+    if (!playlist[0]) return;
+    ensureSongSource(playlist[0]).catch(function () {});
   }
   if ('requestIdleCallback' in window) {
     requestIdleCallback(preloadFirstTrack, { timeout: 2500 });
@@ -6101,4 +6118,3 @@ body::after{
 
 </body>
 </html>
-
