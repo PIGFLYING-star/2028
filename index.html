@@ -4600,9 +4600,9 @@ body::after{
   }
   .music-progress::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 18px;
-    height: 18px;
-    margin-top: -6.5px;
+    width: 14px;
+    height: 14px;
+    margin-top: -4.5px;
     border-radius: 50%;
     background: #1c1c1e;
     border: 2px solid #fff;
@@ -4615,8 +4615,8 @@ body::after{
     background: rgba(0,0,0,.1);
   }
   .music-progress::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     background: #1c1c1e;
     border: 2px solid #fff;
@@ -5440,25 +5440,23 @@ body::after{
   });
 
   /*
-   * 进度条
-   * 桌面：原生 range input 预览 + change 提交
-   * 手机：触摸坐标跟踪 latestRatio（松手时 value 可能仍是旧值），再写一次 currentTime
-   * 拖动中不写 currentTime，避免抽动；seeking 期间 timeupdate 不改 value
+   * 进度条（桌面 + 手机统一坐标求值）
+   * 问题根因：移动端同时绑定 pointer + touch，且 touchstart 为 passive，
+   * 浏览器原生 range 与自定义逻辑打架，松手时 value/ratio 常回落到 0，导致 currentTime=0。
+   * 修复：以 Pointer Events 为主并 preventDefault；坐标始终从 clientX 计算；
+   * 仅在松手时写入 currentTime；seeking 期间 timeupdate 不改写进度条。
    */
   if (progressEl) {
     var scrubActive = false;
     var scrubCommitted = false;
     var latestRatio = 0;
+    var activePointerId = null;
 
     function clampRatio(r) {
       if (!isFinite(r)) return 0;
       if (r < 0) return 0;
       if (r > 1) return 1;
       return r;
-    }
-
-    function ratioFromValue() {
-      return clampRatio(Number(progressEl.value) / 1000);
     }
 
     function ratioFromEvent(e) {
@@ -5472,7 +5470,7 @@ body::after{
       }
       if (x == null) return null;
       var rect = progressEl.getBoundingClientRect();
-      if (rect.width <= 0) return null;
+      if (!rect || rect.width <= 0) return null;
       return clampRatio((x - rect.left) / rect.width);
     }
 
@@ -5487,16 +5485,19 @@ body::after{
       updateLyrics(t);
     }
 
-    function commitRatio() {
+    function commitRatio(ratio) {
       if (scrubCommitted) return;
       scrubCommitted = true;
-      var ratio = clampRatio(latestRatio);
+      ratio = clampRatio(ratio != null ? ratio : latestRatio);
+      latestRatio = ratio;
       var d = audio.duration;
       if (!isFinite(d) || d <= 0) {
         unlockSeeking();
         return;
       }
       var t = ratio * d;
+      // 防止浮点边界把末尾变成 duration 导致部分浏览器跳到下一首
+      if (t >= d) t = Math.max(0, d - 0.05);
       progressEl.value = String(Math.round(ratio * 1000));
       if (timeCurEl) timeCurEl.textContent = formatTime(t);
       updateLyrics(t);
@@ -5509,70 +5510,97 @@ body::after{
         return;
       }
       if (seekUnlockTimer) clearTimeout(seekUnlockTimer);
-      seekUnlockTimer = setTimeout(unlockSeeking, 600);
+      // 移动端 seeked 可能较慢，稍延长锁，避免 timeupdate 把进度条打回 0
+      seekUnlockTimer = setTimeout(unlockSeeking, 900);
     }
 
     function beginScrub(e) {
-      if (e) e.stopPropagation();
+      if (e) {
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+      }
       scrubActive = true;
       scrubCommitted = false;
       seeking = true;
       var r = ratioFromEvent(e);
-      if (r == null) r = ratioFromValue();
+      if (r == null) r = clampRatio(Number(progressEl.value) / 1000);
       previewRatio(r);
     }
 
     function moveScrub(e) {
       if (!scrubActive) return;
-      if (e) e.stopPropagation();
+      if (e) {
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+      }
       var r = ratioFromEvent(e);
       if (r != null) previewRatio(r);
     }
 
     function endScrub(e) {
-      if (!scrubActive && scrubCommitted) return;
-      if (e) e.stopPropagation();
+      if (!scrubActive) return;
+      if (e) {
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+      }
       scrubActive = false;
       var r = ratioFromEvent(e);
       if (r != null) previewRatio(r);
-      // 移动端 touchend 时原生 value 有时未更新，用 rAF 再读一次并提交 latestRatio
-      requestAnimationFrame(function () {
-        var v = ratioFromValue();
-        if (Math.abs(v - latestRatio) < 0.02) latestRatio = v;
-        commitRatio();
-      });
+      // 以坐标计算结果为准，不依赖原生 range 在 touchend 时的 value（移动端常滞后或归零）
+      commitRatio(latestRatio);
+      activePointerId = null;
     }
 
+    function cancelScrub(e) {
+      if (!scrubActive) return;
+      scrubActive = false;
+      activePointerId = null;
+      unlockSeeking();
+    }
+
+    // Pointer Events：现代手机与桌面统一入口，并接管默认行为
     progressEl.addEventListener('pointerdown', function (e) {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
+      activePointerId = e.pointerId;
       beginScrub(e);
       try { progressEl.setPointerCapture(e.pointerId); } catch (err) {}
     });
     progressEl.addEventListener('pointermove', function (e) {
       if (!scrubActive) return;
+      if (activePointerId != null && e.pointerId !== activePointerId) return;
       moveScrub(e);
     });
-    progressEl.addEventListener('pointerup', endScrub);
-    progressEl.addEventListener('pointercancel', endScrub);
+    progressEl.addEventListener('pointerup', function (e) {
+      if (activePointerId != null && e.pointerId !== activePointerId) return;
+      endScrub(e);
+    });
+    progressEl.addEventListener('pointercancel', function (e) {
+      if (activePointerId != null && e.pointerId !== activePointerId) return;
+      cancelScrub(e);
+    });
 
-    progressEl.addEventListener('touchstart', beginScrub, { passive: true });
-    progressEl.addEventListener('touchmove', function (e) {
-      if (!scrubActive) return;
-      if (e.cancelable) e.preventDefault();
-      moveScrub(e);
-    }, { passive: false });
-    progressEl.addEventListener('touchend', endScrub, { passive: true });
-    progressEl.addEventListener('touchcancel', endScrub, { passive: true });
+    // 无 Pointer Events 的旧 WebView 兜底（仅 touch，且非 passive 以便 preventDefault）
+    if (!window.PointerEvent) {
+      progressEl.addEventListener('touchstart', beginScrub, { passive: false });
+      progressEl.addEventListener('touchmove', moveScrub, { passive: false });
+      progressEl.addEventListener('touchend', endScrub, { passive: false });
+      progressEl.addEventListener('touchcancel', cancelScrub, { passive: false });
+    }
 
+    // 桌面键盘/辅助：原生 input 预览；change 提交（pointer 已处理时由 scrubCommitted 挡住）
     progressEl.addEventListener('input', function (e) {
       e.stopPropagation();
+      if (scrubActive) return;
       seeking = true;
-      previewRatio(ratioFromValue());
+      var r = clampRatio(Number(progressEl.value) / 1000);
+      previewRatio(r);
     });
     progressEl.addEventListener('change', function (e) {
       e.stopPropagation();
-      latestRatio = ratioFromValue();
-      if (!scrubCommitted) commitRatio();
+      if (scrubCommitted) return;
+      var r = clampRatio(Number(progressEl.value) / 1000);
+      latestRatio = r;
+      commitRatio(r);
     });
     progressEl.addEventListener('click', function (e) {
       e.stopPropagation();
