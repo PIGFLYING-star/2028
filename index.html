@@ -5249,16 +5249,14 @@ body::after{
     if (statusEl) statusEl.textContent = text;
   }
 
-  /** 切歌后若 metadata 未就绪，暂存待跳转时间，loadedmetadata 时再应用 */
-  var pendingSeekTime = null;
+  /** 切歌后 duration 未就绪时暂存跳转比例，metadata 到达后再应用 */
+  var pendingSeekRatio = null;
 
   function loadSong(index, autoplay) {
     currentIndex = ((index % playlist.length) + playlist.length) % playlist.length;
     const song = playlist[currentIndex];
-    // 切歌时重置 seek 状态，避免上一曲的 seeking 标志卡住进度条
     seeking = false;
-    pendingSeekTime = null;
-    // 仅在换曲时改 src，避免重复赋值中断缓冲
+    pendingSeekRatio = null;
     if (lastSrc !== song.src) {
       lastSrc = song.src;
       audio.src = song.src;
@@ -5424,195 +5422,163 @@ body::after{
   });
 
   if (progressEl) {
-    /* 【进度条】拖动/点击均可跳转；切歌后仍可用。
-       - 坐标计算兼容华为等系统浏览器 value 被写成 0
-       - setPointerCapture 保证拖出控件仍跟手
-       - 拖动后抑制 click，避免 pointerup 后 click 把进度打回 0
-       - duration 未就绪时写入 pendingSeekTime，metadata 到达后再应用 */
-    var seekFromPointer = false;
+    /*
+     * 进度条：拖动 / 点击均可跳转，切歌后同样可用。
+     * 关键点（此前 bug 根因）：
+     *   切歌后 seekable 往往只有开头几秒，若把目标时间钳到 seekable.end，
+     *   会变成接近 0，表现为「拖一下又从头播」。
+     *   正确做法：直接写 audio.currentTime，不要用未完整的 seekable 钳制。
+     */
+    var isDragging = false;
     var activePointerId = null;
     var suppressClickUntil = 0;
-    var lastSeekRatio = 0;
+    var lastRatio = 0;
 
-    function progressRatioFromEvent(e) {
+    function clamp01(r) {
+      if (!isFinite(r)) return 0;
+      if (r < 0) return 0;
+      if (r > 1) return 1;
+      return r;
+    }
+
+    function ratioFromEvent(e) {
       if (!e) return null;
       var rect = progressEl.getBoundingClientRect();
-      var clientX = (e.clientX != null) ? e.clientX
-        : (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX
-        : (e.touches && e.touches[0] ? e.touches[0].clientX : null));
-      if (clientX == null || rect.width <= 0) return null;
-      var ratio = (clientX - rect.left) / rect.width;
-      if (ratio < 0) ratio = 0;
-      if (ratio > 1) ratio = 1;
+      if (rect.width <= 0) return null;
+      var x = e.clientX;
+      if (x == null && e.changedTouches && e.changedTouches[0]) x = e.changedTouches[0].clientX;
+      if (x == null && e.touches && e.touches[0]) x = e.touches[0].clientX;
+      if (x == null) return null;
+      var r = (x - rect.left) / rect.width;
       try {
-        var cs = window.getComputedStyle(progressEl);
-        if (cs && cs.direction === 'rtl') ratio = 1 - ratio;
+        if (window.getComputedStyle(progressEl).direction === 'rtl') r = 1 - r;
       } catch (err) {}
-      return ratio;
+      return clamp01(r);
     }
 
-    function commitSeekTime(t) {
-      if (!isFinite(t) || t < 0) return;
-      var d = audio.duration;
-      if (!isFinite(d) || d <= 0 || audio.readyState < 1) {
-        pendingSeekTime = t;
-        return;
-      }
-      if (t > d) t = d;
-      try {
-        if (audio.seekable && audio.seekable.length > 0) {
-          var start = audio.seekable.start(0);
-          var end = audio.seekable.end(audio.seekable.length - 1);
-          if (t < start) t = start;
-          if (t > end) t = end;
-        }
-        audio.currentTime = t;
-        pendingSeekTime = null;
-      } catch (err) {
-        pendingSeekTime = t;
-        console.warn('[Music Capsule] seek deferred:', err);
-      }
-    }
-
-    function applySeekRatio(ratio, previewOnly) {
-      if (ratio == null || !isFinite(ratio)) return;
-      if (ratio < 0) ratio = 0;
-      if (ratio > 1) ratio = 1;
-      lastSeekRatio = ratio;
-      var d = audio.duration;
-      var t = (isFinite(d) && d > 0) ? ratio * d : 0;
+    /** 更新 UI；commit=true 时真正写入 currentTime */
+    function seekToRatio(ratio, commit) {
+      ratio = clamp01(ratio);
+      lastRatio = ratio;
       progressEl.value = String(Math.round(ratio * 1000));
-      if (timeCurEl) timeCurEl.textContent = formatTime(t);
-      if (isFinite(d) && d > 0) updateLyrics(t);
-      if (previewOnly) return;
+
+      var d = audio.duration;
       if (isFinite(d) && d > 0) {
-        commitSeekTime(t);
+        var t = ratio * d;
+        if (timeCurEl) timeCurEl.textContent = formatTime(t);
+        updateLyrics(t);
+        if (commit) {
+          pendingSeekRatio = null;
+          try {
+            // 关键：不要用未缓冲完的 seekable 去钳制，否则会跳回开头
+            audio.currentTime = t;
+          } catch (err) {
+            pendingSeekRatio = ratio;
+            console.warn('[Music Capsule] seek deferred:', err);
+          }
+        }
       } else {
-        // metadata 未到：按比例暂存，等 loadedmetadata / canplay 再应用
-        pendingSeekTime = { ratio: ratio };
+        if (timeCurEl) timeCurEl.textContent = '0:00';
+        if (commit) pendingSeekRatio = ratio;
       }
     }
 
-    function applySeekFromEvent(e, previewOnly) {
-      var ratio = progressRatioFromEvent(e);
-      if (ratio == null) {
-        var v = Number(progressEl.value);
-        if (isFinite(v)) ratio = v / 1000;
-      }
-      if (ratio == null) ratio = lastSeekRatio;
-      applySeekRatio(ratio, previewOnly);
-    }
-
-    function endSeek(e) {
-      if (e) e.stopPropagation();
-      if (!seeking && !seekFromPointer) return;
-      applySeekFromEvent(e || {}, false);
+    function finishDrag(e) {
+      if (!isDragging) return;
+      var ratio = ratioFromEvent(e);
+      if (ratio == null) ratio = lastRatio;
+      seekToRatio(ratio, true);
+      isDragging = false;
       seeking = false;
-      seekFromPointer = false;
-      suppressClickUntil = performance.now() + 350;
+      suppressClickUntil = performance.now() + 400;
       if (activePointerId != null) {
         try { progressEl.releasePointerCapture(activePointerId); } catch (err) {}
         activePointerId = null;
       }
-      requestAnimationFrame(function () {
-        seeking = false;
-        // 有有效 duration 时再同步；否则等 metadata
-        if (isFinite(audio.duration) && audio.duration > 0) syncProgress();
-      });
     }
 
     progressEl.addEventListener('pointerdown', function (e) {
       e.stopPropagation();
       e.preventDefault();
+      isDragging = true;
       seeking = true;
-      seekFromPointer = true;
       activePointerId = e.pointerId;
       try { progressEl.setPointerCapture(e.pointerId); } catch (err) {}
-      applySeekFromEvent(e, true);
+      var ratio = ratioFromEvent(e);
+      if (ratio != null) seekToRatio(ratio, false);
     });
 
     progressEl.addEventListener('pointermove', function (e) {
-      if (!seeking) return;
+      if (!isDragging) return;
       e.stopPropagation();
-      applySeekFromEvent(e, true);
+      var ratio = ratioFromEvent(e);
+      if (ratio != null) seekToRatio(ratio, false);
     });
 
+    progressEl.addEventListener('pointerup', function (e) {
+      e.stopPropagation();
+      finishDrag(e);
+    });
+    progressEl.addEventListener('pointercancel', function (e) {
+      e.stopPropagation();
+      finishDrag(e);
+    });
+
+    // 原生 range 拖动（桌面鼠标）会触发 input；仅预览，真正提交在 change / pointerup
     progressEl.addEventListener('input', function (e) {
       e.stopPropagation();
       seeking = true;
-      var ratio = Number(progressEl.value) / 1000;
-      if (!isFinite(ratio)) return;
-      applySeekRatio(ratio, true);
+      var ratio = clamp01(Number(progressEl.value) / 1000);
+      seekToRatio(ratio, false);
     });
-
-    progressEl.addEventListener('pointerup', endSeek);
-    progressEl.addEventListener('pointercancel', endSeek);
 
     progressEl.addEventListener('change', function (e) {
       e.stopPropagation();
-      // 指针拖动已在 pointerup 提交，避免 change 用错误 value 覆盖
-      if (seekFromPointer || performance.now() < suppressClickUntil) return;
-      var ratio = Number(progressEl.value) / 1000;
-      if (!isFinite(ratio)) return;
+      if (performance.now() < suppressClickUntil) return;
+      var ratio = clamp01(Number(progressEl.value) / 1000);
       seeking = true;
-      applySeekRatio(ratio, false);
+      seekToRatio(ratio, true);
       seeking = false;
+      isDragging = false;
     });
 
+    // 纯点击（非拖动）跳转；拖动产生的合成 click 必须忽略
     progressEl.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
-      // 拖动产生的合成 click 一律忽略，防止进度被打回 0
       if (performance.now() < suppressClickUntil) return;
+      var ratio = ratioFromEvent(e);
+      if (ratio == null) ratio = clamp01(Number(progressEl.value) / 1000);
       seeking = true;
-      applySeekFromEvent(e, false);
+      seekToRatio(ratio, true);
       seeking = false;
       suppressClickUntil = performance.now() + 200;
-      requestAnimationFrame(function () {
-        if (isFinite(audio.duration) && audio.duration > 0) syncProgress();
-      });
     });
-
-    progressEl.addEventListener('touchstart', function (e) {
-      e.stopPropagation();
-      seeking = true;
-      seekFromPointer = true;
-      if (e.touches && e.touches[0]) applySeekFromEvent(e, true);
-    }, { passive: true });
-    progressEl.addEventListener('touchend', function (e) {
-      e.stopPropagation();
-      endSeek(e);
-    }, { passive: true });
   }
 
   function applyPendingSeek() {
-    if (pendingSeekTime == null) return;
+    if (pendingSeekRatio == null) return;
     var d = audio.duration;
     if (!isFinite(d) || d <= 0) return;
-    var t;
-    if (typeof pendingSeekTime === 'object' && pendingSeekTime.ratio != null) {
-      t = pendingSeekTime.ratio * d;
-    } else if (typeof pendingSeekTime === 'number') {
-      t = pendingSeekTime;
-    } else {
-      pendingSeekTime = null;
-      return;
-    }
-    pendingSeekTime = null;
+    var ratio = clamp01(typeof pendingSeekRatio === 'number' ? pendingSeekRatio : 0);
+    pendingSeekRatio = null;
+    var t = ratio * d;
     try {
-      if (audio.seekable && audio.seekable.length > 0) {
-        var start = audio.seekable.start(0);
-        var end = audio.seekable.end(audio.seekable.length - 1);
-        if (t < start) t = start;
-        if (t > end) t = end;
-      }
       audio.currentTime = t;
-      if (progressEl) progressEl.value = String(Math.round((t / d) * 1000));
+      if (progressEl) progressEl.value = String(Math.round(ratio * 1000));
       if (timeCurEl) timeCurEl.textContent = formatTime(t);
       updateLyrics(t);
     } catch (err) {
       console.warn('[Music Capsule] pending seek failed:', err);
     }
+  }
+
+  // clamp01 在 progress 块外也要用
+  function clamp01(r) {
+    if (!isFinite(r)) return 0;
+    if (r < 0) return 0;
+    if (r > 1) return 1;
+    return r;
   }
 
   audio.addEventListener('play', function () { if (!isLoading) setPlayingUI(true); });
@@ -5627,9 +5593,7 @@ body::after{
     applyPendingSeek();
     syncProgress();
   });
-  audio.addEventListener('canplay', function () {
-    applyPendingSeek();
-  });
+  audio.addEventListener('canplay', applyPendingSeek);
   audio.addEventListener('waiting', function () {
     if (!audio.paused) {
       isLoading = true;
