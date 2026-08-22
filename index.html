@@ -5176,57 +5176,26 @@ body::after{
   audio.volume = 0.8;
   audio.setAttribute('playsinline', '');
   audio.setAttribute('webkit-playsinline', '');
-  audio.preload = 'auto';
-  // 用 Blob URL 播放：规避服务器未返回 Accept-Ranges 时
-  // Chrome/Edge/华为对部分 MP3（尤其 VBR）seek 会静默回到 0 的问题
+  audio.preload = 'metadata';
+  // 播放一律走直链秒开；Blob 仅后台可选缓存，用于部分文件无法 Range seek
   var lastSrcKey = '';
   var playToken = 0;
   var blobUrlCache = Object.create(null);
-  /** 进行中的 fetch，避免同一首歌重复下载 */
   var blobInflight = Object.create(null);
-  /** 换曲拉 Blob 期间锁定进度条在起点，避免小圆点停在上一首位置 */
   var isSwitching = false;
 
-  function resolvePlayableSrc(song) {
-    var key = song.src;
-    if (blobUrlCache[key]) return Promise.resolve(blobUrlCache[key]);
-    if (blobInflight[key]) return blobInflight[key];
-    blobInflight[key] = (async function () {
-      try {
-        var res = await fetch(key, {
-          cache: 'force-cache',
-          credentials: 'same-origin',
-          // 尽早开始传给浏览器 HTTP 缓存
-          priority: 'high'
-        });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        var blob = await res.blob();
-        if (!blob.type || blob.type.indexOf('audio') !== 0) {
-          blob = new Blob([blob], { type: 'audio/mpeg' });
-        }
-        var url = URL.createObjectURL(blob);
-        blobUrlCache[key] = url;
-        return url;
-      } catch (err) {
-        console.warn('[Music Capsule] blob fetch failed, fallback direct src:', key, err);
-        return key;
-      } finally {
-        delete blobInflight[key];
-      }
-    })();
-    return blobInflight[key];
-  }
-
-  /** 后台静默换成 Blob，保持当前进度与播放状态（便于后续任意 seek） */
   function softSwapToBlob(url, expectedKey) {
-    if (!url || url === expectedKey) return;
-    if (lastSrcKey !== expectedKey) return;
+    if (!url || lastSrcKey !== expectedKey) return;
     if (audio.src === url) return;
     var t = audio.currentTime || 0;
     var wasPlaying = !audio.paused;
     var token = playToken;
-    audio.src = url;
-    try { audio.load(); } catch (e) {}
+    try {
+      audio.src = url;
+      audio.load();
+    } catch (e) {
+      return;
+    }
     function resume() {
       if (token !== playToken || lastSrcKey !== expectedKey) return;
       try { audio.currentTime = t; } catch (e) {}
@@ -5235,31 +5204,51 @@ body::after{
         if (p && typeof p.catch === 'function') p.catch(function () {});
       }
     }
-    if (audio.readyState >= 1) {
-      resume();
-    } else {
-      audio.addEventListener('loadedmetadata', resume, { once: true });
-    }
+    if (audio.readyState >= 1) resume();
+    else audio.addEventListener('loadedmetadata', resume, { once: true });
+  }
+
+  /** 后台拉 Blob，绝不阻塞 play / 切歌 */
+  function prefetchBlobInBackground(song) {
+    var key = song && song.src;
+    if (!key || blobUrlCache[key] || blobInflight[key]) return;
+    var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = setTimeout(function () {
+      try { if (ctrl) ctrl.abort(); } catch (e) {}
+    }, 45000);
+    blobInflight[key] = fetch(key, {
+      cache: 'force-cache',
+      credentials: 'same-origin',
+      signal: ctrl ? ctrl.signal : undefined
+    })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.blob();
+      })
+      .then(function (blob) {
+        if (!blob.type || blob.type.indexOf('audio') !== 0) {
+          blob = new Blob([blob], { type: 'audio/mpeg' });
+        }
+        var url = URL.createObjectURL(blob);
+        blobUrlCache[key] = url;
+        if (lastSrcKey === key && String(audio.src).indexOf('blob:') !== 0) {
+          softSwapToBlob(url, key);
+        }
+      })
+      .catch(function () { /* 静默：直链已可播 */ })
+      .finally(function () {
+        clearTimeout(timer);
+        delete blobInflight[key];
+      });
   }
 
   /**
-   * forceReset=true：换曲强制换源并归零
-   * 性能策略：
-   * - 已有 Blob 缓存 → 直接用，几乎零等待
-   * - 未缓存 → 先直链秒开，后台拉 Blob，就绪后 softSwap（不打断播放）
+   * 同步换源，绝不 await 下载。
+   * 有 Blob 缓存则用缓存（便于 seek），否则直链立刻可播。
    */
-  async function ensureSongSource(song, forceReset) {
+  function ensureSongSource(song, forceReset) {
     var key = song.src;
-    var cached = blobUrlCache[key];
-    var playable = cached || key;
-
-    if (!cached) {
-      // 后台拉 Blob，不阻塞起播
-      resolvePlayableSrc(song).then(function (url) {
-        if (url && url !== key) softSwapToBlob(url, key);
-      }).catch(function () {});
-    }
-
+    var playable = blobUrlCache[key] || key;
     var needSwap = forceReset || lastSrcKey !== key || !audio.src;
     if (needSwap) {
       lastSrcKey = key;
@@ -5269,28 +5258,6 @@ body::after{
       try { audio.currentTime = 0; } catch (e) {}
     }
     return playable;
-  }
-
-  /** 空闲预取整份歌单 Blob，切歌命中缓存即秒切 */
-  function prefetchPlaylistBlobs(preferIndex) {
-    var order = [];
-    var n = playlist.length;
-    if (n === 0) return;
-    // 当前 → 下一首 → 上一首 → 其余，优先用户马上会点的
-    var start = ((preferIndex % n) + n) % n;
-    order.push(start);
-    order.push((start + 1) % n);
-    order.push((start - 1 + n) % n);
-    for (var i = 0; i < n; i++) {
-      if (order.indexOf(i) === -1) order.push(i);
-    }
-    order.forEach(function (idx, delayStep) {
-      var song = playlist[idx];
-      if (!song || blobUrlCache[song.src] || blobInflight[song.src]) return;
-      setTimeout(function () {
-        resolvePlayableSrc(song).catch(function () {});
-      }, delayStep * 180);
-    });
   }
 
   function resetProgressUI() {
@@ -5428,14 +5395,13 @@ body::after{
   }
 
   function loadSong(index, autoplay) {
-    // 作废进行中的播放/跳转，防止旧曲 timeupdate 污染新曲 UI
     var token = ++playToken;
     currentIndex = ((index % playlist.length) + playlist.length) % playlist.length;
     const song = playlist[currentIndex];
 
     seeking = false;
     isLoading = false;
-    isSwitching = true; // Blob 加载期间锁死进度条在 0
+    isSwitching = true;
     if (seekUnlockTimer) {
       clearTimeout(seekUnlockTimer);
       seekUnlockTimer = null;
@@ -5456,37 +5422,29 @@ body::after{
     loadLyrics(song.lrc);
     updateMediaSession();
 
-    // 强制换源 + 进度归零，再按需自动播放
-    ensureSongSource(song, true).then(function () {
+    // 同步换源（直链秒开），不下载整文件
+    ensureSongSource(song, true);
+    try { audio.currentTime = 0; } catch (e) {}
+    resetProgressUI();
+
+    function onMeta() {
       if (token !== playToken) return;
-      try { audio.currentTime = 0; } catch (e) {}
-      resetProgressUI();
-      // 元数据就绪后只补总时长，进度仍保持在 0
-      function onMeta() {
-        if (token !== playToken) return;
-        var d = getEffectiveDuration();
-        if (timeEndEl && d > 0) timeEndEl.textContent = formatTime(d);
-        if (progressEl) progressEl.value = 0;
-        if (timeCurEl) timeCurEl.textContent = '0:00';
-      }
-      audio.addEventListener('loadedmetadata', onMeta, { once: true });
-      audio.addEventListener('durationchange', onMeta, { once: true });
-      onMeta();
-      isSwitching = false;
-      // 预取相邻曲目，下次切歌多半已是 Blob 缓存
-      prefetchPlaylistBlobs(currentIndex);
-      if (autoplay && token === playToken) playMusic();
-    }).catch(function (err) {
-      console.warn('[Music Capsule] loadSong source failed:', err);
-      isSwitching = false;
-      if (token !== playToken) return;
-      setStatus('加载失败');
-      setPlayingUI(false);
-    });
+      var d = getEffectiveDuration();
+      if (timeEndEl && d > 0) timeEndEl.textContent = formatTime(d);
+      if (progressEl) progressEl.value = 0;
+      if (timeCurEl) timeCurEl.textContent = '0:00';
+    }
+    audio.addEventListener('loadedmetadata', onMeta, { once: true });
+    audio.addEventListener('durationchange', onMeta, { once: true });
+    onMeta();
+
+    isSwitching = false;
+    if (autoplay && token === playToken) playMusic();
   }
 
   function waitForCanPlay(timeoutMs) {
-    timeoutMs = timeoutMs || 12000;
+    // 直链流式：有一点数据即可起播，不必等整首下完
+    timeoutMs = timeoutMs || 8000;
     if (audio.readyState >= 2) return Promise.resolve();
     return Promise.race([
       new Promise(function (resolve) {
@@ -5495,13 +5453,11 @@ body::after{
           if (settled) return;
           settled = true;
           audio.removeEventListener('canplay', done);
-          audio.removeEventListener('canplaythrough', done);
           audio.removeEventListener('loadeddata', done);
           audio.removeEventListener('loadedmetadata', done);
           resolve();
         }
         audio.addEventListener('canplay', done);
-        audio.addEventListener('canplaythrough', done);
         audio.addEventListener('loadeddata', done);
         audio.addEventListener('loadedmetadata', done);
       }),
@@ -5517,15 +5473,20 @@ body::after{
       playButton.disabled = true;
       setPlayingUI(false);
       setStatus('正在加载…');
-      await ensureSongSource(song, false);
+      // 同步设直链，立即流式播放
+      ensureSongSource(song, false);
       if (token !== playToken) return;
-      await waitForCanPlay(12000);
+      await waitForCanPlay(8000);
       if (token !== playToken) return;
       await audio.play();
       if (token !== playToken) return;
       isLoading = false;
       setPlayingUI(true);
       setStatus('正在播放·' + song.title);
+      // 开播后再后台缓存 Blob（失败不影响播放）
+      setTimeout(function () {
+        if (token === playToken) prefetchBlobInBackground(song);
+      }, 1500);
     } catch (err) {
       console.warn('[Music Capsule] play failed:', err);
       if (token !== playToken) return;
@@ -6031,15 +5992,7 @@ body::after{
   loadSong(0, false);
   applyMusicState(0);
   setPlayingUI(false);
-  // 空闲时按优先级预拉整份歌单 Blob：首首可拖进度，切歌多半秒切
-  function scheduleBlobPrefetch() {
-    prefetchPlaylistBlobs(0);
-  }
-  if ('requestIdleCallback' in window) {
-    requestIdleCallback(scheduleBlobPrefetch, { timeout: 1800 });
-  } else {
-    setTimeout(scheduleBlobPrefetch, 600);
-  }
+  // 仅预加载第一首 metadata，不预拉整文件 Blob（避免占满带宽导致点播失败）
   window.__musicCapsuleReady = true;
   console.log('🎵 Music Capsule Ready ·', playlist.length, 'tracks');
 })();
@@ -6247,4 +6200,8 @@ body::after{
 
 </body>
 </html>
+
+
+
+
 
