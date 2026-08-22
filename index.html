@@ -5190,7 +5190,6 @@ body::after{
       var res = await fetch(key, { cache: 'force-cache', credentials: 'same-origin' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       var blob = await res.blob();
-      // 强制 audio/mpeg，避免部分环境 MIME 不准
       if (blob.type && blob.type.indexOf('audio') !== 0) {
         blob = new Blob([blob], { type: 'audio/mpeg' });
       }
@@ -5203,17 +5202,27 @@ body::after{
     }
   }
 
-  async function ensureSongSource(song) {
+  /** forceReset=true：换曲时强制换 src 并归零，避免进度条/歌词残留 */
+  async function ensureSongSource(song, forceReset) {
     var playable = await resolvePlayableSrc(song);
-    if (lastSrcKey !== song.src) {
+    var needSwap = forceReset || lastSrcKey !== song.src || !audio.src;
+    if (needSwap) {
       lastSrcKey = song.src;
+      try { audio.pause(); } catch (e) {}
       audio.src = playable;
       try { audio.load(); } catch (e) {}
-    } else if (!audio.src) {
-      audio.src = playable;
-      try { audio.load(); } catch (e) {}
+      try { audio.currentTime = 0; } catch (e) {}
     }
     return playable;
+  }
+
+  function resetProgressUI() {
+    if (progressEl) progressEl.value = 0;
+    if (timeCurEl) timeCurEl.textContent = '0:00';
+    if (timeEndEl) timeEndEl.textContent = '0:00';
+    if (lyricCurEl) lyricCurEl.textContent = '—';
+    if (lyricNextEl) lyricNextEl.textContent = '—';
+    lyricIndex = -1;
   }
 
   function formatTime(sec) {
@@ -5264,10 +5273,16 @@ body::after{
   }
 
   async function loadLyrics(path) {
+    // 先清空，避免上一首歌词残留在界面上
+    lyrics = [];
+    lyricIndex = -1;
+    if (lyricCurEl) lyricCurEl.textContent = '—';
+    if (lyricNextEl) lyricNextEl.textContent = '—';
+
     if (lrcCache[path]) {
       lyrics = lrcCache[path];
       lyricIndex = -1;
-      updateLyrics(audio.currentTime || 0);
+      updateLyrics(0);
       return;
     }
     try {
@@ -5280,8 +5295,10 @@ body::after{
       console.warn('[Music Capsule] LRC load failed:', path, err);
       lyrics = [];
     }
+    // 若用户已切到别的歌，丢弃本次结果
+    if (playlist[currentIndex] && playlist[currentIndex].lrc !== path) return;
     lyricIndex = -1;
-    updateLyrics(audio.currentTime || 0);
+    updateLyrics(0);
   }
 
   function updateLyrics(t) {
@@ -5334,36 +5351,59 @@ body::after{
   }
 
   function loadSong(index, autoplay) {
+    // 作废进行中的播放/跳转，防止旧曲 timeupdate 污染新曲 UI
+    var token = ++playToken;
     currentIndex = ((index % playlist.length) + playlist.length) % playlist.length;
     const song = playlist[currentIndex];
+
     seeking = false;
+    isLoading = false;
     if (seekUnlockTimer) {
       clearTimeout(seekUnlockTimer);
       seekUnlockTimer = null;
     }
+
+    try { audio.pause(); } catch (e) {}
+
     if (titleEl) titleEl.textContent = song.title;
     if (artistEl) artistEl.textContent = song.artist || '';
     if (coverEl && song.cover) {
       coverEl.src = song.cover;
       coverEl.alt = song.title + ' 封面';
     }
+
+    resetProgressUI();
     setStatus(autoplay ? '正在加载…' : '已暂停播放');
-    if (progressEl) progressEl.value = 0;
-    if (timeCurEl) timeCurEl.textContent = '0:00';
-    if (timeEndEl) timeEndEl.textContent = '0:00';
+    setPlayingUI(false);
     loadLyrics(song.lrc);
     updateMediaSession();
-    // 异步拉取 Blob，保证后续可任意 seek（不阻塞 UI）
-    ensureSongSource(song).then(function () {
-      if (playlist[currentIndex] !== song) return;
-      if (!seeking) syncProgress();
-    }).catch(function () {});
-    if (autoplay) playMusic();
+
+    // 强制换源 + 进度归零，再按需自动播放
+    ensureSongSource(song, true).then(function () {
+      if (token !== playToken) return;
+      try { audio.currentTime = 0; } catch (e) {}
+      resetProgressUI();
+      // 元数据就绪后补总时长
+      function onMeta() {
+        if (token !== playToken) return;
+        var d = getEffectiveDuration();
+        if (timeEndEl && d > 0) timeEndEl.textContent = formatTime(d);
+      }
+      audio.addEventListener('loadedmetadata', onMeta, { once: true });
+      audio.addEventListener('durationchange', onMeta, { once: true });
+      onMeta();
+      if (autoplay && token === playToken) playMusic();
+    }).catch(function (err) {
+      console.warn('[Music Capsule] loadSong source failed:', err);
+      if (token !== playToken) return;
+      setStatus('加载失败');
+      setPlayingUI(false);
+    });
   }
 
   function waitForCanPlay(timeoutMs) {
     timeoutMs = timeoutMs || 12000;
-    if (audio.readyState >= 3) return Promise.resolve();
+    if (audio.readyState >= 2) return Promise.resolve();
     return Promise.race([
       new Promise(function (resolve) {
         var settled = false;
@@ -5393,7 +5433,7 @@ body::after{
       playButton.disabled = true;
       setPlayingUI(false);
       setStatus('正在加载…');
-      await ensureSongSource(song);
+      await ensureSongSource(song, false);
       if (token !== playToken) return;
       await waitForCanPlay(12000);
       if (token !== playToken) return;
@@ -5449,8 +5489,8 @@ body::after{
   var seekUnlockTimer = null;
 
   function syncProgress() {
-    // 拖动中 / 跳转未完成：绝不改写进度条，否则会抽动或被重置
-    if (seeking) return;
+    // 拖动中 / 跳转未完成 / 换曲加载中：绝不改写进度条
+    if (seeking || isLoading) return;
     var d = getEffectiveDuration();
     var t = audio.currentTime || 0;
     if (timeCurEl) timeCurEl.textContent = formatTime(t);
@@ -6118,3 +6158,5 @@ body::after{
 
 </body>
 </html>
+
+
