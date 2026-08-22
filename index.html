@@ -4580,6 +4580,12 @@ body::after{
     gap: 4px;
     width: 100%;
     padding-top: 6px; /* 【进度条】给滑块圆点留出空间，避免被顶栏遮挡 */
+    /* 交互热区：全浏览器统一由 wrap 接管，避免原生 range 在移动端/Edge 上的 seek 缺陷 */
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: pointer;
+    position: relative;
   }
   .music-progress {
     width: 100%;
@@ -4592,6 +4598,12 @@ body::after{
     outline: none;
     cursor: pointer;
     touch-action: none;
+    /* 仅展示进度；拖动由父级 wrap 计算坐标，规避 iOS/华为/Edge 原生 range 松手归零 */
+    pointer-events: none;
+  }
+  .music-progress:focus {
+    /* 键盘无障碍：聚焦时允许方向键操作原生 range */
+    pointer-events: auto;
   }
   .music-progress::-webkit-slider-runnable-track {
     height: 5px;
@@ -4621,6 +4633,12 @@ body::after{
     background: #1c1c1e;
     border: 2px solid #fff;
     box-shadow: 0 1px 4px rgba(0,0,0,.25);
+  }
+  /* Firefox 额外：去掉默认 focus 环的突兀，保留可访问性轮廓 */
+  .music-progress::-moz-focus-outer { border: 0; }
+  .music-progress:focus-visible {
+    outline: 2px solid rgba(201,168,76,.55);
+    outline-offset: 2px;
   }
   .music-time-row {
     display: flex;
@@ -5065,8 +5083,8 @@ body::after{
 
     <!-- 【功能1】胶囊2：iOS 风格完整控件 -->
     <div class="music-player-extra" id="musicPlayerExtra">
-      <div class="music-progress-wrap">
-        <input class="music-progress" id="musicProgress" type="range" min="0" max="1000" value="0" step="1" aria-label="播放进度">
+      <div class="music-progress-wrap" id="musicProgressWrap">
+        <input class="music-progress" id="musicProgress" type="range" min="0" max="1000" value="0" step="1" aria-label="播放进度" tabindex="0">
         <div class="music-time-row">
           <span id="musicTimeCur">0:00</span>
           <span id="musicTimeEnd">0:00</span>
@@ -5169,6 +5187,32 @@ body::after{
     const m = Math.floor(sec / 60);
     const s = Math.floor(sec % 60);
     return m + ':' + String(s).padStart(2, '0');
+  }
+
+  /** 有效时长：部分浏览器/文件 duration 为 NaN 或 Infinity，回退到 seekable */
+  function getEffectiveDuration() {
+    var d = audio.duration;
+    if (isFinite(d) && d > 0) return d;
+    try {
+      if (audio.seekable && audio.seekable.length > 0) {
+        var end = audio.seekable.end(audio.seekable.length - 1);
+        if (isFinite(end) && end > 0) return end;
+      }
+    } catch (err) {}
+    return 0;
+  }
+
+  /** 把目标时间钳到可 seek 区间，避免超出缓冲被浏览器静默丢弃 */
+  function clampToSeekable(t) {
+    try {
+      if (!audio.seekable || audio.seekable.length === 0) return t;
+      var lastEnd = audio.seekable.end(audio.seekable.length - 1);
+      if (isFinite(lastEnd) && lastEnd > 0 && t > lastEnd) {
+        // 仍尝试目标时间（浏览器会按需拉流）；仅在明显过大时略收
+        if (t > lastEnd * 1.5 && lastEnd > 2) return lastEnd;
+      }
+    } catch (err) {}
+    return t;
   }
 
   /** 解析标准 LRC */
@@ -5383,11 +5427,11 @@ body::after{
   function syncProgress() {
     // 拖动中 / 跳转未完成：绝不改写进度条，否则会抽动或被重置
     if (seeking) return;
-    var d = audio.duration;
+    var d = getEffectiveDuration();
     var t = audio.currentTime || 0;
     if (timeCurEl) timeCurEl.textContent = formatTime(t);
     if (timeEndEl) timeEndEl.textContent = formatTime(d);
-    if (progressEl && isFinite(d) && d > 0) {
+    if (progressEl && d > 0) {
       progressEl.value = String(Math.round((t / d) * 1000));
     }
     updateLyrics(t);
@@ -5402,12 +5446,125 @@ body::after{
     syncProgress();
   }
 
+  /**
+   * 全浏览器可靠跳转（Chrome / Edge / Safari / Firefox / 华为 / 各类 WebView）
+   * - Safari：优先 fastSeek
+   * - Edge/华为：pause 后写 currentTime 并重试，防止静默丢弃
+   * - duration 未就绪：由调用方排队，此处只做写入与确认
+   */
+  function hardSeekTo(timeSec) {
+    var d = getEffectiveDuration();
+    if (!(d > 0)) return false;
+    var t = timeSec;
+    if (!isFinite(t) || t < 0) t = 0;
+    if (t >= d) t = Math.max(0, d - 0.05);
+    t = clampToSeekable(t);
+
+    seeking = true;
+    var wasPlaying = !audio.paused;
+    var target = t;
+    var settled = false;
+    var token = ++playToken; // 换曲则作废本次 seek 收尾
+
+    function applyOnce() {
+      try {
+        if (audio.readyState < 1) return false;
+        // Safari / iOS 对 fastSeek 更友好
+        if (typeof audio.fastSeek === 'function') {
+          try {
+            audio.fastSeek(target);
+            return true;
+          } catch (e1) { /* fall through */ }
+        }
+        audio.currentTime = target;
+        return true;
+      } catch (err) {
+        console.warn('[Music Capsule] seek write failed:', err);
+        return false;
+      }
+    }
+
+    function finishOk() {
+      if (settled) return;
+      settled = true;
+      try { audio.removeEventListener('seeked', onSeeked); } catch (e) {}
+      if (token !== playToken) {
+        unlockSeeking();
+        return;
+      }
+      if (wasPlaying && audio.paused) {
+        var p = audio.play();
+        if (p && typeof p.catch === 'function') p.catch(function () {});
+      }
+      // 成功后立刻用真实 currentTime 刷新 UI，避免视觉回弹
+      var cur = audio.currentTime || 0;
+      var dur = getEffectiveDuration();
+      if (progressEl && dur > 0) {
+        progressEl.value = String(Math.round((cur / dur) * 1000));
+      }
+      if (timeCurEl) timeCurEl.textContent = formatTime(cur);
+      updateLyrics(cur);
+      unlockSeeking();
+    }
+
+    function onSeeked() {
+      if (token !== playToken) return;
+      if (Math.abs((audio.currentTime || 0) - target) < 1.25) {
+        finishOk();
+      }
+    }
+    audio.addEventListener('seeked', onSeeked);
+
+    // Edge / 华为 / 部分 Chromium WebView：播放中直接改 currentTime 易被丢弃
+    try {
+      if (wasPlaying) audio.pause();
+    } catch (err) {}
+
+    applyOnce();
+    // 下一帧再写一次（Safari / 部分安卓需要）
+    try {
+      requestAnimationFrame(function () {
+        if (!settled && token === playToken) applyOnce();
+      });
+    } catch (e) {
+      setTimeout(function () { if (!settled && token === playToken) applyOnce(); }, 16);
+    }
+
+    var tries = 0;
+    var maxTries = 10;
+    function poll() {
+      if (settled || token !== playToken) return;
+      tries++;
+      var cur = audio.currentTime || 0;
+      if (Math.abs(cur - target) < 0.45) {
+        finishOk();
+        return;
+      }
+      if (tries <= maxTries) {
+        applyOnce();
+        setTimeout(poll, 35 + tries * 28);
+      } else {
+        applyOnce();
+        finishOk();
+      }
+    }
+    setTimeout(poll, 28);
+
+    if (seekUnlockTimer) clearTimeout(seekUnlockTimer);
+    seekUnlockTimer = setTimeout(function () {
+      try { audio.removeEventListener('seeked', onSeeked); } catch (e) {}
+      if (!settled) finishOk();
+    }, 2200);
+
+    return true;
+  }
+
   // 胶囊本体点击：严格 0→1→2→1（点控件不切换状态）
   var suppressOutsideUntil = 0;
   /* 仅真正的控件不切换状态；其余整块胶囊区域都可点 */
   function isControlTarget(t) {
     return !!(t && t.closest && t.closest(
-      'button, input[type="range"], #musicPlay, #musicPlayMain, #musicPrev, #musicNext, #musicProgress'
+      'button, input[type="range"], #musicPlay, #musicPlayMain, #musicPrev, #musicNext, #musicProgress, #musicProgressWrap, .music-progress-wrap'
     ));
   }
   capsule.addEventListener('click', function (e) {
@@ -5440,17 +5597,24 @@ body::after{
   });
 
   /*
-   * 进度条（桌面 + 手机统一坐标求值）
-   * 问题根因：移动端同时绑定 pointer + touch，且 touchstart 为 passive，
-   * 浏览器原生 range 与自定义逻辑打架，松手时 value/ratio 常回落到 0，导致 currentTime=0。
-   * 修复：以 Pointer Events 为主并 preventDefault；坐标始终从 clientX 计算；
-   * 仅在松手时写入 currentTime；seeking 期间 timeupdate 不改写进度条。
+   * 进度条 · 全浏览器统一适配
+   * Chrome / Edge / Firefox / Safari(iOS·macOS) / 华为 / QQ / UC / 小米 / OPPO / vivo / Samsung
+   *
+   * 方案：
+   * 1) 拖动交互绑定在 #musicProgressWrap（range 设 pointer-events:none 仅作展示）
+   *    → 彻底避开原生 range 在移动端/Edge 上「松手 value 归零」的缺陷
+   * 2) 坐标换算比例，松手 hardSeekTo（fastSeek / pause+写+重试+play）
+   * 3) Pointer + Touch + Mouse 三套事件，互斥防双开
+   * 4) 键盘仍走原生 range 的 input/change（focus 时恢复 pointer-events）
    */
-  if (progressEl) {
+  var progressWrap = document.getElementById('musicProgressWrap') || (progressEl && progressEl.parentElement);
+
+  if (progressEl && progressWrap) {
     var scrubActive = false;
     var scrubCommitted = false;
     var latestRatio = 0;
     var activePointerId = null;
+    var scrubMode = ''; // 'pointer' | 'touch' | 'mouse'
 
     function clampRatio(r) {
       if (!isFinite(r)) return 0;
@@ -5459,27 +5623,27 @@ body::after{
       return r;
     }
 
+    function ratioFromClientX(clientX) {
+      if (clientX == null || !isFinite(clientX)) return null;
+      var rect = progressWrap.getBoundingClientRect();
+      if (!rect || rect.width <= 0) return null;
+      return clampRatio((clientX - rect.left) / rect.width);
+    }
+
     function ratioFromEvent(e) {
       if (!e) return null;
-      var x = e.clientX;
-      if (x == null && e.changedTouches && e.changedTouches[0]) {
-        x = e.changedTouches[0].clientX;
-      }
-      if (x == null && e.touches && e.touches[0]) {
-        x = e.touches[0].clientX;
-      }
-      if (x == null) return null;
-      var rect = progressEl.getBoundingClientRect();
-      if (!rect || rect.width <= 0) return null;
-      return clampRatio((x - rect.left) / rect.width);
+      if (e.clientX != null && isFinite(e.clientX)) return ratioFromClientX(e.clientX);
+      if (e.changedTouches && e.changedTouches[0]) return ratioFromClientX(e.changedTouches[0].clientX);
+      if (e.touches && e.touches[0]) return ratioFromClientX(e.touches[0].clientX);
+      return null;
     }
 
     function previewRatio(ratio) {
       ratio = clampRatio(ratio);
       latestRatio = ratio;
       progressEl.value = String(Math.round(ratio * 1000));
-      var d = audio.duration;
-      if (!isFinite(d) || d <= 0) return;
+      var d = getEffectiveDuration();
+      if (!(d > 0)) return;
       var t = ratio * d;
       if (timeCurEl) timeCurEl.textContent = formatTime(t);
       updateLyrics(t);
@@ -5490,37 +5654,47 @@ body::after{
       scrubCommitted = true;
       ratio = clampRatio(ratio != null ? ratio : latestRatio);
       latestRatio = ratio;
-      var d = audio.duration;
-      if (!isFinite(d) || d <= 0) {
-        unlockSeeking();
+      var d = getEffectiveDuration();
+      if (!(d > 0)) {
+        seeking = true;
+        var pending = ratio;
+        var onMeta = function () {
+          audio.removeEventListener('loadedmetadata', onMeta);
+          audio.removeEventListener('durationchange', onMeta);
+          var d2 = getEffectiveDuration();
+          if (d2 > 0) {
+            progressEl.value = String(Math.round(pending * 1000));
+            hardSeekTo(pending * d2);
+          } else {
+            unlockSeeking();
+          }
+        };
+        audio.addEventListener('loadedmetadata', onMeta);
+        audio.addEventListener('durationchange', onMeta);
+        if (seekUnlockTimer) clearTimeout(seekUnlockTimer);
+        seekUnlockTimer = setTimeout(function () {
+          audio.removeEventListener('loadedmetadata', onMeta);
+          audio.removeEventListener('durationchange', onMeta);
+          unlockSeeking();
+        }, 3000);
         return;
       }
       var t = ratio * d;
-      // 防止浮点边界把末尾变成 duration 导致部分浏览器跳到下一首
-      if (t >= d) t = Math.max(0, d - 0.05);
       progressEl.value = String(Math.round(ratio * 1000));
       if (timeCurEl) timeCurEl.textContent = formatTime(t);
       updateLyrics(t);
-      seeking = true;
-      try {
-        audio.currentTime = t;
-      } catch (err) {
-        console.warn('[Music Capsule] seek failed:', err);
-        unlockSeeking();
-        return;
-      }
-      if (seekUnlockTimer) clearTimeout(seekUnlockTimer);
-      // 移动端 seeked 可能较慢，稍延长锁，避免 timeupdate 把进度条打回 0
-      seekUnlockTimer = setTimeout(unlockSeeking, 900);
+      hardSeekTo(t);
     }
 
-    function beginScrub(e) {
+    function beginScrub(e, mode) {
+      if (scrubActive) return;
       if (e) {
         if (e.cancelable) e.preventDefault();
         e.stopPropagation();
       }
       scrubActive = true;
       scrubCommitted = false;
+      scrubMode = mode || '';
       seeking = true;
       var r = ratioFromEvent(e);
       if (r == null) r = clampRatio(Number(progressEl.value) / 1000);
@@ -5546,48 +5720,78 @@ body::after{
       scrubActive = false;
       var r = ratioFromEvent(e);
       if (r != null) previewRatio(r);
-      // 以坐标计算结果为准，不依赖原生 range 在 touchend 时的 value（移动端常滞后或归零）
       commitRatio(latestRatio);
       activePointerId = null;
+      scrubMode = '';
     }
 
-    function cancelScrub(e) {
+    function cancelScrub() {
       if (!scrubActive) return;
       scrubActive = false;
       activePointerId = null;
+      scrubMode = '';
       unlockSeeking();
     }
 
-    // Pointer Events：现代手机与桌面统一入口，并接管默认行为
-    progressEl.addEventListener('pointerdown', function (e) {
+    // —— Pointer（Chrome / Edge / 新安卓 / 桌面）——
+    progressWrap.addEventListener('pointerdown', function (e) {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
+      if (scrubMode === 'touch') return; // touch 已接管
       activePointerId = e.pointerId;
-      beginScrub(e);
-      try { progressEl.setPointerCapture(e.pointerId); } catch (err) {}
+      beginScrub(e, 'pointer');
+      try { progressWrap.setPointerCapture(e.pointerId); } catch (err) {}
     });
-    progressEl.addEventListener('pointermove', function (e) {
-      if (!scrubActive) return;
+    progressWrap.addEventListener('pointermove', function (e) {
+      if (!scrubActive || scrubMode === 'touch') return;
       if (activePointerId != null && e.pointerId !== activePointerId) return;
       moveScrub(e);
     });
-    progressEl.addEventListener('pointerup', function (e) {
+    progressWrap.addEventListener('pointerup', function (e) {
+      if (scrubMode === 'touch') return;
       if (activePointerId != null && e.pointerId !== activePointerId) return;
       endScrub(e);
     });
-    progressEl.addEventListener('pointercancel', function (e) {
+    progressWrap.addEventListener('pointercancel', function (e) {
+      if (scrubMode === 'touch') return;
       if (activePointerId != null && e.pointerId !== activePointerId) return;
-      cancelScrub(e);
+      cancelScrub();
     });
 
-    // 无 Pointer Events 的旧 WebView 兜底（仅 touch，且非 passive 以便 preventDefault）
+    // —— Touch（iOS Safari / 华为 / 旧 WebView；非 passive 以便 preventDefault）——
+    progressWrap.addEventListener('touchstart', function (e) {
+      if (scrubMode === 'pointer') return;
+      beginScrub(e, 'touch');
+    }, { passive: false });
+    progressWrap.addEventListener('touchmove', function (e) {
+      if (scrubMode !== 'touch') return;
+      moveScrub(e);
+    }, { passive: false });
+    progressWrap.addEventListener('touchend', function (e) {
+      if (scrubMode !== 'touch') return;
+      endScrub(e);
+    }, { passive: false });
+    progressWrap.addEventListener('touchcancel', function () {
+      if (scrubMode !== 'touch') return;
+      cancelScrub();
+    }, { passive: false });
+
+    // —— Mouse 兜底（极旧浏览器无 Pointer 时）——
     if (!window.PointerEvent) {
-      progressEl.addEventListener('touchstart', beginScrub, { passive: false });
-      progressEl.addEventListener('touchmove', moveScrub, { passive: false });
-      progressEl.addEventListener('touchend', endScrub, { passive: false });
-      progressEl.addEventListener('touchcancel', cancelScrub, { passive: false });
+      progressWrap.addEventListener('mousedown', function (e) {
+        if (e.button !== 0) return;
+        beginScrub(e, 'mouse');
+        function onMove(ev) { moveScrub(ev); }
+        function onUp(ev) {
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          endScrub(ev);
+        }
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
     }
 
-    // 桌面键盘/辅助：原生 input 预览；change 提交（pointer 已处理时由 scrubCommitted 挡住）
+    // 键盘 / 辅助技术：聚焦 range 时原生 input/change
     progressEl.addEventListener('input', function (e) {
       e.stopPropagation();
       if (scrubActive) return;
@@ -5602,7 +5806,7 @@ body::after{
       latestRatio = r;
       commitRatio(r);
     });
-    progressEl.addEventListener('click', function (e) {
+    progressWrap.addEventListener('click', function (e) {
       e.stopPropagation();
     });
   }
@@ -5617,7 +5821,11 @@ body::after{
   audio.addEventListener('durationchange', function () {
     if (!seeking) syncProgress();
   });
-  audio.addEventListener('seeked', unlockSeeking);
+  // hardSeekTo 内部已处理 seeked；此处仅作非拖动场景的软解锁
+  audio.addEventListener('seeked', function () {
+    if (!seeking) return;
+    // 若仍在 seeking 且已接近目标，由 hardSeek 的 poll/finish 解锁；超时兜底
+  });
   audio.addEventListener('waiting', function () {
     if (!audio.paused) {
       isLoading = true;
