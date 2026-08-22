@@ -2291,12 +2291,9 @@ body:before{
   .photo-viewer,.photo-viewer::before,.photo-viewer-topbar,.photo-stage,.photo-track,.photo-slide img,.photo-nav,.photo-viewer-close{transition:none!important;animation:none!important;}
 }
 </style>
-  <link rel="preload" as="image" href="/assets/music/cover.webp" type="image/webp">
-  <link rel="preload" as="image" href="/assets/img/class01.webp" type="image/webp">
   <!--
-    【图片加载兼容修复】
-    只预连接/预加载 class01 的主图，不在首屏一次性下载所有相册大图。
-    class01-2 / class01-3 会在打开相册时立即 eager 加载，并带自动重试。
+    【缓存策略】照片与音频不使用 preload，避免浏览器强缓存；
+    图片加载失败时仍走 cache-bust 重试逻辑。
   -->
 </head>
 <body>
@@ -4593,6 +4590,9 @@ body::after{
     background: rgba(0,0,0,.1);
     outline: none;
     cursor: pointer;
+    touch-action: none;
+    /* 扩大可点/可拖区域，不影响视觉高度 */
+    margin: 8px 0;
   }
   .music-progress::-webkit-slider-runnable-track {
     height: 5px;
@@ -5040,7 +5040,7 @@ body::after{
 }
 </style>
 
-<audio id="audio-player" preload="auto" playsinline webkit-playsinline x-webkit-airplay="allow"></audio>
+<audio id="audio-player" preload="metadata" playsinline webkit-playsinline x-webkit-airplay="allow"></audio>
 
 <div id="musicCapsule" aria-label="音乐播放器" aria-expanded="false" data-music-state="0">
   <div class="music-capsule-icon" aria-hidden="true"></div>
@@ -5152,8 +5152,9 @@ body::after{
   audio.volume = 0.8;
   audio.setAttribute('playsinline', '');
   audio.setAttribute('webkit-playsinline', '');
-  audio.preload = 'auto';
+  audio.preload = 'metadata';
   // 【系统浏览器缓冲优化】保持单一加载会话，避免频繁 load() 清空已缓冲数据
+  // 照片与音频均不走强缓存；换曲时再按需缓冲
   var lastSrc = '';
   var playToken = 0;
 
@@ -5186,7 +5187,7 @@ body::after{
       return;
     }
     try {
-      const res = await fetch(path, { cache: 'force-cache' });
+      const res = await fetch(path, { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const text = await res.text();
       lyrics = parseLrc(text);
@@ -5418,9 +5419,10 @@ body::after{
   });
 
   if (progressEl) {
-    /* 【华为等系统浏览器】点击进度条常不更新 value 或写成 0，导致跳回开头；
-       拖动正常。改为根据点击/触摸坐标计算进度，并安全写入 currentTime。 */
+    /* 【进度条交互】可拖动、可点击跳转；华为等系统浏览器用坐标计算避免 value 被写成 0。
+       使用 setPointerCapture 保证拖出控件范围仍能跟踪。 */
     var seekFromPointer = false;
+    var activePointerId = null;
 
     function progressRatioFromEvent(e) {
       var rect = progressEl.getBoundingClientRect();
@@ -5431,7 +5433,6 @@ body::after{
       var ratio = (clientX - rect.left) / rect.width;
       if (ratio < 0) ratio = 0;
       if (ratio > 1) ratio = 1;
-      // RTL 防护
       try {
         var cs = window.getComputedStyle(progressEl);
         if (cs && cs.direction === 'rtl') ratio = 1 - ratio;
@@ -5444,12 +5445,11 @@ body::after{
       if (!isFinite(d) || d <= 0) return;
       if (ratio == null || !isFinite(ratio)) return;
       var t = ratio * d;
-      if (progressEl) progressEl.value = String(Math.round(ratio * 1000));
+      progressEl.value = String(Math.round(ratio * 1000));
       if (timeCurEl) timeCurEl.textContent = formatTime(t);
       updateLyrics(t);
       if (previewOnly) return;
       try {
-        // 部分系统浏览器需在 seekable 范围内再写
         if (audio.seekable && audio.seekable.length > 0) {
           var start = audio.seekable.start(0);
           var end = audio.seekable.end(audio.seekable.length - 1);
@@ -5465,7 +5465,6 @@ body::after{
     function applySeekFromEvent(e, previewOnly) {
       var ratio = progressRatioFromEvent(e);
       if (ratio == null) {
-        // 回退：使用 input 当前 value
         var d = audio.duration;
         if (isFinite(d) && d > 0) {
           ratio = Number(progressEl.value) / 1000;
@@ -5476,9 +5475,11 @@ body::after{
 
     progressEl.addEventListener('pointerdown', function (e) {
       e.stopPropagation();
+      e.preventDefault();
       seeking = true;
       seekFromPointer = true;
-      // 按下时立刻按坐标预览，兼容「点按不拖」
+      activePointerId = e.pointerId;
+      try { progressEl.setPointerCapture(e.pointerId); } catch (err) {}
       applySeekFromEvent(e, true);
     });
 
@@ -5491,7 +5492,6 @@ body::after{
     progressEl.addEventListener('input', function (e) {
       e.stopPropagation();
       seeking = true;
-      // 拖动时浏览器一般会正确更新 value
       var d = audio.duration;
       if (!isFinite(d) || d <= 0) return;
       var ratio = Number(progressEl.value) / 1000;
@@ -5504,7 +5504,10 @@ body::after{
       applySeekFromEvent(e || {}, false);
       seeking = false;
       seekFromPointer = false;
-      // 下一帧再同步，避免 timeupdate 立刻把条打回旧位置
+      if (activePointerId != null) {
+        try { progressEl.releasePointerCapture(activePointerId); } catch (err) {}
+        activePointerId = null;
+      }
       requestAnimationFrame(function () {
         seeking = false;
         syncProgress();
@@ -5515,12 +5518,10 @@ body::after{
     progressEl.addEventListener('pointercancel', endSeek);
     progressEl.addEventListener('change', function (e) {
       e.stopPropagation();
-      // change 在部分浏览器点按时 value 仍为旧值/0，优先用坐标逻辑已在 pointerup 处理
       if (seekFromPointer) return;
       endSeek(e);
     });
 
-    // 点击：强制按坐标跳转（华为浏览器关键修复）
     progressEl.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -5530,7 +5531,6 @@ body::after{
       requestAnimationFrame(function () { syncProgress(); });
     });
 
-    // 旧版触摸机型补充
     progressEl.addEventListener('touchstart', function (e) {
       e.stopPropagation();
       seeking = true;
@@ -5602,14 +5602,13 @@ body::after{
   loadSong(0, false);
   applyMusicState(0);
   setPlayingUI(false);
-  // 【系统浏览器】空闲时预缓冲首曲，缩短首次点击「正在加载」时间
+  // 空闲时仅设置 src（metadata），不强制 load()，减少音频被浏览器强缓存
   function preloadFirstTrack() {
     try {
       if (!audio.src && playlist[0]) {
         lastSrc = playlist[0].src;
         audio.src = playlist[0].src;
       }
-      if (audio.readyState < 2) audio.load();
     } catch (e) {}
   }
   if ('requestIdleCallback' in window) {
