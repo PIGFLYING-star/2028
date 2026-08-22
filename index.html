@@ -5259,6 +5259,10 @@ body::after{
     currentIndex = ((index % playlist.length) + playlist.length) % playlist.length;
     const song = playlist[currentIndex];
     seeking = false;
+    if (seekUnlockTimer) {
+      clearTimeout(seekUnlockTimer);
+      seekUnlockTimer = null;
+    }
     if (lastSrc !== song.src) {
       lastSrc = song.src;
       audio.src = song.src;
@@ -5374,17 +5378,28 @@ body::after{
     }
   }
 
+  var seekUnlockTimer = null;
+
   function syncProgress() {
-    // 拖动中或跳转未完成时，禁止 timeupdate 把进度条打回旧位置/0
+    // 拖动中 / 跳转未完成：绝不改写进度条，否则会抽动或被重置
     if (seeking) return;
-    const d = audio.duration;
-    const t = audio.currentTime || 0;
+    var d = audio.duration;
+    var t = audio.currentTime || 0;
     if (timeCurEl) timeCurEl.textContent = formatTime(t);
     if (timeEndEl) timeEndEl.textContent = formatTime(d);
     if (progressEl && isFinite(d) && d > 0) {
       progressEl.value = String(Math.round((t / d) * 1000));
     }
     updateLyrics(t);
+  }
+
+  function unlockSeeking() {
+    seeking = false;
+    if (seekUnlockTimer) {
+      clearTimeout(seekUnlockTimer);
+      seekUnlockTimer = null;
+    }
+    syncProgress();
   }
 
   // 胶囊本体点击：严格 0→1→2→1（点控件不切换状态）
@@ -5425,56 +5440,89 @@ body::after{
   });
 
   /*
-   * 进度条：完全走原生 <input type="range"> 的 input/change。
-   * 不要 preventDefault / setPointerCapture / 手动算坐标——
-   * 那些做法会让 value 变成 0，表现为「拖一下从头播」。
+   * 进度条（稳定版）
+   * - 拖动过程中：只更新时间文字，不写 currentTime（避免连续 seek 造成抽动）
+   * - 松手时：写一次 currentTime，并保持 seeking=true 直到 seeked
+   * - timeupdate 在 seeking 期间不改 progress.value（避免进度被重置）
    */
   if (progressEl) {
-    function seekFromRangeValue() {
+    var rangeCommitted = false;
+
+    function rangeRatio() {
+      var r = Number(progressEl.value) / 1000;
+      if (!isFinite(r)) return 0;
+      if (r < 0) return 0;
+      if (r > 1) return 1;
+      return r;
+    }
+
+    function previewRange() {
       var d = audio.duration;
       if (!isFinite(d) || d <= 0) return;
-      var ratio = Number(progressEl.value) / 1000;
-      if (!isFinite(ratio)) return;
-      if (ratio < 0) ratio = 0;
-      if (ratio > 1) ratio = 1;
-      var t = ratio * d;
+      var t = rangeRatio() * d;
       if (timeCurEl) timeCurEl.textContent = formatTime(t);
       updateLyrics(t);
+    }
+
+    function commitRange() {
+      var d = audio.duration;
+      if (!isFinite(d) || d <= 0) {
+        unlockSeeking();
+        return;
+      }
+      var t = rangeRatio() * d;
+      if (timeCurEl) timeCurEl.textContent = formatTime(t);
+      updateLyrics(t);
+      seeking = true;
+      rangeCommitted = true;
       try {
         audio.currentTime = t;
       } catch (err) {
         console.warn('[Music Capsule] seek failed:', err);
+        unlockSeeking();
+        return;
       }
+      // 若浏览器不触发 seeked，超时解锁
+      if (seekUnlockTimer) clearTimeout(seekUnlockTimer);
+      seekUnlockTimer = setTimeout(unlockSeeking, 500);
     }
 
-    function startSeeking(e) {
-      if (e) e.stopPropagation();
+    progressEl.addEventListener('pointerdown', function (e) {
+      e.stopPropagation();
       seeking = true;
-    }
+      rangeCommitted = false;
+    });
+    progressEl.addEventListener('touchstart', function (e) {
+      e.stopPropagation();
+      seeking = true;
+      rangeCommitted = false;
+    }, { passive: true });
 
-    function endSeeking(e) {
-      if (e) e.stopPropagation();
-      // 松手时再确认一次位置
-      seekFromRangeValue();
-      seeking = false;
-      syncProgress();
-    }
-
-    progressEl.addEventListener('pointerdown', startSeeking);
-    progressEl.addEventListener('touchstart', startSeeking, { passive: true });
-
+    // 拖动中：只预览，不 seek
     progressEl.addEventListener('input', function (e) {
       e.stopPropagation();
       seeking = true;
-      seekFromRangeValue();
+      previewRange();
     });
 
-    progressEl.addEventListener('change', endSeeking);
-    progressEl.addEventListener('pointerup', endSeeking);
-    progressEl.addEventListener('pointercancel', endSeeking);
-    progressEl.addEventListener('touchend', endSeeking, { passive: true });
+    // 松手：真正跳转（change 在桌面可靠；pointerup/touchend 补移动端）
+    progressEl.addEventListener('change', function (e) {
+      e.stopPropagation();
+      commitRange();
+    });
+    progressEl.addEventListener('pointerup', function (e) {
+      e.stopPropagation();
+      if (!rangeCommitted) commitRange();
+    });
+    progressEl.addEventListener('pointercancel', function (e) {
+      e.stopPropagation();
+      if (!rangeCommitted) commitRange();
+    });
+    progressEl.addEventListener('touchend', function (e) {
+      e.stopPropagation();
+      if (!rangeCommitted) commitRange();
+    }, { passive: true });
 
-    // 阻止拖动进度条时触发胶囊展开/收起
     progressEl.addEventListener('click', function (e) {
       e.stopPropagation();
     });
@@ -5484,12 +5532,13 @@ body::after{
   audio.addEventListener('pause', function () { if (!isLoading) setPlayingUI(false); });
   audio.addEventListener('ended', function () { nextSong(); });
   audio.addEventListener('timeupdate', syncProgress);
-  audio.addEventListener('loadedmetadata', syncProgress);
-  audio.addEventListener('durationchange', syncProgress);
-  audio.addEventListener('seeked', function () {
-    seeking = false;
-    syncProgress();
+  audio.addEventListener('loadedmetadata', function () {
+    if (!seeking) syncProgress();
   });
+  audio.addEventListener('durationchange', function () {
+    if (!seeking) syncProgress();
+  });
+  audio.addEventListener('seeked', unlockSeeking);
   audio.addEventListener('waiting', function () {
     if (!audio.paused) {
       isLoading = true;
