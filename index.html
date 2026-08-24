@@ -32,6 +32,13 @@
     :root {
       --gold: #c9a84c;         /* 主金色 */
       --gold-light: #e8d5a3;   /* 浅金色 */
+      /* 封面主色动态氛围（由 JS 提取写入） */
+      --ambient-r: 201;
+      --ambient-g: 168;
+      --ambient-b: 76;
+      --ambient: rgb(var(--ambient-r), var(--ambient-g), var(--ambient-b));
+      --ambient-soft: rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), 0.22);
+      --ambient-glow: rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), 0.35);
       --dark: #1a1a2e;         /* 深色标题底色 */
       --cream: #fdf8f0;        /* 页面米黄背景 */
       --text-main: #333;       /* 主要文字颜色 */
@@ -1475,9 +1482,10 @@ body::after{
   background:
     radial-gradient(
       circle,
-      rgba(201,168,76,.18),
+      rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), .20),
       transparent 70%
     );
+  transition: background 1.2s ease;
   filter:blur(25px);
   z-index:0;
   animation:
@@ -1537,7 +1545,8 @@ body::after{
  height:420px;
  border-radius:50%;
  pointer-events:none;
- background:radial-gradient(circle,rgba(255,215,120,.22),transparent 70%);
+ background:radial-gradient(circle,rgba(var(--ambient-r),var(--ambient-g),var(--ambient-b),.24),transparent 70%);
+ transition: background 1.2s ease;
  filter:blur(40px);
  animation:orbMove 18s infinite alternate ease-in-out;
  z-index:-1;
@@ -2295,6 +2304,226 @@ body:before{
     【缓存策略】照片与音频不使用 preload，避免浏览器强缓存；
     图片加载失败时仍走 cache-bust 重试逻辑。
   -->
+<style id="emblem-3d">
+    /* ====================== 立体玻璃班徽 · 工作室灯光 / 弹簧回正 ====================== */
+    .emblem-section {
+      padding: 56px 20px 64px;
+      text-align: center;
+      background: var(--cream);
+      position: relative;
+      overflow: hidden;
+    }
+    .emblem-header { position: relative; z-index: 1; margin-bottom: 4px; }
+    .emblem-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--dark);
+      letter-spacing: 6px;
+      margin-bottom: 6px;
+    }
+    .emblem-sub {
+      font-size: 12px;
+      color: var(--text-sub);
+      letter-spacing: 3px;
+    }
+    .emblem-stage {
+      --spec-x: 50%;
+      --spec-y: 32%;
+      --env-x: 50%;
+      --env-y: 28%;
+      --fresnel: 0.12;
+      --sh-x: 0px;
+      --sh-s: 1;
+      position: relative;
+      z-index: 1;
+      width: min(300px, 78vw);
+      height: min(320px, 84vw);
+      margin: 12px auto 0;
+      perspective: 1100px;
+      perspective-origin: 50% 42%;
+      touch-action: none;
+      cursor: grab;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .emblem-stage.is-dragging { cursor: grabbing; }
+
+    /* 地面接触阴影：用班徽剪影，不是廉价椭圆 */
+    .emblem-contact {
+      position: absolute;
+      left: 12%;
+      right: 12%;
+      bottom: 5%;
+      height: 24%;
+      transform: translateX(var(--sh-x)) scale(var(--sh-s), 0.34);
+      transform-origin: center bottom;
+      filter: blur(28px);
+      opacity: 0.14;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .emblem-contact img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: brightness(0) blur(2px);
+      opacity: 0.55;
+    }
+
+    /* 地面倒影 */
+    .emblem-reflect {
+      position: absolute;
+      left: 18%;
+      right: 18%;
+      bottom: 4%;
+      height: 26%;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.1;
+      transform: translateX(calc(var(--sh-x) * 0.35));
+      -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,.32) 0%, transparent 72%);
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.32) 0%, transparent 72%);
+    }
+    .emblem-reflect img {
+      width: 100%;
+      height: 220%;
+      object-fit: contain;
+      object-position: center top;
+      transform: scaleY(-1);
+      filter: blur(0.6px) saturate(0.85);
+      opacity: 0.9;
+    }
+
+    .emblem-space {
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      top: 2%;
+      height: 78%;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+    .emblem-extrude,
+    .emblem-front,
+    .ex {
+      position: absolute;
+      inset: 0;
+      transform-style: preserve-3d;
+      pointer-events: none;
+    }
+    .emblem-space img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      pointer-events: none;
+      -webkit-user-drag: none;
+      user-select: none;
+    }
+    .ex-5 { transform: translateZ(-16px); filter: brightness(0.28) saturate(0.65); }
+    .ex-4 { transform: translateZ(-12px); filter: brightness(0.38) saturate(0.75); }
+    .ex-3 { transform: translateZ(-8px);  filter: brightness(0.5)  saturate(0.82); }
+    .ex-2 { transform: translateZ(-5px);  filter: brightness(0.64) saturate(0.9); }
+    .ex-1 { transform: translateZ(-2px);  filter: brightness(0.8)  saturate(0.96); }
+
+    .emblem-front {
+      transform: translateZ(0.1px);
+    }
+    .emblem-photo {
+      filter: drop-shadow(0 10px 18px rgba(40, 32, 20, 0.10));
+    }
+
+    /* 涂层全部按班徽透明通道裁切，避免圆形硬切 */
+    .emblem-coat {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      -webkit-mask-image: url("/assets/img/111.webp");
+              mask-image: url("/assets/img/111.webp");
+      -webkit-mask-size: contain;
+              mask-size: contain;
+      -webkit-mask-repeat: no-repeat;
+              mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+              mask-position: center;
+    }
+    /* 环境反射：随旋转挪动，像固定棚灯 */
+    .emblem-env {
+      background:
+        linear-gradient(
+          152deg,
+          rgba(255,255,255,.28) 0%,
+          rgba(210,228,255,.08) 18%,
+          rgba(255,255,255,0) 42%,
+          rgba(255,214,186,.04) 70%,
+          transparent 100%
+        );
+      background-size: 220% 220%;
+      background-position: var(--env-x) var(--env-y);
+      mix-blend-mode: soft-light;
+      opacity: calc(0.22 + var(--fresnel) * 0.18);
+    }
+    /* 主高光：小而淡，跟手滑动 */
+    .emblem-spec {
+      background:
+        radial-gradient(
+          22% 16% at var(--spec-x) var(--spec-y),
+          rgba(255,255,255,.40) 0%,
+          rgba(255,255,255,.12) 28%,
+          rgba(255,255,255,0) 62%
+        );
+      mix-blend-mode: soft-light;
+      opacity: 0.55;
+    }
+    /* 副高光（略偏色，玻璃色散） */
+    .emblem-spec-b {
+      background:
+        radial-gradient(
+          16% 12% at calc(var(--spec-x) + 6%) calc(var(--spec-y) + 8%),
+          rgba(186, 220, 255, .16) 0%,
+          transparent 60%
+        );
+      mix-blend-mode: soft-light;
+      opacity: 0.35;
+    }
+    /* 边缘菲涅尔：侧看更亮 */
+    .emblem-rim {
+      background:
+        radial-gradient(
+          70% 70% at 50% 42%,
+          transparent 46%,
+          rgba(255,255,255,.16) 62%,
+          rgba(255,255,255,.05) 78%,
+          transparent 86%
+        );
+      mix-blend-mode: overlay;
+      opacity: var(--fresnel);
+    }
+
+    .emblem-hint {
+      position: relative;
+      z-index: 1;
+      margin-top: 2px;
+      font-size: 11px;
+      color: rgba(153,153,153,.85);
+      letter-spacing: 0.18em;
+    }
+
+    @media (max-width: 768px) {
+      .emblem-section { padding: 40px 16px 48px; }
+      .emblem-stage {
+        width: min(240px, 72vw);
+        height: min(260px, 78vw);
+      }
+      .ex-4, .ex-2 { display: none; }
+      .emblem-reflect { opacity: 0.14; }
+      .emblem-contact { filter: blur(22px); opacity: 0.12; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .emblem-space { transition: none !important; }
+    }
+</style>
 </head>
 <body>
   <!-- ====================== 头部Hero区域 ====================== -->
@@ -2509,6 +2738,40 @@ body:before{
       <div class="tl-month-modal-body" id="tlMonthModalBody"></div>
     </div>
   </div>
+
+
+  <!-- ====================== 立体玻璃班徽（页脚上方） ====================== -->
+  <section class="emblem-section" id="classEmblem" aria-label="班徽">
+    <div class="emblem-header">
+      <div class="emblem-title">班徽</div>
+      <div class="emblem-sub">/ EMBLEM</div>
+    </div>
+    <div class="emblem-stage" id="emblemStage" role="img" aria-label="可拖动旋转的立体班徽">
+      <div class="emblem-contact" id="emblemContact" aria-hidden="true">
+        <img src="/assets/img/111.webp" alt="" draggable="false">
+      </div>
+      <div class="emblem-reflect" aria-hidden="true">
+        <img src="/assets/img/111.webp" alt="" draggable="false">
+      </div>
+      <div class="emblem-space" id="emblemSpace">
+        <div class="emblem-extrude" aria-hidden="true">
+          <div class="ex ex-5"><img src="/assets/img/111.webp" alt="" draggable="false"></div>
+          <div class="ex ex-4"><img src="/assets/img/111.webp" alt="" draggable="false"></div>
+          <div class="ex ex-3"><img src="/assets/img/111.webp" alt="" draggable="false"></div>
+          <div class="ex ex-2"><img src="/assets/img/111.webp" alt="" draggable="false"></div>
+          <div class="ex ex-1"><img src="/assets/img/111.webp" alt="" draggable="false"></div>
+        </div>
+        <div class="emblem-front">
+          <img class="emblem-photo" src="/assets/img/111.webp" alt="臻辉班班徽" width="300" height="300" decoding="async" draggable="false">
+          <span class="emblem-coat emblem-env" id="emblemEnv"></span>
+          <span class="emblem-coat emblem-spec" id="emblemSpec"></span>
+          <span class="emblem-coat emblem-spec-b" id="emblemSpecB"></span>
+          <span class="emblem-coat emblem-rim" id="emblemRim"></span>
+        </div>
+      </div>
+    </div>
+    <div class="emblem-hint">拖动 · 松手回正</div>
+  </section>
 
   <!-- ====================== 页脚 ====================== -->
   <div class="footer">
@@ -4962,10 +5225,11 @@ body::after{
   #musicCapsule.is-playing {
     box-shadow:
       0 24px 68px rgba(0,0,0,.18),
-      0 0 34px rgba(255,255,255,.13),
-      0 0 0 5px rgba(255,255,255,.035),
+      0 0 40px rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), .32),
+      0 0 0 5px rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), .08),
       inset 0 1px 0 rgba(255,255,255,.96),
       inset 0 -1px 0 rgba(255,255,255,.22);
+    transition: box-shadow 0.8s ease;
   }
 
   #musicCapsule.is-playing .music-cover {
@@ -5135,8 +5399,8 @@ body::after{
       lrc: encodeURI('media/再见.lrc')
     },
     {
-      title: '未来可期',
-      artist: 'VØJ;',
+      title: 'Memory Reboot',
+      artist: 'VØJ',
       src: '/assets/music/memory.mp3',
       cover: '/assets/music/cover.webp',
       lrc: 'media/memory.lrc'
@@ -5379,7 +5643,7 @@ body::after{
     playButton.setAttribute('aria-label', playing ? '暂停音乐' : '播放音乐');
     playButton.setAttribute('aria-pressed', String(!!playing));
     if (isLoading) playButton.textContent = '…';
-    else playButton.textContent = playing ? 'Ⅱ' : '▶';
+    else playButton.textContent = playing ? '❙❙' : '▶';
     // 胶囊2 中央大按钮 SVG
     if (playMain) {
       playMain.setAttribute('aria-label', playing ? '暂停' : '播放');
@@ -5392,6 +5656,58 @@ body::after{
 
   function setStatus(text) {
     if (statusEl) statusEl.textContent = text;
+  }
+
+  /** 从封面提取主色，写入 CSS 变量做动态氛围 */
+  function extractDominantColor(imgUrl) {
+    if (!imgUrl) return;
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function () {
+      try {
+        var size = 40;
+        var canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        var ctx = canvas.getContext('2d', { willReadFrequently: true });
+        if (!ctx) return;
+        ctx.drawImage(img, 0, 0, size, size);
+        var data = ctx.getImageData(0, 0, size, size).data;
+        var r = 0, g = 0, b = 0, count = 0;
+        for (var i = 0; i < data.length; i += 4) {
+          var pr = data[i], pg = data[i + 1], pb = data[i + 2], pa = data[i + 3];
+          if (pa < 128) continue;
+          var bright = (pr + pg + pb) / 3;
+          // 过滤过暗/过亮像素，保留有情绪的颜色
+          if (bright < 28 || bright > 235) continue;
+          // 略微偏好饱和度更高的像素
+          var maxc = Math.max(pr, pg, pb), minc = Math.min(pr, pg, pb);
+          if (maxc - minc < 12 && bright > 180) continue;
+          r += pr; g += pg; b += pb; count++;
+        }
+        if (count < 8) {
+          r = 201; g = 168; b = 76; // 回退金色
+        } else {
+          r = Math.round(r / count);
+          g = Math.round(g / count);
+          b = Math.round(b / count);
+        }
+        // 轻微提亮，避免氛围过沉
+        r = Math.min(255, Math.round(r * 1.08));
+        g = Math.min(255, Math.round(g * 1.08));
+        b = Math.min(255, Math.round(b * 1.08));
+        var root = document.documentElement;
+        root.style.setProperty('--ambient-r', r);
+        root.style.setProperty('--ambient-g', g);
+        root.style.setProperty('--ambient-b', b);
+      } catch (err) {
+        console.warn('[Music Capsule] color extract failed', err);
+      }
+    };
+    img.onerror = function () {
+      /* 保持当前/默认金色 */
+    };
+    img.src = imgUrl;
   }
 
   function loadSong(index, autoplay) {
@@ -5414,6 +5730,7 @@ body::after{
     if (coverEl && song.cover) {
       coverEl.src = song.cover;
       coverEl.alt = song.title + ' 封面';
+      extractDominantColor(song.cover);
     }
 
     resetProgressUI();
@@ -5492,7 +5809,7 @@ body::after{
       if (token !== playToken) return;
       isLoading = false;
       setPlayingUI(false);
-      setStatus('无法播放，请检查音频文件');
+      setStatus('无法播放，请检查音频文件或网络状态');
     } finally {
       if (token === playToken) {
         isLoading = false;
@@ -5992,6 +6309,8 @@ body::after{
   loadSong(0, false);
   applyMusicState(0);
   setPlayingUI(false);
+  // 首屏也提取一次封面主色
+  if (playlist[0] && playlist[0].cover) extractDominantColor(playlist[0].cover);
   // 仅预加载第一首 metadata，不预拉整文件 Blob（避免占满带宽导致点播失败）
   window.__musicCapsuleReady = true;
   console.log('🎵 Music Capsule Ready ·', playlist.length, 'tracks');
@@ -6197,6 +6516,189 @@ body::after{
   }
 }
 </style>
+
+
+<script>
+/* 立体玻璃班徽：棚灯高光 + 弹簧回正，无 WebGL */
+(function () {
+  'use strict';
+  var stage = document.getElementById('emblemStage');
+  var space = document.getElementById('emblemSpace');
+  if (!stage || !space) return;
+
+  var reduce = false;
+  try {
+    reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch (e) {}
+
+  var REST_X = 0;
+  var REST_Y = 0;
+  var REST_SPEC_X = 50;
+  var REST_SPEC_Y = 32;
+  var rx = 0;
+  var ry = 0;
+  var vx = 0;
+  var vy = 0;
+  var specX = REST_SPEC_X;
+  var specY = REST_SPEC_Y;
+  var specTx = REST_SPEC_X;
+  var specTy = REST_SPEC_Y;
+  var dragging = false;
+  var lastX = 0, lastY = 0, lastT = 0;
+  var raf = 0;
+  var inView = true;
+  var specEl = document.getElementById('emblemSpec');
+  var specBEl = document.getElementById('emblemSpecB');
+  var envEl = document.getElementById('emblemEnv');
+
+  var STIFF = 0.075;
+  var DAMP = 0.82;
+  var DRAG = 0.16;
+
+  function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+
+  function pointerToSpec(e) {
+    /* 相对班徽本体取点，不要用整块舞台（下方还有阴影区） */
+    var el = space || stage;
+    var rect = el.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    specTx = clamp(((e.clientX - rect.left) / rect.width) * 100, 6, 94);
+    specTy = clamp(((e.clientY - rect.top) / rect.height) * 100, 6, 94);
+  }
+
+  function paintLight() {
+    var sx = specX.toFixed(2);
+    var sy = specY.toFixed(2);
+    stage.style.setProperty('--spec-x', sx + '%');
+    stage.style.setProperty('--spec-y', sy + '%');
+    stage.style.setProperty('--env-x', sx + '%');
+    stage.style.setProperty('--env-y', sy + '%');
+    if (specEl) {
+      specEl.style.background =
+        'radial-gradient(22% 16% at ' + sx + '% ' + sy + '%, rgba(255,255,255,.40) 0%, rgba(255,255,255,.12) 28%, rgba(255,255,255,0) 62%)';
+    }
+    if (specBEl) {
+      specBEl.style.background =
+        'radial-gradient(16% 12% at ' + (specX + 6).toFixed(2) + '% ' + (specY + 8).toFixed(2) + '%, rgba(186,220,255,.16) 0%, transparent 60%)';
+    }
+    if (envEl) {
+      envEl.style.backgroundPosition = sx + '% ' + sy + '%';
+    }
+  }
+
+  function apply() {
+    space.style.transform = 'rotateX(' + rx.toFixed(3) + 'deg) rotateY(' + ry.toFixed(3) + 'deg)';
+    var fres = Math.min(1, (Math.abs(rx) + Math.abs(ry)) / 52);
+    stage.style.setProperty('--fresnel', fres.toFixed(3));
+    stage.style.setProperty('--sh-x', (-ry * 0.42).toFixed(2) + 'px');
+    stage.style.setProperty('--sh-s', (0.96 + Math.abs(ry) / 260).toFixed(3));
+    paintLight();
+  }
+
+  function energy() {
+    return Math.abs(vx) + Math.abs(vy) + Math.abs(rx - REST_X) + Math.abs(ry - REST_Y)
+      + Math.abs(specX - specTx) + Math.abs(specY - specTy);
+  }
+
+  function tick() {
+    raf = 0;
+    if (!dragging) {
+      vx += (REST_X - rx) * STIFF;
+      vy += (REST_Y - ry) * STIFF;
+      vx *= DAMP;
+      vy *= DAMP;
+      rx += vx;
+      ry += vy;
+      specTx = REST_SPEC_X;
+      specTy = REST_SPEC_Y;
+      specX += (specTx - specX) * 0.12;
+      specY += (specTy - specY) * 0.12;
+      if (energy() < 0.08) {
+        rx = REST_X;
+        ry = REST_Y;
+        vx = 0;
+        vy = 0;
+        specX = REST_SPEC_X;
+        specY = REST_SPEC_Y;
+        apply();
+        return;
+      }
+    } else {
+      specX += (specTx - specX) * 0.62;
+      specY += (specTy - specY) * 0.62;
+    }
+    apply();
+    if (inView && !reduce && (dragging || energy() >= 0.08)) {
+      raf = requestAnimationFrame(tick);
+    }
+  }
+
+  function startLoop() {
+    if (!raf) raf = requestAnimationFrame(tick);
+  }
+
+  apply();
+
+  stage.addEventListener('pointerdown', function (e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    dragging = true;
+    vx = 0;
+    vy = 0;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    lastT = performance.now();
+    pointerToSpec(e);
+    specX = specTx;
+    specY = specTy;
+    stage.classList.add('is-dragging');
+    try { stage.setPointerCapture(e.pointerId); } catch (err) {}
+    startLoop();
+    if (e.cancelable) e.preventDefault();
+  });
+
+  stage.addEventListener('pointermove', function (e) {
+    pointerToSpec(e);
+    if (!dragging) {
+      startLoop();
+      return;
+    }
+    var now = performance.now();
+    var dx = e.clientX - lastX;
+    var dy = e.clientY - lastY;
+    var dt = Math.max(8, now - lastT);
+    ry = clamp(ry + dx * DRAG, -42, 42);
+    rx = clamp(rx - dy * DRAG * 0.82, -24, 24);
+    vy = dx * DRAG * (16 / dt);
+    vx = -dy * DRAG * 0.82 * (16 / dt);
+    lastX = e.clientX;
+    lastY = e.clientY;
+    lastT = now;
+    specX += (specTx - specX) * 0.7;
+    specY += (specTy - specY) * 0.7;
+    apply();
+    if (e.cancelable) e.preventDefault();
+  });
+
+  function endDrag() {
+    if (!dragging) return;
+    dragging = false;
+    stage.classList.remove('is-dragging');
+    vx = clamp(vx, -1.8, 1.8);
+    vy = clamp(vy, -2.2, 2.2);
+    startLoop();
+  }
+  stage.addEventListener('pointerup', endDrag);
+  stage.addEventListener('pointercancel', endDrag);
+
+  if ('IntersectionObserver' in window) {
+    var obs = new IntersectionObserver(function (entries) {
+      inView = !!(entries[0] && entries[0].isIntersecting);
+      if (inView && !reduce) startLoop();
+    }, { threshold: 0.1 });
+    obs.observe(stage);
+  }
+})();
+</script>
 
 </body>
 </html>
