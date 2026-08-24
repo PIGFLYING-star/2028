@@ -3734,7 +3734,7 @@ body:before{
         if (allMessages.length === 0) {
           wallTip.style.display = 'block';
           wallTip.textContent = isNetwork
-            ? '留言服务暂不可用（请确认已部署 Cloudflare Functions 且绑定 D1）'
+            ? '留言服务暂不可用，请联系站长（请确认已部署 Cloudflare Functions 且绑定 D1）'
             : '加载失败，请刷新页面重试';
           wallTip.className = 'wall-tip error';
         }
@@ -5226,28 +5226,26 @@ body::after{
   /* 播放态：只改阴影与高光，禁止覆盖 transition，否则展开/收缩动画会丢 */
   #musicCapsule.is-playing {
     box-shadow:
-      0 24px 68px rgba(0,0,0,.18),
-      0 0 28px rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), .38),
-      0 0 72px rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), .42),
-      0 0 120px rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), .28),
-      0 0 0 6px rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), .12),
+      0 22px 56px rgba(0,0,0,.16),
+      0 0 16px rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), .22),
+      0 0 32px rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), .14),
+      0 0 0 3px rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), .06),
       inset 0 1px 0 rgba(255,255,255,.98),
-      inset 0 -1px 0 rgba(255,255,255,.28);
-    /* 额外外发光模糊层，避免只有硬边 box-shadow 显得生硬 */
-    filter: drop-shadow(0 0 18px rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), .45))
-            drop-shadow(0 0 42px rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), .32));
+      inset 0 -1px 0 rgba(255,255,255,.24);
+    /* 轻微外发光，避免硬边；半径刻意收小 */
+    filter: drop-shadow(0 0 8px rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), .22));
   }
 
   #musicCapsule.is-playing::before {
-    opacity: .95;
+    opacity: .9;
     background:
-      radial-gradient(100px 68px at var(--glass-x, 24%) var(--glass-y, 12%),
-        rgba(255,255,255,.95), transparent 70%),
+      radial-gradient(88px 58px at var(--glass-x, 24%) var(--glass-y, 12%),
+        rgba(255,255,255,.9), transparent 72%),
       linear-gradient(115deg,
-        rgba(255,255,255,.52) 0%,
-        rgba(255,255,255,.16) 28%,
+        rgba(255,255,255,.48) 0%,
+        rgba(255,255,255,.14) 28%,
         transparent 47%,
-        rgba(255,255,255,.28) 78%,
+        rgba(255,255,255,.24) 78%,
         transparent 100%);
   }
 
@@ -5414,14 +5412,14 @@ body::after{
       title: '再见',
       artist: '张震岳',
       src: encodeURI('/assets/music/zaijian.mp3'),
-      cover: '/assets/music/cover.webp',
+      cover: '/assets/music/cover1.webp',
       lrc: encodeURI('media/再见.lrc')
     },
     {
       title: 'Memory Reboot',
       artist: 'VØJ',
       src: '/assets/music/memory.mp3',
-      cover: '/assets/music/cover.webp',
+      cover: '/assets/music/cover2.webp',
       lrc: 'media/memory.lrc'
     }
   ];
