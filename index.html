@@ -5047,6 +5047,62 @@ body::after{
     filter: blur(4px);
   }
 
+  /* 折叠态播放：同风格迷你波纹（不改路径/逻辑，仅靠 is-playing） */
+  .music-capsule-icon .music-wave-bar {
+    display: none;
+    width: 2.5px;
+    height: 10px;
+    border-radius: 2px;
+    background: rgba(35,35,35,.86);
+    box-shadow: 0 1px 2px rgba(255,255,255,.72);
+    flex-shrink: 0;
+    transform-origin: center center;
+  }
+
+  #musicCapsule.is-playing:not(.is-open) .music-capsule-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3.5px;
+  }
+
+  #musicCapsule.is-playing:not(.is-open) .music-capsule-icon::before,
+  #musicCapsule.is-playing:not(.is-open) .music-capsule-icon::after {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  #musicCapsule.is-playing:not(.is-open) .music-capsule-icon .music-wave-bar {
+    display: block;
+    animation: musicWaveBar 0.9s ease-in-out infinite;
+  }
+
+  #musicCapsule.is-playing:not(.is-open) .music-capsule-icon .music-wave-bar:nth-child(1) {
+    height: 8px;
+    animation-delay: 0s;
+  }
+  #musicCapsule.is-playing:not(.is-open) .music-capsule-icon .music-wave-bar:nth-child(2) {
+    height: 14px;
+    animation-delay: 0.18s;
+  }
+  #musicCapsule.is-playing:not(.is-open) .music-capsule-icon .music-wave-bar:nth-child(3) {
+    height: 10px;
+    animation-delay: 0.32s;
+  }
+
+  @keyframes musicWaveBar {
+    0%, 100% { transform: scaleY(0.42); opacity: 0.72; }
+    50%      { transform: scaleY(1);    opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #musicCapsule.is-playing:not(.is-open) .music-capsule-icon .music-wave-bar {
+      animation: none !important;
+      transform: none !important;
+      opacity: 1 !important;
+    }
+  }
+
   /* ---------- 展开内容：像玻璃中的内容层一样进入 ---------- */
   .music-capsule-panel {
     position: absolute;
@@ -5348,7 +5404,11 @@ body::after{
 <audio id="audio-player" preload="metadata" playsinline webkit-playsinline x-webkit-airplay="allow"></audio>
 
 <div id="musicCapsule" aria-label="音乐播放器" aria-expanded="false" data-music-state="0">
-  <div class="music-capsule-icon" aria-hidden="true"></div>
+  <div class="music-capsule-icon" aria-hidden="true">
+    <span class="music-wave-bar"></span>
+    <span class="music-wave-bar"></span>
+    <span class="music-wave-bar"></span>
+  </div>
 
   <div class="music-capsule-panel">
     <!-- 胶囊1 / 顶栏：封面 + 信息 + 小播放键 -->
