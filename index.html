@@ -4694,7 +4694,8 @@ body::after{
       width 0.48s var(--music-ease),
       height 0.48s var(--music-ease),
       border-radius 0.48s var(--music-ease),
-      box-shadow 0.4s ease,
+      box-shadow 0.55s ease,
+      filter 0.55s ease,
       transform 0.22s var(--music-ease),
       opacity 0.25s ease;
   }
@@ -4708,17 +4709,17 @@ body::after{
     pointer-events: none;
     border-radius: inherit;
     background:
-      radial-gradient(80px 54px at var(--glass-x, 24%) var(--glass-y, 12%),
-        rgba(255,255,255,.86), transparent 72%),
+      radial-gradient(90px 60px at var(--glass-x, 24%) var(--glass-y, 12%),
+        rgba(255,255,255,.92), transparent 72%),
       linear-gradient(115deg,
-        rgba(255,255,255,.38) 0%,
-        rgba(255,255,255,.10) 28%,
+        rgba(255,255,255,.48) 0%,
+        rgba(255,255,255,.14) 28%,
         transparent 47%,
-        rgba(255,255,255,.18) 78%,
+        rgba(255,255,255,.24) 78%,
         transparent 100%);
-    opacity: .72;
+    opacity: .88;
     transform: translate3d(0,0,0) scale(1.02);
-    transition: opacity .42s ease, transform .72s var(--music-ease);
+    transition: opacity .42s ease, transform .72s var(--music-ease), background .35s ease;
   }
 
   /* 第二层：玻璃内缘 / specular edge。 */
@@ -5222,14 +5223,32 @@ body::after{
     transform: scale(.88);
   }
 
+  /* 播放态：只改阴影与高光，禁止覆盖 transition，否则展开/收缩动画会丢 */
   #musicCapsule.is-playing {
     box-shadow:
       0 24px 68px rgba(0,0,0,.18),
-      0 0 40px rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), .32),
-      0 0 0 5px rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), .08),
-      inset 0 1px 0 rgba(255,255,255,.96),
-      inset 0 -1px 0 rgba(255,255,255,.22);
-    transition: box-shadow 0.8s ease;
+      0 0 28px rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), .38),
+      0 0 72px rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), .42),
+      0 0 120px rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), .28),
+      0 0 0 6px rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), .12),
+      inset 0 1px 0 rgba(255,255,255,.98),
+      inset 0 -1px 0 rgba(255,255,255,.28);
+    /* 额外外发光模糊层，避免只有硬边 box-shadow 显得生硬 */
+    filter: drop-shadow(0 0 18px rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), .45))
+            drop-shadow(0 0 42px rgba(var(--ambient-r), var(--ambient-g), var(--ambient-b), .32));
+  }
+
+  #musicCapsule.is-playing::before {
+    opacity: .95;
+    background:
+      radial-gradient(100px 68px at var(--glass-x, 24%) var(--glass-y, 12%),
+        rgba(255,255,255,.95), transparent 70%),
+      linear-gradient(115deg,
+        rgba(255,255,255,.52) 0%,
+        rgba(255,255,255,.16) 28%,
+        transparent 47%,
+        rgba(255,255,255,.28) 78%,
+        transparent 100%);
   }
 
   #musicCapsule.is-playing .music-cover {
