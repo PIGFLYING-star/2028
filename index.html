@@ -2867,20 +2867,106 @@ body.book-open-lock {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+  transform: scale(1.02);
   transition:
-    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    visibility 0.55s,
-    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0.65s,
+    transform 0.7s cubic-bezier(0.22, 1.15, 0.36, 1);
 }
 .tl-seal-layer.is-on {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
+  transform: scale(1);
 }
 .tl-seal-layer.is-breaking {
-  opacity: 0;
-  transform: scale(1.04);
   pointer-events: none;
+  animation: tlSealLayerBreak 0.95s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.tl-seal-layer.is-breaking .tl-seal-wax {
+  animation: tlSealWaxBreak 0.95s cubic-bezier(0.22, 1.2, 0.36, 1) forwards;
+}
+.tl-seal-layer.is-breaking .tl-seal-ring {
+  animation: tlSealRingBurst 0.95s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.tl-seal-layer.is-breaking .tl-seal-glow {
+  animation: tlSealGlowBurst 0.95s ease-out forwards;
+}
+.tl-seal-layer.is-breaking .tl-seal-caption {
+  animation: tlSealCaptionOut 0.45s ease forwards;
+}
+.tl-seal-layer.is-breaking .tl-seal-flash {
+  animation: tlSealFlash 0.95s ease-out forwards;
+}
+@keyframes tlSealLayerBreak {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.015);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.06);
+    filter: blur(10px);
+    visibility: hidden;
+  }
+}
+@keyframes tlSealWaxBreak {
+  0% {
+    transform: scale(1) rotate(0deg);
+    filter: brightness(1);
+    opacity: 1;
+    box-shadow:
+      0 16px 40px rgba(140, 100, 30, 0.35),
+      inset 0 1px 0 rgba(255,255,255,0.65),
+      inset 0 -8px 18px rgba(80, 50, 10, 0.25);
+  }
+  22% {
+    transform: scale(1.1) rotate(-4deg);
+    filter: brightness(1.25);
+  }
+  42% {
+    transform: scale(0.94) rotate(3deg);
+    filter: brightness(1.1);
+  }
+  100% {
+    transform: scale(1.55) rotate(-8deg);
+    filter: brightness(1.55) blur(6px);
+    opacity: 0;
+    box-shadow: 0 0 48px rgba(255, 220, 140, 0.55);
+  }
+}
+@keyframes tlSealRingBurst {
+  0% { transform: scale(1); opacity: 0.85; border-color: rgba(255,255,255,0.4); }
+  100% { transform: scale(2.1); opacity: 0; border-color: rgba(255,255,255,0); }
+}
+@keyframes tlSealGlowBurst {
+  0% { transform: scale(1); opacity: 0.75; }
+  40% { transform: scale(1.35); opacity: 1; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+@keyframes tlSealCaptionOut {
+  to { opacity: 0; transform: translateY(8px); }
+}
+@keyframes tlSealFlash {
+  0% { opacity: 0; transform: scale(0.4); }
+  28% { opacity: 0.55; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.8); }
+}
+.tl-seal-flash {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle, rgba(255,245,210,0.85) 0%, rgba(201,168,76,0.25) 40%, transparent 70%);
+  opacity: 0;
 }
 .tl-seal-glow {
   position: absolute;
@@ -2921,15 +3007,20 @@ body.book-open-lock {
   appearance: none;
   display: grid;
   place-items: center;
-  transform: scale(0.86);
-  transition: transform 0.55s cubic-bezier(0.22, 1.35, 0.36, 1), box-shadow 0.35s ease;
+  transform: scale(0.82);
+  opacity: 0.85;
+  transition:
+    transform 0.7s cubic-bezier(0.22, 1.35, 0.36, 1),
+    box-shadow 0.4s ease,
+    opacity 0.5s ease;
   -webkit-tap-highlight-color: transparent;
 }
 .tl-seal-layer.is-on .tl-seal-wax {
   transform: scale(1);
+  opacity: 1;
 }
 .tl-seal-wax:active {
-  transform: scale(0.92);
+  transform: scale(0.94);
 }
 .tl-seal-ring {
   position: absolute;
@@ -2949,21 +3040,45 @@ body.book-open-lock {
   letter-spacing: 0.2em;
   color: rgba(90, 70, 30, 0.72);
   font-weight: 600;
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.55s ease 0.12s,
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.12s;
+}
+.tl-seal-layer.is-on .tl-seal-caption {
+  opacity: 1;
+  transform: translateY(0);
 }
 .tl-month-modal-body.is-sealed {
-  filter: blur(6px) saturate(0.85);
-  opacity: 0.35;
-  transition: filter 0.55s ease, opacity 0.55s ease;
+  filter: blur(8px) saturate(0.8);
+  opacity: 0.28;
+  transform: scale(0.985);
+  transition:
+    filter 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.85s ease,
+    transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .tl-month-modal-body.is-revealed {
-  filter: none;
+  filter: blur(0);
   opacity: 1;
+  transform: scale(1);
 }
 @media (prefers-reduced-motion: reduce) {
-  .tl-seal-glow { animation: none !important; }
+  .tl-seal-glow,
+  .tl-seal-layer.is-breaking,
+  .tl-seal-layer.is-breaking .tl-seal-wax,
+  .tl-seal-layer.is-breaking .tl-seal-ring,
+  .tl-seal-layer.is-breaking .tl-seal-glow,
+  .tl-seal-layer.is-breaking .tl-seal-caption,
+  .tl-seal-layer.is-breaking .tl-seal-flash {
+    animation: none !important;
+  }
   .tl-seal-layer,
   .tl-seal-wax,
-  .tl-month-modal-body.is-sealed {
+  .tl-seal-caption,
+  .tl-month-modal-body.is-sealed,
+  .tl-month-modal-body.is-revealed {
     transition-duration: 0.01ms !important;
   }
 }
@@ -3441,6 +3556,7 @@ body.candlelight .tl-seal-caption {
       <!-- 首次启封蜡印层：仅该年第一次打开时出现 -->
       <div class="tl-seal-layer" id="tlSealLayer" aria-hidden="true">
         <div class="tl-seal-glow" aria-hidden="true"></div>
+        <div class="tl-seal-flash" aria-hidden="true"></div>
         <button type="button" class="tl-seal-wax" id="tlSealWax" aria-label="启封这一年">
           <span class="tl-seal-ring"></span>
           <span class="tl-seal-core">启封</span>
@@ -7275,13 +7391,18 @@ body::after{
       return;
     }
     sealBusy = true;
+    // 先让正文开始解模糊，与蜡印破碎同步
+    if (modalBody) {
+      modalBody.classList.remove('is-sealed');
+      modalBody.classList.add('is-revealed');
+    }
     sealLayer.classList.add('is-breaking');
     setTimeout(function () {
       markYearSealed(year);
       hideSealLayer(true);
       sealBusy = false;
       if (done) done();
-    }, 520);
+    }, 960);
   }
 
   function showSealForYear(year) {
@@ -7888,8 +8009,20 @@ body::after{
   <button type="button" class="candle-toggle" id="candleToggle" aria-label="切换烛光夜读" aria-pressed="false" title="烛光夜读">
     <span class="candle-toggle-glow" aria-hidden="true"></span>
     <span class="candle-toggle-icon" aria-hidden="true">
-      <svg class="candle-icon-moon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12.1 2.1a9.9 9.9 0 0 0-1.3.1 10 10 0 1 0 11 11.5 8 8 0 0 1-9.7-11.6z"/></svg>
-      <svg class="candle-icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 4.5a1 1 0 0 1 1 1V7a1 1 0 1 1-2 0V5.5a1 1 0 0 1 1-1zm0 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm7.5-2.5a1 1 0 0 1 0 2H18a1 1 0 1 1 0-2h1.5zM6 12a1 1 0 0 1-1 1H3.5a1 1 0 1 1 0-2H5a1 1 0 0 1 1 1zm11.3 5.3a1 1 0 0 1 0 1.4l-1.1 1.1a1 1 0 1 1-1.4-1.4l1.1-1.1a1 1 0 0 1 1.4 0zM8.2 6.2a1 1 0 0 1 0 1.4L7.1 8.7A1 1 0 0 1 5.7 7.3l1.1-1.1a1 1 0 0 1 1.4 0zm9.1 0a1 1 0 0 1 1.4 0l1.1 1.1a1 1 0 1 1-1.4 1.4L17.3 7.6a1 1 0 0 1 0-1.4zM8.2 17.8a1 1 0 0 1-1.4 0L5.7 16.7a1 1 0 1 1 1.4-1.4l1.1 1.1a1 1 0 0 1 0 1.4zM12 17a1 1 0 0 1 1 1v1.5a1 1 0 1 1-2 0V18a1 1 0 0 1 1-1z"/></svg>
+      <svg class="candle-icon-moon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="candle-icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="4" fill="currentColor"/>
+        <g stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+          <line x1="12" y1="2.5" x2="12" y2="5"/>
+          <line x1="12" y1="19" x2="12" y2="21.5"/>
+          <line x1="2.5" y1="12" x2="5" y2="12"/>
+          <line x1="19" y1="12" x2="21.5" y2="12"/>
+          <line x1="5.05" y1="5.05" x2="6.8" y2="6.8"/>
+          <line x1="17.2" y1="17.2" x2="18.95" y2="18.95"/>
+          <line x1="18.95" y1="5.05" x2="17.2" y2="6.8"/>
+          <line x1="6.8" y1="17.2" x2="5.05" y2="18.95"/>
+        </g>
+      </svg>
     </span>
   </button>
 
