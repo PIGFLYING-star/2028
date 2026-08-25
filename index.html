@@ -2664,46 +2664,106 @@ body.book-open-lock {
 @keyframes bookOpenBlink {
   50% { opacity: 0; }
 }
+/* 空白区域不接收点击穿透；仅启封按钮可点 */
+.book-open-stage {
+  pointer-events: none;
+}
 .book-open-btn {
   appearance: none;
   -webkit-appearance: none;
-  border: 1px solid rgba(201,168,76,0.55);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid rgba(255, 228, 170, 0.42);
   background:
-    linear-gradient(135deg, rgba(255,255,255,0.12), rgba(201,168,76,0.22));
-  color: #e8d5a3;
+    radial-gradient(120% 180% at 20% 0%, rgba(255,255,255,0.38), transparent 42%),
+    linear-gradient(155deg, rgba(232, 213, 163, 0.34) 0%, rgba(201, 168, 76, 0.22) 48%, rgba(140, 110, 40, 0.28) 100%);
+  color: #f7efd6;
   font-family: 'Noto Serif SC', serif;
   font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.42em;
-  padding: 14px 36px 14px 42px;
+  font-weight: 700;
+  letter-spacing: 0.48em;
+  padding: 15px 40px 15px 46px;
   border-radius: 999px;
   cursor: pointer;
   opacity: 0;
-  transform: translateY(14px) scale(0.96);
+  transform: translateY(16px) scale(0.94);
   pointer-events: none;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.28);
   box-shadow:
-    0 12px 40px rgba(0,0,0,0.28),
-    inset 0 1px 0 rgba(255,255,255,0.25);
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
+    0 18px 48px rgba(0,0,0,0.32),
+    0 0 0 1px rgba(255,255,255,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.55),
+    inset 0 -1px 0 rgba(0,0,0,0.12);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
   transition:
-    opacity 0.55s ease,
-    transform 0.65s cubic-bezier(0.22, 1.25, 0.36, 1),
-    background 0.3s ease,
-    border-color 0.3s ease;
+    opacity 0.6s ease,
+    transform 0.7s cubic-bezier(0.22, 1.3, 0.36, 1),
+    background 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+.book-open-btn::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,0.28), transparent 42%);
+  opacity: 0.85;
+  z-index: 0;
+}
+.book-open-btn::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  left: -60%;
+  width: 40%;
+  height: 180%;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+  transform: rotate(22deg);
+  opacity: 0;
+  z-index: 1;
+}
+.book-open-btn > span {
+  position: relative;
+  z-index: 2;
 }
 .book-open-overlay.is-btn .book-open-btn {
   opacity: 1;
   transform: translateY(0) scale(1);
   pointer-events: auto;
 }
-.book-open-btn:active {
-  transform: scale(0.94);
+.book-open-overlay.is-btn .book-open-btn.is-press {
+  transform: scale(0.96);
+  box-shadow:
+    0 8px 24px rgba(0,0,0,0.28),
+    inset 0 1px 0 rgba(255,255,255,0.35);
+}
+.book-open-overlay.is-btn .book-open-btn.is-flash::after {
+  opacity: 1;
+  animation: bookOpenBtnShine 0.7s ease forwards;
+}
+@keyframes bookOpenBtnShine {
+  0% { left: -60%; opacity: 0.2; }
+  40% { opacity: 0.9; }
+  100% { left: 130%; opacity: 0; }
 }
 @media (hover: hover) {
-  .book-open-btn:hover {
-    border-color: rgba(232,213,163,0.85);
-    background: linear-gradient(135deg, rgba(255,255,255,0.18), rgba(201,168,76,0.35));
+  .book-open-overlay.is-btn .book-open-btn:hover {
+    border-color: rgba(255, 236, 190, 0.72);
+    box-shadow:
+      0 22px 56px rgba(0,0,0,0.36),
+      0 0 28px rgba(201,168,76,0.22),
+      inset 0 1px 0 rgba(255,255,255,0.65);
+    background:
+      radial-gradient(120% 180% at 24% 0%, rgba(255,255,255,0.46), transparent 44%),
+      linear-gradient(155deg, rgba(240, 220, 170, 0.42) 0%, rgba(201, 168, 76, 0.3) 50%, rgba(150, 118, 42, 0.32) 100%);
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -2764,7 +2824,7 @@ body.book-open-lock {
       </div>
       <div class="book-open-class">臻辉班</div>
       <div class="book-open-motto" id="bookOpenMotto" aria-live="polite"></div>
-      <button type="button" class="book-open-btn" id="bookOpenBtn">启封</button>
+      <button type="button" class="book-open-btn" id="bookOpenBtn" aria-label="启封纪念册"><span>启封</span></button>
     </div>
   </div>
   <!-- ====================== 头部Hero区域 ====================== -->
@@ -7096,7 +7156,7 @@ body::after{
 
 
 <script>
-/* 开册启封：班徽浮现 → 班训写出 → 启封进入 */
+/* 开册启封：班徽浮现 → 班训写出 → 仅点「启封」进入（空白无效） */
 (function () {
   'use strict';
   var overlay = document.getElementById('bookOpenOverlay');
@@ -7107,6 +7167,8 @@ body::after{
   var STORAGE_KEY = 'zhenhui_book_opened';
   var lines = ['让努力成为一种常态', '让优秀成为一种习惯', '——黄欢'];
   var reduce = false;
+  var finished = false;
+  var canOpen = false;
   try {
     reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   } catch (e) {}
@@ -7125,13 +7187,21 @@ body::after{
   }
 
   function finishOpen() {
+    if (finished || !canOpen) return;
+    finished = true;
+    canOpen = false;
+    btn.classList.add('is-flash');
+    btn.classList.add('is-press');
     markOpened();
-    overlay.classList.add('is-leaving');
-    overlay.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('book-open-lock');
+    // 先给按钮一瞬反馈，再淡出整层
     setTimeout(function () {
-      overlay.classList.add('is-done');
-    }, 720);
+      overlay.classList.add('is-leaving');
+      overlay.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('book-open-lock');
+      setTimeout(function () {
+        overlay.classList.add('is-done');
+      }, 720);
+    }, reduce ? 40 : 180);
   }
 
   if (alreadyOpened()) {
@@ -7142,7 +7212,23 @@ body::after{
 
   document.body.classList.add('book-open-lock');
 
+  // 空白处点击：明确吞掉，绝不启封
+  function swallowBlank(e) {
+    if (!overlay || overlay.classList.contains('is-done') || overlay.classList.contains('is-leaving')) return;
+    var t = e.target;
+    if (t === btn || (btn.contains && btn.contains(t))) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+  }
+  overlay.addEventListener('click', swallowBlank, true);
+  overlay.addEventListener('pointerdown', swallowBlank, true);
+  overlay.addEventListener('touchstart', swallowBlank, { capture: true, passive: false });
+
   function typeLines(done) {
+    var htmlLines = [];
+    for (var n = 0; n < lines.length; n++) htmlLines.push('');
+
     if (reduce) {
       mottoEl.innerHTML = '<div class="book-open-motto-inner">' + lines.map(function (l, i) {
         return '<span class="book-open-line' + (i === lines.length - 1 ? ' book-open-line--sign' : '') + '">' + l + '</span>';
@@ -7153,7 +7239,6 @@ body::after{
     }
     var lineIdx = 0;
     var charIdx = 0;
-    var htmlLines = ['', ''];
     overlay.classList.add('is-motto');
 
     function paint() {
@@ -7192,7 +7277,6 @@ body::after{
     tick();
   }
 
-  // 入场序列
   requestAnimationFrame(function () {
     overlay.classList.add('is-ready');
     var waitEmblem = reduce ? 80 : 780;
@@ -7200,24 +7284,38 @@ body::after{
       typeLines(function () {
         setTimeout(function () {
           overlay.classList.add('is-btn');
-          try { btn.focus(); } catch (e) {}
+          canOpen = true;
         }, reduce ? 40 : 220);
       });
     }, waitEmblem);
   });
 
-  btn.addEventListener('click', function (e) {
-    e.preventDefault();
+  function onBtnActivate(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+    }
+    if (!canOpen || finished) return;
     finishOpen();
-  });
+  }
 
-  // 键盘：Enter / Space 启封
+  btn.addEventListener('click', onBtnActivate);
+  btn.addEventListener('pointerdown', function (e) {
+    if (!canOpen || finished) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    btn.classList.add('is-press');
+  });
+  function clearPress() { btn.classList.remove('is-press'); }
+  btn.addEventListener('pointerup', clearPress);
+  btn.addEventListener('pointercancel', clearPress);
+  btn.addEventListener('pointerleave', clearPress);
+
   overlay.addEventListener('keydown', function (e) {
+    if (!canOpen || finished) return;
     if (e.key === 'Enter' || e.key === ' ') {
-      if (overlay.classList.contains('is-btn')) {
-        e.preventDefault();
-        finishOpen();
-      }
+      e.preventDefault();
+      onBtnActivate(e);
     }
   });
 })();
