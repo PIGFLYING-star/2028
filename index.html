@@ -2547,6 +2547,690 @@ body:before{
     }
 </style>
 
+
+<style id="zhenhui-enhancements">
+/* =========================================================
+ * 臻辉班增强版 · 开册 / 班徽背面 / 照片评论 / 未来星空
+ * 仅增加新交互，不覆盖原有业务逻辑。
+ * ========================================================= */
+
+/* ---------- 开册启封优化 ---------- */
+.book-open-overlay::before{
+  content:"";
+  position:absolute;
+  inset:-20%;
+  pointer-events:none;
+  background:
+    linear-gradient(115deg,transparent 42%,rgba(255,255,255,.055) 48%,rgba(232,213,163,.12) 50%,rgba(255,255,255,.02) 53%,transparent 59%);
+  transform:translate3d(-38%,0,0);
+  animation:bookOpenLightSweep 5.4s cubic-bezier(.22,1,.36,1) 1.1s infinite;
+  opacity:.9;
+}
+.book-open-overlay::after{
+  content:"";
+  position:absolute;
+  width:min(58vw,560px);
+  height:min(58vw,560px);
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(201,168,76,.13),transparent 68%);
+  filter:blur(28px);
+  pointer-events:none;
+  transform:translate3d(0,10px,0) scale(.84);
+  opacity:0;
+  animation:bookOpenAura 1.8s cubic-bezier(.22,1,.36,1) .25s forwards,bookOpenAuraBreath 5.6s ease-in-out 2.2s infinite;
+}
+@keyframes bookOpenLightSweep{
+  0%,18%{transform:translate3d(-42%,0,0);opacity:0}
+  28%{opacity:.8}
+  45%{transform:translate3d(42%,0,0);opacity:.9}
+  60%,100%{transform:translate3d(68%,0,0);opacity:0}
+}
+@keyframes bookOpenAura{
+  from{opacity:0;transform:translate3d(0,18px,0) scale(.72)}
+  to{opacity:1;transform:translate3d(0,0,0) scale(1)}
+}
+@keyframes bookOpenAuraBreath{
+  0%,100%{transform:translate3d(0,0,0) scale(1);opacity:.55}
+  50%{transform:translate3d(0,-8px,0) scale(1.08);opacity:.82}
+}
+.book-open-stage{
+  z-index:2;
+}
+.book-open-emblem-wrap{
+  position:relative;
+}
+.book-open-emblem-wrap::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:-20px;
+  width:86%;
+  height:24px;
+  transform:translateX(-50%) scaleX(.78);
+  background:radial-gradient(ellipse,rgba(201,168,76,.28),transparent 72%);
+  filter:blur(10px);
+  opacity:0;
+  transition:opacity .9s ease .18s,transform 1s cubic-bezier(.22,1.1,.36,1) .18s;
+}
+.book-open-overlay.is-ready .book-open-emblem-wrap::after{
+  opacity:1;
+  transform:translateX(-50%) scaleX(1);
+}
+.book-open-meta{
+  display:grid;
+  gap:4px;
+  justify-items:center;
+  margin:-4px 0 18px;
+  opacity:0;
+  transform:translateY(9px);
+  transition:opacity .65s ease .26s,transform .8s cubic-bezier(.22,1,.36,1) .26s;
+  font-family:'Noto Serif SC',serif;
+  font-size:11px;
+  line-height:1.5;
+  letter-spacing:.18em;
+  color:rgba(232,213,163,.64);
+  text-align:center;
+}
+.book-open-overlay.is-ready .book-open-meta{
+  opacity:1;
+  transform:translateY(0);
+}
+.book-open-meta span:nth-child(1){
+  color:rgba(255,248,230,.82);
+  font-weight:600;
+}
+.book-open-meta span:nth-child(3){
+  font-family:Georgia,'Times New Roman',serif;
+  letter-spacing:.24em;
+  font-size:10px;
+  color:rgba(232,213,163,.55);
+}
+.book-open-hint{
+  margin-top:13px;
+  min-height:16px;
+  color:rgba(255,255,255,.42);
+  font-size:10px;
+  letter-spacing:.14em;
+  text-align:center;
+  opacity:0;
+  transform:translateY(6px);
+  transition:opacity .55s ease .34s,transform .6s cubic-bezier(.22,1,.36,1) .34s;
+  pointer-events:none;
+}
+.book-open-overlay.is-btn .book-open-hint{
+  opacity:1;
+  transform:none;
+}
+.book-open-btn{
+  animation:bookOpenButtonBreath 3.8s ease-in-out 1.6s infinite;
+}
+@keyframes bookOpenButtonBreath{
+  0%,100%{box-shadow:0 18px 48px rgba(0,0,0,.32),0 0 0 1px rgba(255,255,255,.08),inset 0 1px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(0,0,0,.12)}
+  50%{box-shadow:0 22px 58px rgba(0,0,0,.36),0 0 24px rgba(201,168,76,.15),0 0 0 1px rgba(255,255,255,.10),inset 0 1px 0 rgba(255,255,255,.62),inset 0 -1px 0 rgba(0,0,0,.12)}
+}
+.book-open-btn:focus-visible{
+  outline:2px solid rgba(232,213,163,.7);
+  outline-offset:4px;
+}
+@media(max-width:768px){
+  .book-open-meta{letter-spacing:.12em;font-size:10px}
+  .book-open-meta span:nth-child(3){font-size:9px;letter-spacing:.18em}
+  .book-open-hint{font-size:9px;letter-spacing:.10em}
+}
+@media(prefers-reduced-motion:reduce){
+  .book-open-overlay::before,
+  .book-open-overlay::after,
+  .book-open-btn{animation:none!important}
+  .book-open-meta,
+  .book-open-hint,
+  .book-open-emblem-wrap::after{transition:none!important}
+}
+
+/* ---------- 班徽背面：点击翻转 ---------- */
+.emblem-front,
+.emblem-back{
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+}
+.emblem-front{
+  transform:translateZ(.1px) rotateY(0deg);
+}
+.emblem-back{
+  position:absolute;
+  will-change:transform;
+  inset:0;
+  transform:translateZ(.05px) rotateY(180deg);
+  display:grid;
+  place-items:center;
+  padding:20px;
+  box-sizing:border-box;
+  border-radius:50%;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 28% 20%,rgba(255,255,255,.96),transparent 30%),
+    linear-gradient(145deg,rgba(255,255,255,.96),rgba(247,244,238,.82));
+  border:1px solid rgba(255,255,255,.85);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -2px 7px rgba(155,125,60,.08),
+    0 18px 45px rgba(0,0,0,.12);
+  pointer-events:none;
+}
+.emblem-back::before{
+  content:"";
+  position:absolute;
+  inset:8px;
+  border:1px solid rgba(201,168,76,.25);
+  border-radius:50%;
+  pointer-events:none;
+}
+.emblem-back-inner{
+  position:relative;
+  z-index:1;
+  width:82%;
+  text-align:center;
+  color:#4d4434;
+}
+.emblem-back-kicker{
+  font-family:Georgia,'Times New Roman',serif;
+  font-size:9px;
+  letter-spacing:.34em;
+  color:rgba(154,116,40,.70);
+  margin-bottom:9px;
+}
+.emblem-back-title{
+  font-family:'Noto Serif SC',serif;
+  font-size:24px;
+  font-weight:800;
+  letter-spacing:.28em;
+  padding-left:.28em;
+  color:#3a3429;
+}
+.emblem-back-meta{
+  display:grid;
+  gap:4px;
+  margin-top:10px;
+  font-size:11px;
+  letter-spacing:.12em;
+  color:#8a7a5e;
+}
+.emblem-back-divider{
+  width:52px;
+  height:1px;
+  margin:14px auto;
+  background:linear-gradient(90deg,transparent,#c9a84c,transparent);
+}
+.emblem-back-slogan{
+  font-family:Georgia,'Times New Roman',serif;
+  font-size:11px;
+  letter-spacing:.18em;
+  color:#b18b37;
+}
+.emblem-back-hint{
+  margin-top:16px;
+  font-size:9px;
+  letter-spacing:.10em;
+  color:#a49a89;
+}
+.emblem-stage.emblem-is-flipped{
+  cursor:pointer;
+}
+.emblem-stage.emblem-is-flipped .emblem-hint{
+  color:var(--gold);
+}
+.emblem-stage.emblem-is-flipped .emblem-back{
+  pointer-events:auto;
+}
+.emblem-stage.emblem-is-flipped .emblem-rim,
+.emblem-stage.emblem-is-flipped .emblem-spec,
+.emblem-stage.emblem-is-flipped .emblem-spec-b,
+.emblem-stage.emblem-is-flipped .emblem-env{
+  opacity:.02;
+}
+@media(max-width:768px){
+  .emblem-back-title{font-size:21px}
+  .emblem-back-meta{font-size:10px}
+  .emblem-back-slogan{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  .emblem-back,
+  .emblem-front{transition:none!important}
+}
+
+/* ---------- 图片 Shared Element / 翻面 ---------- */
+.photo-viewer-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  pointer-events:auto;
+}
+.photo-comment-btn{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-height:40px;
+  padding:0 13px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.28);
+  background:rgba(255,255,255,.10);
+  color:rgba(255,255,255,.94);
+  backdrop-filter:blur(18px) saturate(170%);
+  -webkit-backdrop-filter:blur(18px) saturate(170%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.26),0 12px 32px rgba(0,0,0,.14);
+  font:600 12px/1 'Noto Serif SC',serif;
+  letter-spacing:.08em;
+  cursor:pointer;
+  transition:transform .35s cubic-bezier(.22,1.25,.36,1),background .3s ease,border-color .3s ease,box-shadow .3s ease;
+}
+.photo-comment-btn:hover{transform:translateY(-2px);background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.48)}
+.photo-comment-btn:active{transform:scale(.92)}
+.photo-comment-icon{
+  position:relative;
+  width:13px;
+  height:10px;
+  border:1.4px solid currentColor;
+  border-radius:5px;
+}
+.photo-comment-icon::after{
+  content:"";
+  position:absolute;
+  left:2px;
+  bottom:-4px;
+  width:4px;
+  height:4px;
+  border-left:1.4px solid currentColor;
+  transform:skewX(-22deg);
+}
+.photo-comment-count{
+  min-width:16px;
+  height:16px;
+  padding:0 4px;
+  display:inline-grid;
+  place-items:center;
+  border-radius:999px;
+  background:rgba(255,255,255,.14);
+  color:rgba(255,255,255,.80);
+  font-size:9px;
+}
+.photo-comment-btn.is-open{
+  background:rgba(255,255,255,.18);
+  border-color:rgba(255,255,255,.56);
+}
+.photo-track-viewport.is-flip-ready{
+  perspective:1600px;
+}
+.photo-slide.photo-slide-front{
+  transform-style:preserve-3d;
+  transition:transform .82s cubic-bezier(.16,1,.3,1),filter .5s ease;
+}
+.photo-viewer.is-memory-back .photo-stage{
+  pointer-events:none;
+  transform:translate3d(0,8px,0) scale(.985);
+  opacity:.05;
+  filter:blur(11px);
+  will-change:transform,opacity,filter;
+}
+.photo-memory-back{
+  position:absolute;
+  inset:clamp(78px,9vh,110px) clamp(16px,5vw,80px) clamp(62px,9vh,96px);
+  z-index:8;
+  display:grid;
+  place-items:center;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transform:translate3d(0,42px,0) scale(.968);
+  will-change:transform,opacity;
+  transition:
+    opacity .56s cubic-bezier(.22,1,.36,1),
+    visibility .56s linear,
+    transform .78s cubic-bezier(.16,1,.3,1);
+}
+.photo-viewer.is-memory-back .photo-memory-back{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+  transform:translate3d(0,0,0) scale(1);
+}
+.photo-memory-card{
+  width:min(720px,92vw);
+  max-height:100%;
+  padding:28px 26px 22px;
+  box-sizing:border-box;
+  border-radius:30px;
+  overflow:hidden;
+  background:
+    radial-gradient(100% 80% at 12% 0%,rgba(255,255,255,.98),transparent 46%),
+    linear-gradient(145deg,#ffffff 0%,#fbfaf8 52%,#f3eee4 100%);
+  color:#403a2f;
+  border:1px solid rgba(255,255,255,.95);
+  box-shadow:
+    0 34px 100px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,1);
+  display:flex;
+  flex-direction:column;
+}
+.photo-memory-kicker{
+  font:700 10px/1 Georgia,'Times New Roman',serif;
+  letter-spacing:.28em;
+  color:#b28c3c;
+  text-align:center;
+}
+.photo-memory-title{
+  margin:11px 0 13px;
+  text-align:center;
+  font:700 clamp(18px,4vw,24px)/1.5 'Noto Serif SC',serif;
+  letter-spacing:.08em;
+  color:#3d372d;
+}
+.photo-memory-rule{
+  width:74px;
+  height:1px;
+  margin:0 auto 15px;
+  background:linear-gradient(90deg,transparent,#c9a84c,transparent);
+}
+.photo-memory-comments{
+  flex:1 1 auto;
+  min-height:80px;
+  max-height:min(38vh,320px);
+  overflow:auto;
+  padding:4px 2px 12px;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.photo-memory-comments::-webkit-scrollbar{width:5px}
+.photo-memory-comments::-webkit-scrollbar-thumb{background:rgba(201,168,76,.25);border-radius:999px}
+.photo-comment-item{
+  padding:10px 12px;
+  margin-bottom:8px;
+  border-radius:17px;
+  border:1px solid rgba(201,168,76,.14);
+  background:rgba(255,255,255,.72);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.96),0 5px 18px rgba(102,82,40,.05);
+}
+.photo-comment-text{
+  font-size:13px;
+  line-height:1.75;
+  color:#5e5547;
+  word-break:break-word;
+}
+.photo-comment-time{
+  margin-top:4px;
+  font-size:9px;
+  color:#aaa08f;
+  letter-spacing:.08em;
+}
+.photo-comment-empty{
+  min-height:90px;
+  display:grid;
+  place-items:center;
+  text-align:center;
+  color:#a49a8a;
+  font-size:12px;
+  line-height:1.7;
+  padding:0 18px;
+}
+.photo-comment-editor{
+  display:flex;
+  gap:8px;
+  align-items:flex-end;
+  margin-top:8px;
+}
+.photo-comment-editor textarea{
+  flex:1 1 auto;
+  min-width:0;
+  resize:none;
+  min-height:48px;
+  max-height:110px;
+  padding:12px 13px;
+  border-radius:16px;
+  border:1px solid rgba(201,168,76,.18);
+  background:rgba(255,255,255,.88);
+  color:#4a4338;
+  outline:none;
+  font:13px/1.55 'Noto Serif SC',serif;
+  -webkit-appearance:none;
+  transition:border-color .25s ease,box-shadow .25s ease;
+}
+.photo-comment-editor textarea:focus{
+  border-color:rgba(201,168,76,.55);
+  box-shadow:0 0 0 3px rgba(201,168,76,.08);
+}
+.photo-comment-send{
+  flex:0 0 auto;
+  min-width:62px;
+  height:48px;
+  padding:0 13px;
+  border:1px solid rgba(201,168,76,.32);
+  border-radius:16px;
+  background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(226,208,167,.58));
+  color:#8e6c25;
+  font:700 12px/1 'Noto Serif SC',serif;
+  letter-spacing:.08em;
+  cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 8px 24px rgba(120,90,30,.10);
+  transition:transform .3s cubic-bezier(.22,1.2,.36,1),box-shadow .3s ease;
+}
+.photo-comment-send:active{transform:scale(.94)}
+.photo-comment-send:disabled{opacity:.55;cursor:wait}
+.photo-memory-back-hint{
+  margin-top:11px;
+  text-align:center;
+  font-size:10px;
+  color:#aaa08f;
+  letter-spacing:.12em;
+}
+.photo-viewer.is-memory-back .photo-viewer-hint{
+  opacity:1;
+  transform:translateX(-50%);
+}
+@media(max-width:768px){
+  .photo-viewer-actions{gap:6px}
+  .photo-comment-btn{min-height:38px;padding:0 10px;font-size:11px}
+  .photo-comment-btn>span:nth-child(2){display:none}
+  .photo-memory-back{inset:72px 12px 56px}
+  .photo-memory-card{width:92vw;padding:22px 17px 16px;border-radius:24px}
+  .photo-memory-title{font-size:17px}
+}
+@media(prefers-reduced-motion:reduce){
+  .photo-comment-btn,
+  .photo-memory-back,
+  .photo-viewer.is-memory-back .photo-stage,
+  .photo-comment-send{transition:none!important}
+}
+
+/* ---------- 未来星空：只存在于本次页面会话 ---------- */
+.future-message-wrap{
+  margin:14px auto 0;
+  width:min(700px,100%);
+}
+.future-message-btn{
+  width:100%;
+  min-height:60px;
+  border:1px solid rgba(255,255,255,.46);
+  border-radius:18px;
+  background:
+    radial-gradient(120% 150% at 20% 0%,rgba(255,255,255,.48),transparent 44%),
+    linear-gradient(135deg,rgba(255,255,255,.34),rgba(201,168,76,.16));
+  color:var(--gold);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.72),
+    0 12px 32px rgba(0,0,0,.06);
+  backdrop-filter:blur(18px) saturate(170%);
+  -webkit-backdrop-filter:blur(18px) saturate(170%);
+  cursor:pointer;
+  font:700 13px/1.3 'Noto Serif SC',serif;
+  letter-spacing:.12em;
+  transition:transform .42s cubic-bezier(.22,1.25,.36,1),box-shadow .32s ease,background .32s ease;
+}
+.future-message-btn span,.future-message-btn small{display:block}
+.future-message-btn small{
+  margin-top:5px;
+  color:var(--text-sub);
+  font:400 9px/1.4 'Noto Serif SC',serif;
+  letter-spacing:.08em;
+}
+.future-message-btn:hover{transform:translateY(-3px);box-shadow:0 18px 42px rgba(0,0,0,.10),inset 0 1px 0 rgba(255,255,255,.86)}
+.future-message-btn:active{transform:scale(.975)}
+.future-message-panel{
+  position:fixed;
+  inset:0;
+  z-index:1000010;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(10,12,22,.36);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .38s ease,visibility .38s ease;
+}
+.future-message-panel.is-open{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+}
+.future-message-box{
+  position:relative;
+  width:min(520px,92vw);
+  padding:25px 22px 20px;
+  border-radius:28px;
+  background:
+    radial-gradient(100% 75% at 10% 0%,rgba(255,255,255,.92),transparent 52%),
+    linear-gradient(145deg,rgba(255,255,255,.72),rgba(255,248,230,.50));
+  border:1px solid rgba(255,255,255,.70);
+  box-shadow:0 28px 90px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.92);
+  transform:translateY(24px) scale(.97);
+  transition:transform .55s cubic-bezier(.22,1.2,.36,1);
+}
+.future-message-panel.is-open .future-message-box{transform:none}
+.future-message-close{
+  position:absolute;right:12px;top:10px;
+  width:36px;height:36px;border:0;border-radius:50%;
+  background:rgba(255,255,255,.52);color:#9b907e;font-size:22px;cursor:pointer;
+}
+.future-message-kicker{
+  text-align:center;
+  font:700 9px/1 Georgia,'Times New Roman',serif;
+  letter-spacing:.28em;color:#b18b37;
+}
+.future-message-title{
+  margin-top:11px;text-align:center;
+  font:700 22px/1.5 'Noto Serif SC',serif;letter-spacing:.08em;color:#40382c;
+}
+.future-message-sub{
+  margin:8px auto 15px;
+  max-width:420px;text-align:center;
+  color:#938977;font-size:11px;line-height:1.8;letter-spacing:.04em;
+}
+.future-message-box textarea{
+  width:100%;box-sizing:border-box;resize:none;
+  min-height:86px;padding:13px 14px;border-radius:17px;
+  border:1px solid rgba(201,168,76,.18);
+  background:rgba(255,255,255,.72);color:#554b3a;outline:none;
+  font:13px/1.7 'Noto Serif SC',serif;
+}
+.future-message-send{
+  width:100%;height:46px;margin-top:10px;
+  border:1px solid rgba(255,255,255,.75);border-radius:15px;
+  background:linear-gradient(145deg,rgba(255,255,255,.86),rgba(201,168,76,.62));
+  color:#70541b;font:700 12px/1 'Noto Serif SC',serif;letter-spacing:.1em;
+  cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 12px 28px rgba(110,80,25,.10);
+}
+.future-message-send:active{transform:scale(.98)}
+.future-sky{
+  position:relative;
+  width:min(900px,100%);
+  height:180px;
+  margin:16px auto 0;
+  overflow:hidden;
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 52% 46%,rgba(201,168,76,.09),transparent 30%),
+    radial-gradient(circle at 15% 20%,rgba(118,140,220,.10),transparent 30%),
+    linear-gradient(180deg,#171928 0%,#10111d 100%);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 18px 45px rgba(0,0,0,.16);
+}
+.future-sky-caption{
+  position:absolute;left:50%;top:12px;transform:translateX(-50%);
+  white-space:nowrap;color:rgba(255,255,255,.38);
+  font-size:9px;letter-spacing:.16em;pointer-events:none;
+}
+.future-star{
+  position:absolute;
+  left:0;
+  top:0;
+  width:7px;height:7px;border-radius:50%;
+  background:radial-gradient(circle,#fff9d8 0%,#e9c85f 34%,rgba(201,168,76,.15) 72%,transparent 100%);
+  box-shadow:0 0 7px rgba(232,213,163,.65),0 0 22px rgba(201,168,76,.32);
+  transform:translate(-50%,-50%) scale(0);
+  animation:futureStarAppear .86s cubic-bezier(.22,1.22,.36,1) forwards, futureStarPulse 3.8s ease-in-out 1s infinite;
+}
+@keyframes futureStarAppear{
+  0%{transform:translate(-50%,-50%) scale(0);filter:blur(5px);opacity:0}
+  58%{transform:translate(-50%,-50%) scale(1.8);filter:blur(0);opacity:1}
+  100%{transform:translate(-50%,-50%) scale(1);filter:blur(0);opacity:.92}
+}
+@keyframes futureStarPulse{
+  0%,100%{opacity:.72}
+  50%{opacity:1}
+}
+.future-star-note{
+  position:absolute;
+  left:0;
+  top:0;
+  transform:translate(-50%,-135%) translateY(4px);
+  max-width:170px;
+  padding:6px 9px;
+  border-radius:12px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.10);
+  color:rgba(255,248,230,.68);
+  font-size:9px;
+  line-height:1.5;
+  text-align:center;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s ease,transform .35s ease;
+}
+.future-star-wrap:hover .future-star-note,
+.future-star-wrap:focus-within .future-star-note{opacity:1;transform:translate(-50%,-145%)}
+.future-flying-message{
+  position:fixed;
+  z-index:1000030;
+  pointer-events:none;
+  padding:8px 13px;
+  border:1px solid rgba(255,255,255,.68);
+  border-radius:999px;
+  color:#554a36;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.90),rgba(232,213,163,.45));
+  backdrop-filter:blur(20px) saturate(180%);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  box-shadow:0 18px 55px rgba(201,168,76,.25),inset 0 1px 3px rgba(255,255,255,.96);
+  font:600 11px/1 'Noto Serif SC',serif;
+  white-space:nowrap;
+}
+@media(max-width:768px){
+  .future-message-btn{min-height:58px}
+  .future-sky{height:150px;border-radius:20px}
+  .future-star-note{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .future-message-box,
+  .future-message-panel,
+  .future-message-btn,
+  .future-flying-message,
+  .future-star,
+  .future-star-wrap{animation:none!important;transition:none!important}
+}
+</style>
+
 <style id="book-open-and-seal">
 /* ====================== 开册启封 · 班徽印记 ====================== */
 .book-open-overlay {
@@ -3327,7 +4011,154 @@ body.candlelight .tl-seal-caption {
     bottom: max(18px, env(safe-area-inset-bottom));
   }
 }
+
+/* =========================================================
+ * 夜读模式适配补丁 · 新增功能
+ * 相册背面评论 + 未来星空 + 未来留言弹窗
+ * 与原有烛光夜读主题保持同一套暖暗材质
+ * ========================================================= */
+body.candlelight .photo-comment-btn{
+  background:rgba(40,32,22,.58);
+  border-color:rgba(201,168,76,.28);
+  color:#f0e6d2;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 12px 32px rgba(0,0,0,.28);
+}
+body.candlelight .photo-comment-btn.is-open{
+  background:rgba(72,55,30,.66);
+  border-color:rgba(201,168,76,.50);
+}
+body.candlelight .photo-comment-count{
+  background:rgba(201,168,76,.14);
+  color:#e8d5a3;
+}
+body.candlelight .photo-memory-card{
+  background:
+    radial-gradient(100% 80% at 12% 0%,rgba(255,255,255,.10),transparent 46%),
+    linear-gradient(145deg,#272119 0%,#211c16 52%,#19140f 100%);
+  color:#e6dcc8;
+  border-color:rgba(201,168,76,.24);
+  box-shadow:
+    0 34px 100px rgba(0,0,0,.48),
+    inset 0 1px 0 rgba(255,255,255,.12);
+}
+body.candlelight .photo-memory-kicker{color:#d4b56a}
+body.candlelight .photo-memory-title{color:#f0e6d2}
+body.candlelight .photo-memory-rule{
+  background:linear-gradient(90deg,transparent,#d4b56a,transparent);
+}
+body.candlelight .photo-memory-comments::-webkit-scrollbar-thumb{
+  background:rgba(201,168,76,.34);
+}
+body.candlelight .photo-comment-item{
+  background:rgba(58,48,36,.72);
+  border-color:rgba(201,168,76,.20);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 5px 18px rgba(0,0,0,.18);
+}
+body.candlelight .photo-comment-text{color:#dfd2bc}
+body.candlelight .photo-comment-time,
+body.candlelight .photo-comment-empty,
+body.candlelight .photo-memory-back-hint{color:#9f927d}
+body.candlelight .photo-comment-editor textarea{
+  background:rgba(36,30,22,.92);
+  border-color:rgba(201,168,76,.28);
+  color:#e6dcc8;
+}
+body.candlelight .photo-comment-editor textarea::placeholder{
+  color:#7f735f;
+}
+body.candlelight .photo-comment-editor textarea:focus{
+  border-color:rgba(201,168,76,.55);
+  box-shadow:0 0 0 3px rgba(201,168,76,.08);
+}
+body.candlelight .photo-comment-send{
+  background:linear-gradient(145deg,rgba(74,57,30,.92),rgba(105,79,32,.70));
+  color:#f0dfb7;
+  border-color:rgba(201,168,76,.34);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 8px 24px rgba(0,0,0,.20);
+}
+body.candlelight .future-message-btn{
+  background:
+    radial-gradient(120% 150% at 20% 0%,rgba(255,220,160,.14),transparent 44%),
+    linear-gradient(135deg,rgba(55,45,33,.78),rgba(92,70,35,.50));
+  color:#e6c87b;
+  border-color:rgba(201,168,76,.30);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 12px 32px rgba(0,0,0,.30);
+}
+body.candlelight .future-message-btn small{color:#998b74}
+body.candlelight .future-message-panel{
+  background:rgba(8,7,6,.56);
+}
+body.candlelight .future-message-box{
+  background:
+    radial-gradient(100% 75% at 10% 0%,rgba(255,255,255,.10),transparent 52%),
+    linear-gradient(145deg,rgba(50,41,30,.96),rgba(31,26,20,.96));
+  border-color:rgba(201,168,76,.28);
+  box-shadow:0 28px 90px rgba(0,0,0,.52),inset 0 1px 0 rgba(255,255,255,.10);
+}
+body.candlelight .future-message-kicker{color:#d4b56a}
+body.candlelight .future-message-title{color:#f0e6d2}
+body.candlelight .future-message-sub{color:#a99b85}
+body.candlelight .future-message-close{
+  background:rgba(255,255,255,.08);
+  color:#b6a88d;
+}
+body.candlelight .future-message-box textarea{
+  background:rgba(28,24,18,.92);
+  border-color:rgba(201,168,76,.24);
+  color:#e6dcc8;
+}
+body.candlelight .future-message-box textarea::placeholder{color:#766b59}
+body.candlelight .future-message-send{
+  background:linear-gradient(145deg,rgba(73,56,30,.95),rgba(111,82,31,.72));
+  color:#f0dfb7;
+  border-color:rgba(201,168,76,.34);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 12px 28px rgba(0,0,0,.22);
+}
+body.candlelight .future-sky{
+  background:
+    radial-gradient(circle at 52% 46%,rgba(201,168,76,.12),transparent 30%),
+    radial-gradient(circle at 15% 20%,rgba(118,140,220,.06),transparent 30%),
+    linear-gradient(180deg,#0f0d0b 0%,#090807 100%);
+  border-color:rgba(201,168,76,.18);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 18px 45px rgba(0,0,0,.34);
+}
+body.candlelight .future-sky-caption{color:rgba(232,213,163,.46)}
+body.candlelight .future-star-note{
+  background:rgba(46,38,28,.82);
+  border-color:rgba(201,168,76,.18);
+  color:rgba(255,248,230,.74);
+}
+
 </style>
+
+<style id="zhenhui-shared-element-patch">
+.photo-shared-clone{
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+}
+.photo-slide img.photo-shared-hidden{
+  opacity:0!important;
+}
+.photo-viewer.is-memory-back .photo-viewer-actions .photo-comment-btn{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 14px 38px rgba(255,255,255,.08);
+}
+@media(max-width:768px){
+  .photo-shared-clone{box-shadow:0 14px 36px rgba(0,0,0,.20)!important}
+}
+</style>
+
+
+<style id="zhenhui-gallery-hint">
+.gallery-interaction-hint{
+  margin-top:8px;
+  font-size:10px;
+  line-height:1.6;
+  letter-spacing:.10em;
+  color:var(--text-sub);
+  opacity:.86;
+}
+</style>
+
 </head>
 <body>
   <!-- ====================== 开册启封 ====================== -->
@@ -3337,8 +4168,14 @@ body.candlelight .tl-seal-caption {
         <img src="/assets/img/111.webp" alt="" width="168" height="168" decoding="async" draggable="false">
       </div>
       <div class="book-open-class">臻辉班</div>
+      <div class="book-open-meta" aria-label="班级信息">
+        <span>2026—2028</span>
+        <span>威远县凤翔学校</span>
+        <span>Together · Forever</span>
+      </div>
       <div class="book-open-motto" id="bookOpenMotto" aria-live="polite"></div>
       <button type="button" class="book-open-btn" id="bookOpenBtn" aria-label="启封纪念册"><span>启封</span></button>
+      <div class="book-open-hint" id="bookOpenHint">点击「启封」，正式进入我们的纪念册</div>
     </div>
   </div>
   <!-- ====================== 头部Hero区域 ====================== -->
@@ -3414,6 +4251,7 @@ body.candlelight .tl-seal-caption {
     <div class="gallery-header">
       <div class="gallery-title">班级相册</div>
       <div class="gallery-sub">/ PHOTOS</div>
+      <div class="gallery-interaction-hint">点击照片进入 · 左右滑动浏览 · 轻轻上扫查看背面并留下评论</div>
     </div>
 
     <div class="gallery-grid" id="gallery">
@@ -3523,10 +4361,33 @@ body.candlelight .tl-seal-caption {
       <button class="wall-btn" id="submitBtn">发布</button>
     </div>
 
-    <!--【修改：原折叠面板替换为触发按钮】 -->
+    <!-- 我的留言：按要求置于「把一句话留给未来」上方 -->
     <div class="open-my-msg-btn-wrap">
       <button class="open-my-msg-btn" id="openMyMsgModalBtn">查看我的留言</button>
     </div>
+
+    <div class="future-message-wrap">
+      <button type="button" class="future-message-btn" id="futureMessageBtn">
+        <span>把一句话留给未来</span>
+        <small>仅本地可见 · 刷新网页后消失</small>
+      </button>
+    </div>
+
+    <div class="future-message-panel" id="futureMessagePanel" aria-hidden="true">
+      <div class="future-message-box">
+        <button type="button" class="future-message-close" id="futureMessageClose" aria-label="关闭">&times;</button>
+        <div class="future-message-kicker">A NOTE FOR THE FUTURE</div>
+        <div class="future-message-title">把一句话留给未来</div>
+        <div class="future-message-sub">写给未来的我们。发送后，它会飞向夜空，成为一颗只在你本次浏览中存在的星星。</div>
+        <textarea id="futureMessageInput" maxlength="120" rows="3" placeholder="例如：十年以后再见，愿我们都还记得今天。"></textarea>
+        <button type="button" class="future-message-send" id="futureMessageSend">发送</button>
+      </div>
+    </div>
+
+    <div class="future-sky" id="futureSky" aria-label="写给未来的星空">
+      <div class="future-sky-caption">写给未来的星空 · 仅本地可见 · 刷新网页后消失</div>
+    </div>
+
   </div>
 
   <!--【新增：我的留言弹窗模态DOM】 -->
@@ -3588,16 +4449,29 @@ body.candlelight .tl-seal-caption {
           <div class="ex ex-2"><img src="/assets/img/111.webp" alt="" draggable="false"></div>
           <div class="ex ex-1"><img src="/assets/img/111.webp" alt="" draggable="false"></div>
         </div>
-        <div class="emblem-front">
+        <div class="emblem-front" id="emblemFrontFace">
           <img class="emblem-photo" src="/assets/img/111.webp" alt="臻辉班班徽" width="300" height="300" decoding="async" draggable="false">
           <span class="emblem-coat emblem-env" id="emblemEnv"></span>
           <span class="emblem-coat emblem-spec" id="emblemSpec"></span>
           <span class="emblem-coat emblem-spec-b" id="emblemSpecB"></span>
           <span class="emblem-coat emblem-rim" id="emblemRim"></span>
         </div>
+        <div class="emblem-back" id="emblemBackFace" aria-hidden="true">
+          <div class="emblem-back-inner">
+            <div class="emblem-back-kicker">Z H · CLASS</div>
+            <div class="emblem-back-title">臻辉班</div>
+            <div class="emblem-back-meta">
+              <span>2026—2028</span>
+              <span>威远县凤翔学校</span>
+            </div>
+            <div class="emblem-back-divider"></div>
+            <div class="emblem-back-slogan">Together · Forever</div>
+            <div class="emblem-back-hint">轻触班徽，返回正面</div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="emblem-hint">拖动 · 松手回正</div>
+    <div class="emblem-hint">拖动 · 松手回正 · 点击翻转</div>
     <div class="emblem-seal-mark" id="emblemSealMark" aria-live="polite"></div>
   </section>
 
@@ -3607,8 +4481,7 @@ body.candlelight .tl-seal-caption {
     <div class="footer-motto">
       <div class="motto-inner">
         让努力成为一种常态<br>
-        让优秀成为一种习惯<br>
-        <span class="motto-sign">——黄欢</span>
+        让优秀成为一种习惯
       </div>
     </div>
     <div class="footer-divider"></div>
@@ -3624,7 +4497,14 @@ body.candlelight .tl-seal-caption {
         <div class="photo-viewer-title" id="photoViewerTitle">班级相册</div>
         <div class="photo-viewer-counter" id="photoViewerCounter">1 / 1</div>
       </div>
-      <button class="photo-viewer-close" id="photoViewerClose" type="button" aria-label="关闭图库" title="关闭图库"></button>
+      <div class="photo-viewer-actions">
+        <button class="photo-comment-btn" id="photoCommentBtn" type="button" aria-label="评论这张照片" title="评论这张照片">
+          <span class="photo-comment-icon" aria-hidden="true"></span>
+          <span>评论</span>
+          <span class="photo-comment-count" id="photoCommentCount">0</span>
+        </button>
+        <button class="photo-viewer-close" id="photoViewerClose" type="button" aria-label="关闭图库" title="关闭图库"></button>
+      </div>
     </div>
 
     <div class="photo-stage" id="photoStage">
@@ -3641,7 +4521,26 @@ body.candlelight .tl-seal-caption {
       </button>
     </div>
 
-    <div class="photo-viewer-hint" id="photoViewerHint">左右滑动浏览照片</div>
+    <div class="photo-viewer-hint" id="photoViewerHint">左右滑动浏览 · 轻轻上扫查看照片背面</div>
+
+    <div class="photo-memory-back" id="photoMemoryBack" aria-hidden="true">
+      <div class="photo-memory-card" id="photoMemoryCard">
+        <div class="photo-memory-kicker">A MEMORY TO KEEP</div>
+        <div class="photo-memory-title" id="photoMemoryTitle">这一张，留给以后再看。</div>
+        <div class="photo-memory-rule"></div>
+
+        <div class="photo-memory-comments" id="photoMemoryComments">
+          <div class="photo-comment-empty" id="photoCommentEmpty">还没有评论，写下这张照片里的故事吧。</div>
+        </div>
+
+        <div class="photo-comment-editor">
+          <textarea id="photoCommentInput" maxlength="200" rows="2" placeholder="写一句关于这张照片的回忆…"></textarea>
+          <button type="button" class="photo-comment-send" id="photoCommentSend">发送</button>
+        </div>
+
+        <div class="photo-memory-back-hint">轻轻下扫退出照片浏览 · 点右上角可再次进入</div>
+      </div>
+    </div>
   </div>
   <script>
     /* ==============================================
@@ -4108,7 +5007,7 @@ body.candlelight .tl-seal-caption {
       if (!photoViewer.classList.contains('is-open')) return;
       if (performance.now() < suppressPhotoCloseUntil) return;
       if (isDraggingPhoto || dragMoved) return;
-      if (event.target.closest('.photo-viewer-close, .photo-nav')) return;
+      if (event.target.closest('.photo-viewer-close, .photo-nav, .photo-comment-btn')) return;
 
       /* 点击图片本身不关闭。 */
       const image = event.target.closest('.photo-slide img');
@@ -4312,6 +5211,418 @@ body.candlelight .tl-seal-caption {
     photoViewport.addEventListener('pointerleave', event => {
       if (isDraggingPhoto && event.pointerType === 'mouse') finishPhotoDrag();
     });
+
+    /* =========================================================
+     * 【新增】照片评论 + 上扫翻背面 + Shared Element
+     * ========================================================= */
+    const photoCommentBtn = document.getElementById('photoCommentBtn');
+    const photoCommentCount = document.getElementById('photoCommentCount');
+    const photoMemoryBack = document.getElementById('photoMemoryBack');
+    const photoMemoryTitle = document.getElementById('photoMemoryTitle');
+    const photoMemoryComments = document.getElementById('photoMemoryComments');
+    const photoCommentEmpty = document.getElementById('photoCommentEmpty');
+    const photoCommentInput = document.getElementById('photoCommentInput');
+    const photoCommentSend = document.getElementById('photoCommentSend');
+
+    let photoMemoryMode = 'front';
+    let photoCommentLoading = false;
+    let photoCommentGestureStartX = 0;
+    let photoCommentGestureStartY = 0;
+    let photoCommentGestureStartT = 0;
+    let photoCommentGestureActive = false;
+    let photoGestureAxis = null;
+    let photoSharedClone = null;
+
+    function getActiveGalleryKey(){
+      let group = activeGalleryTitle;
+      document.querySelectorAll('.gallery-item').forEach(function(item){
+        if ((item.dataset.galleryTitle || '') === activeGalleryTitle && item.dataset.galleryGroup) {
+          group = item.dataset.galleryGroup;
+        }
+      });
+      return String(group || 'gallery').trim();
+    }
+
+    function setPhotoMemoryMode(back, focusEditor){
+      photoMemoryMode = back ? 'back' : 'front';
+      photoViewer.classList.toggle('is-memory-back', back);
+      photoCommentBtn.classList.toggle('is-open', back);
+      photoViewer.setAttribute('data-memory-mode', photoMemoryMode);
+      photoMemoryBack.setAttribute('aria-hidden', back ? 'false' : 'true');
+
+      if (back) {
+        photoMemoryTitle.textContent = activeGalleryTitle + ' · 第 ' + (activeIndex + 1) + ' 张';
+        photoHint.textContent = '轻轻下扫退出照片浏览';
+        loadPhotoComments(focusEditor);
+      } else {
+        photoHint.textContent = '左右滑动浏览 · 轻轻上扫查看照片背面';
+        photoViewer.classList.remove('is-memory-back');
+      }
+    }
+
+    async function loadPhotoComments(focusEditor){
+      if (!activeGallery.length) return;
+      const group = getActiveGalleryKey();
+      const url = '/api/photo-comments?gallery=' + encodeURIComponent(group) + '&photo=' + encodeURIComponent(String(activeIndex));
+      try {
+        photoCommentLoading = true;
+        const res = await fetch(url, { headers: { 'Accept':'application/json' }, cache:'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        const comments = Array.isArray(data.comments) ? data.comments : [];
+        renderPhotoComments(comments);
+      } catch (err) {
+        console.warn('[PhotoComments] load failed:', err);
+        photoMemoryComments.innerHTML = '<div class="photo-comment-empty">评论暂时无法加载，请稍后再试。</div>';
+        photoCommentCount.textContent = '0';
+      } finally {
+        photoCommentLoading = false;
+        if (focusEditor) {
+          setTimeout(() => photoCommentInput && photoCommentInput.focus({preventScroll:true}), 260);
+        }
+      }
+    }
+
+    function renderPhotoComments(comments){
+      const safeList = Array.isArray(comments) ? comments : [];
+      photoCommentCount.textContent = String(safeList.length);
+      if (!safeList.length) {
+        photoMemoryComments.innerHTML = '';
+        const empty = document.createElement('div');
+        empty.className = 'photo-comment-empty';
+        empty.id = 'photoCommentEmpty';
+        empty.textContent = '还没有评论，写下这张照片里的故事吧。';
+        photoMemoryComments.appendChild(empty);
+        return;
+      }
+      photoMemoryComments.innerHTML = '';
+      safeList.slice(0, 50).forEach(item => {
+        const wrap = document.createElement('div');
+        wrap.className = 'photo-comment-item';
+        const text = document.createElement('div');
+        text.className = 'photo-comment-text';
+        text.textContent = item.content || '';
+        const time = document.createElement('div');
+        time.className = 'photo-comment-time';
+        time.textContent = formatTime(item.create_at);
+        wrap.appendChild(text);
+        wrap.appendChild(time);
+        photoMemoryComments.appendChild(wrap);
+      });
+      photoMemoryComments.scrollTop = photoMemoryComments.scrollHeight;
+    }
+
+    async function sendPhotoComment(){
+      const text = String(photoCommentInput.value || '').trim();
+      if (!text || !activeGallery.length || photoCommentLoading) return;
+      if (text.length > 200) return;
+      const group = getActiveGalleryKey();
+      photoCommentSend.disabled = true;
+      photoCommentSend.textContent = '发送中…';
+      try {
+        const res = await fetch('/api/photo-comments', {
+          method:'POST',
+          headers:{'Content-Type':'application/json','Accept':'application/json'},
+          body:JSON.stringify({
+            gallery_group: group,
+            photo_index: activeIndex,
+            content: text,
+            client_id: CLIENT_ID
+          })
+        });
+        const ret = await res.json().catch(() => ({}));
+        if (!res.ok || ret.error) throw new Error(ret.error || ('HTTP ' + res.status));
+        photoCommentInput.value = '';
+        await loadPhotoComments(true);
+      } catch(err){
+        alert('评论发送失败：' + (err.message || err));
+      } finally {
+        photoCommentSend.disabled = false;
+        photoCommentSend.textContent = '发送';
+      }
+    }
+
+    function togglePhotoMemory(){
+      if (!photoViewer.classList.contains('is-open')) return;
+      setPhotoMemoryMode(photoMemoryMode !== 'back', photoMemoryMode !== 'back');
+    }
+
+    photoCommentBtn.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      togglePhotoMemory();
+    });
+    photoCommentSend.addEventListener('click', sendPhotoComment);
+    photoCommentInput.addEventListener('keydown', function(e){
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') sendPhotoComment();
+    });
+
+    function playPhotoSharedElement(sourceItem){
+      if (photoSharedClone) {
+        photoSharedClone.remove();
+        photoSharedClone = null;
+      }
+      const source = sourceItem && sourceItem.querySelector('img');
+      const target = photoTrack.querySelector('.photo-slide.is-current img');
+      if (!source || !target || !target.complete || target.naturalWidth <= 0) return;
+
+      const from = source.getBoundingClientRect();
+      const to = target.getBoundingClientRect();
+      if (from.width < 4 || from.height < 4 || to.width < 4 || to.height < 4) return;
+
+      const clone = source.cloneNode(true);
+      clone.className = 'photo-shared-clone';
+      clone.removeAttribute('id');
+      clone.style.cssText = [
+        'position:fixed',
+        'left:' + from.left + 'px',
+        'top:' + from.top + 'px',
+        'width:' + from.width + 'px',
+        'height:' + from.height + 'px',
+        'max-width:none',
+        'max-height:none',
+        'object-fit:cover',
+        'object-position:center',
+        'border-radius:' + getComputedStyle(source).borderRadius,
+        'box-shadow:' + getComputedStyle(source).boxShadow,
+        'z-index:1000020',
+        'pointer-events:none',
+        'transform-origin:center center',
+        'opacity:1',
+        'will-change:transform,opacity,filter'
+      ].join(';');
+      document.body.appendChild(clone);
+      photoSharedClone = clone;
+
+      target.classList.add('photo-shared-hidden');
+      const dx = to.left - from.left;
+      const dy = to.top - from.top;
+      const sx = to.width / Math.max(from.width,1);
+      const sy = to.height / Math.max(from.height,1);
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          clone.style.transition = 'transform .78s cubic-bezier(.16,1,.3,1),border-radius .62s ease,box-shadow .62s ease,filter .62s ease,opacity .30s ease';
+          clone.style.transform = 'translate3d(' + dx + 'px,' + dy + 'px,0) scale(' + sx + ',' + sy + ')';
+          clone.style.borderRadius = getComputedStyle(target).borderRadius;
+          clone.style.boxShadow = getComputedStyle(target).boxShadow;
+          clone.style.filter = 'saturate(108%)';
+        });
+      });
+
+      setTimeout(() => {
+        if (!photoSharedClone) return;
+        clone.style.opacity = '0';
+        target.classList.remove('photo-shared-hidden');
+      }, 690);
+      setTimeout(() => {
+        if (photoSharedClone === clone) {
+          clone.remove();
+          photoSharedClone = null;
+        }
+      }, 1000);
+    }
+
+    /* 统一管理垂直手势：上扫背面 / 下扫正面；水平仍负责翻照片 */
+    photoViewport.addEventListener('pointerdown', function(e){
+      if (!photoViewer.classList.contains('is-open')) return;
+      photoCommentGestureActive = true;
+      photoCommentGestureAxis = null;
+      photoCommentGestureStartX = e.clientX;
+      photoCommentGestureStartY = e.clientY;
+      photoCommentGestureStartT = performance.now();
+    }, true);
+
+    photoViewport.addEventListener('pointermove', function(e){
+      if (!photoCommentGestureActive) return;
+      const dx = e.clientX - photoCommentGestureStartX;
+      const dy = e.clientY - photoCommentGestureStartY;
+      if (!photoCommentGestureAxis && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+        photoCommentGestureAxis = Math.abs(dy) > Math.abs(dx) * 1.12 ? 'y' : 'x';
+        // 一旦判定为纵向手势，立即交给上下扫逻辑，停止横向照片拖拽，避免两套动画争夺同一帧。
+        if (photoCommentGestureAxis === 'y' && isDraggingPhoto) {
+          isDraggingPhoto = false;
+          dragMoved = true;
+          photoViewer.classList.remove('is-dragging');
+          updatePhotoViewer(true);
+        }
+      }
+      if (photoCommentGestureAxis === 'y') {
+        if (e.cancelable) e.preventDefault();
+      }
+    }, true);
+
+    function finishPhotoVerticalGesture(e){
+      if (!photoCommentGestureActive) return;
+      photoCommentGestureActive = false;
+      const dx = e.clientX - photoCommentGestureStartX;
+      const dy = e.clientY - photoCommentGestureStartY;
+      const dt = Math.max(1, performance.now() - photoCommentGestureStartT);
+      const velocityY = Math.abs(dy) / dt;
+      const threshold = Math.min(95, Math.max(54, window.innerHeight * .09));
+      const shouldFlip = photoCommentGestureAxis === 'y' &&
+        (Math.abs(dy) > threshold || velocityY > .65);
+      if (shouldFlip && dy < 0 && photoMemoryMode === 'front') {
+        setPhotoMemoryMode(true, false);
+      } else if (shouldFlip && dy > 0 && photoMemoryMode === 'back') {
+        // 背面下扫：直接退出照片浏览，回到网页，而不是返回照片正面。
+        closeGallery();
+      }
+      photoCommentGestureAxis = null;
+    }
+
+    photoViewport.addEventListener('pointerup', finishPhotoVerticalGesture, true);
+    photoViewport.addEventListener('pointercancel', function(){
+      photoCommentGestureActive = false;
+      photoCommentGestureAxis = null;
+    }, true);
+
+    /* 打开/切图/关闭时统一复位翻面 */
+    const _openGallery = openGallery;
+    openGallery = function(item){
+      _openGallery(item);
+      setPhotoMemoryMode(false, false);
+      photoCommentCount.textContent = '0';
+      setTimeout(() => playPhotoSharedElement(item), 90);
+    };
+
+    const _goToPhoto = goToPhoto;
+    goToPhoto = function(nextIndex){
+      setPhotoMemoryMode(false, false);
+      _goToPhoto(nextIndex);
+      setTimeout(() => loadPhotoComments(false), 160);
+    };
+
+    const _closeGallery = closeGallery;
+    closeGallery = function(){
+      setPhotoMemoryMode(false, false);
+      _closeGallery();
+    };
+
+
+    /* =========================================================
+     * 【新增】把一句话留给未来 · 仅本次浏览存在
+     * 不写 localStorage / sessionStorage / D1。
+     * ========================================================= */
+    const futureMessageBtn = document.getElementById('futureMessageBtn');
+    const futureMessagePanel = document.getElementById('futureMessagePanel');
+    const futureMessageClose = document.getElementById('futureMessageClose');
+    const futureMessageInput = document.getElementById('futureMessageInput');
+    const futureMessageSend = document.getElementById('futureMessageSend');
+    const futureSky = document.getElementById('futureSky');
+
+    // 未来星星只存在当前页面内存：不写 Cookie / localStorage / sessionStorage / D1 / API。
+    const futureLocalNotes = [];
+
+    function openFutureMessagePanel(){
+      futureMessagePanel.classList.add('is-open');
+      futureMessagePanel.setAttribute('aria-hidden','false');
+      setTimeout(() => futureMessageInput && futureMessageInput.focus({preventScroll:true}), 180);
+      document.body.style.overflow = 'hidden';
+    }
+    function closeFutureMessagePanel(){
+      futureMessagePanel.classList.remove('is-open');
+      futureMessagePanel.setAttribute('aria-hidden','true');
+      if (!photoViewer.classList.contains('is-open') && !document.getElementById('myMsgModal')?.classList.contains('active')) {
+        document.body.style.overflow = '';
+      }
+    }
+
+    function spawnFutureStar(message){
+      const skyRect = futureSky.getBoundingClientRect();
+      const fromRect = futureMessageSend.getBoundingClientRect();
+      const targetX = Math.max(18, Math.min(skyRect.width - 18, skyRect.width * (0.16 + Math.random() * 0.68)));
+      const targetY = Math.max(34, Math.min(skyRect.height - 18, skyRect.height * (0.30 + Math.random() * 0.55)));
+
+      const fly = document.createElement('div');
+      fly.className = 'future-flying-message';
+      fly.textContent = message;
+      fly.style.left = fromRect.left + 'px';
+      fly.style.top = fromRect.top + 'px';
+      document.body.appendChild(fly);
+
+      const endX = skyRect.left + targetX - fromRect.left;
+      const endY = skyRect.top + targetY - fromRect.top;
+      const start = performance.now();
+      const duration = 940;
+
+      function animate(now){
+        const p = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - p, 3);
+        const x = endX * eased;
+        const y = endY * eased - 130 * Math.sin(p * Math.PI);
+        const scale = 1 - .25 * eased + .06 * Math.sin(p * Math.PI);
+        const blur = p > .18 && p < .86 ? Math.sin(p * Math.PI) * 1.6 : 0;
+        fly.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0) scale(' + scale + ')';
+        fly.style.opacity = String(1 - Math.max(0, p - .72) / .28);
+        fly.style.filter = 'blur(' + blur.toFixed(2) + 'px)';
+        if (p < 1) requestAnimationFrame(animate);
+        else {
+          fly.remove();
+          createFutureStar(message, targetX, targetY);
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+
+    function createFutureStar(message, x, y){
+      const wrap = document.createElement('button');
+      wrap.type = 'button';
+      wrap.className = 'future-star-wrap';
+      wrap.setAttribute('aria-label', message);
+      wrap.style.position = 'absolute';
+      wrap.style.left = x + 'px';
+      wrap.style.top = y + 'px';
+      wrap.style.width = '1px';
+      wrap.style.height = '1px';
+      wrap.style.border = '0';
+      wrap.style.padding = '0';
+      wrap.style.margin = '0';
+      wrap.style.background = 'transparent';
+      wrap.style.cursor = 'pointer';
+
+      const star = document.createElement('span');
+      star.className = 'future-star';
+      const note = document.createElement('span');
+      note.className = 'future-star-note';
+      note.textContent = message;
+
+      wrap.appendChild(star);
+      wrap.appendChild(note);
+      futureSky.appendChild(wrap);
+    }
+
+    futureMessageBtn.addEventListener('click', openFutureMessagePanel);
+    futureMessageClose.addEventListener('click', closeFutureMessagePanel);
+    futureMessagePanel.addEventListener('click', function(e){
+      if (e.target === futureMessagePanel) closeFutureMessagePanel();
+    });
+    futureMessageInput.addEventListener('keydown', function(e){
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') futureMessageSend.click();
+      if (e.key === 'Escape') closeFutureMessagePanel();
+    });
+
+    futureMessageSend.addEventListener('click', function(){
+      const text = String(futureMessageInput.value || '').trim();
+      if (!text) {
+        futureMessageInput.focus();
+        return;
+      }
+      if (text.length > 120) return;
+
+      futureMessageSend.disabled = true;
+      futureMessageSend.textContent = '发送中…';
+      /* 仅写入内存数组：刷新页面后自然清空。 */
+      futureLocalNotes.push({ content:text, createdAt:Date.now() });
+      closeFutureMessagePanel();
+      spawnFutureStar(text);
+      futureMessageInput.value = '';
+      setTimeout(() => {
+        futureMessageSend.disabled = false;
+        futureMessageSend.textContent = '发送';
+      }, 380);
+    });
+
     /* ==============================================
      * 花瓣飘落装饰逻辑
      * ============================================== */
@@ -7590,8 +8901,12 @@ body::after{
   var specTy = REST_SPEC_Y;
   var dragging = false;
   var lastX = 0, lastY = 0, lastT = 0;
+  var movedSinceDown = false;
   var raf = 0;
   var inView = true;
+  var flipped = false;
+  var flipAngle = 0;
+  var flipTarget = 0;
   var specEl = document.getElementById('emblemSpec');
   var specBEl = document.getElementById('emblemSpecB');
   var envEl = document.getElementById('emblemEnv');
@@ -7655,7 +8970,8 @@ body::after{
   }
 
   function apply() {
-    space.style.transform = 'rotateX(' + rx.toFixed(3) + 'deg) rotateY(' + ry.toFixed(3) + 'deg)';
+    space.style.transform =
+      'rotateX(' + rx.toFixed(3) + 'deg) rotateY(' + (ry + flipAngle).toFixed(3) + 'deg)';
     var fres = Math.min(1, (Math.abs(rx) + Math.abs(ry)) / 52);
     stage.style.setProperty('--fresnel', fres.toFixed(3));
     stage.style.setProperty('--sh-x', (-ry * 0.42).toFixed(2) + 'px');
@@ -7665,7 +8981,8 @@ body::after{
 
   function energy() {
     return Math.abs(vx) + Math.abs(vy) + Math.abs(rx - REST_X) + Math.abs(ry - REST_Y)
-      + Math.abs(specX - specTx) + Math.abs(specY - specTy);
+      + Math.abs(specX - specTx) + Math.abs(specY - specTy)
+      + Math.abs(flipTarget - flipAngle) * 0.22;
   }
 
   function tick() {
@@ -7679,6 +8996,7 @@ body::after{
       ry += vy;
       specTx = REST_SPEC_X;
       specTy = REST_SPEC_Y;
+      flipAngle += (flipTarget - flipAngle) * 0.16;
       specX += (specTx - specX) * 0.12;
       specY += (specTy - specY) * 0.12;
       if (energy() < SETTLE) {
@@ -7710,6 +9028,7 @@ body::after{
   stage.addEventListener('pointerdown', function (e) {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     dragging = true;
+    movedSinceDown = false;
     vx = 0;
     vy = 0;
     lastX = e.clientX;
@@ -7733,6 +9052,7 @@ body::after{
     var now = performance.now();
     var dx = e.clientX - lastX;
     var dy = e.clientY - lastY;
+    if (Math.abs(e.clientX - lastX) + Math.abs(e.clientY - lastY) > 4) movedSinceDown = true;
     var dt = Math.max(8, now - lastT);
     var gain = dragGain();
     ry = clamp(ry + dx * DRAG * gain, -MAX_RY, MAX_RY);
@@ -7777,8 +9097,20 @@ body::after{
     showEmblemSeal();
     startLoop();
   }
-  stage.addEventListener('pointerup', endDrag);
-  stage.addEventListener('pointercancel', endDrag);
+  stage.addEventListener('pointerup', function(e){
+    var wasMoved = movedSinceDown;
+    endDrag();
+    if (!wasMoved) {
+      flipped = !flipped;
+      flipTarget = flipped ? 180 : 0;
+      stage.classList.toggle('emblem-is-flipped', flipped);
+      stage.setAttribute('aria-label', flipped ? '班徽背面信息，轻触返回正面' : '可拖动旋转的立体班徽');
+      startLoop();
+    }
+  });
+  stage.addEventListener('pointercancel', function(){
+    endDrag();
+  });
 
   if ('IntersectionObserver' in window) {
     var obs = new IntersectionObserver(function (entries) {
