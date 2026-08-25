@@ -4224,6 +4224,43 @@ body.candlelight .future-star-note{
   }
 }
 </style>
+
+<style id="final-cleanup-fixes">
+/* 班徽：取消点击翻转提示，但保留正常展示 */
+.emblem-hint{display:none!important;}
+.emblem-stage{cursor:default!important;}
+
+/* 修复背面被内部层覆盖 */
+.emblem-space{
+ transform-style:preserve-3d!important;
+ -webkit-transform-style:preserve-3d!important;
+}
+.emblem-back{
+ z-index:20!important;
+ backface-visibility:hidden!important;
+ -webkit-backface-visibility:hidden!important;
+}
+.emblem-front{
+ z-index:10!important;
+ backface-visibility:hidden!important;
+ -webkit-backface-visibility:hidden!important;
+}
+
+/* 去除照片打开甩入动画，保持自然淡入 */
+.photo-stage.photo-opening,
+.photo-viewer.is-open .photo-stage{
+ animation:none!important;
+}
+
+.photo-comment-delete{
+ margin-left:auto;
+ border:0;
+ background:transparent;
+ color:#b08b45;
+ font-size:12px;
+ cursor:pointer;
+}
+</style>
 </head>
 <body>
   <!-- ====================== 开册启封 ====================== -->
@@ -5372,9 +5409,37 @@ body.candlelight .future-star-note{
         time.textContent = formatTime(item.create_at);
         wrap.appendChild(text);
         wrap.appendChild(time);
+
+        if (item.client_id === CLIENT_ID) {
+          const del = document.createElement('button');
+          del.className = 'photo-comment-delete';
+          del.textContent = '删除';
+          del.onclick = () => deletePhotoComment(item.id);
+          wrap.appendChild(del);
+        }
+
         photoMemoryComments.appendChild(wrap);
       });
       photoMemoryComments.scrollTop = photoMemoryComments.scrollHeight;
+    }
+
+    async function deletePhotoComment(id){
+      if(!confirm('删除这条评论？')) return;
+      try{
+        const res = await fetch('/api/photo-comments',{
+          method:'DELETE',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            id:id,
+            client_id:CLIENT_ID
+          })
+        });
+        const ret = await res.json().catch(()=>({}));
+        if(!res.ok || !ret.ok) throw new Error(ret.error || '删除失败');
+        await loadPhotoComments(false);
+      }catch(err){
+        alert('删除失败：'+(err.message||err));
+      }
     }
 
     async function sendPhotoComment(){
@@ -9456,267 +9521,6 @@ body::after{
 })();
 </script>
 
-
-<script id="final-fix-js">
-(function(){
-
-/* 班徽点击翻转强制绑定 */
-const emblemStage=document.getElementById('emblemStage');
-if(emblemStage){
-  let lock=false;
-  emblemStage.addEventListener('click',function(e){
-    if(lock)return;
-    if(e.target.closest('button,a'))return;
-    lock=true;
-    setTimeout(()=>lock=false,300);
-    this.classList.toggle('emblem-is-flipped');
-  });
-}
-
-
-/* 相册 FLIP 开场 */
-const viewer=document.getElementById('photoViewer');
-const stage=document.getElementById('photoStage');
-const oldOpen=window.openGallery;
-
-if(stage){
-  const observer=new MutationObserver(()=>{
-    if(viewer && viewer.classList.contains('is-open')){
-      stage.classList.remove('photo-opening');
-      void stage.offsetWidth;
-      stage.classList.add('photo-opening');
-      setTimeout(()=>stage.classList.remove('photo-opening'),450);
-    }
-  });
-  if(viewer) observer.observe(viewer,{attributes:true});
-}
-
-
-/* 相册上下滑 */
-if(viewer){
-
- let sy=0;
- let sx=0;
- let moved=false;
-
- viewer.addEventListener('touchstart',e=>{
-   if(!viewer.classList.contains('is-open'))return;
-   const t=e.touches[0];
-   sy=t.clientY;
-   sx=t.clientX;
-   moved=false;
- },{passive:true});
-
-
- viewer.addEventListener('touchmove',e=>{
-   if(!viewer.classList.contains('is-open'))return;
-   const t=e.touches[0];
-   if(Math.abs(t.clientY-sy)>8)moved=true;
- },{passive:true});
-
-
- viewer.addEventListener('touchend',e=>{
-   if(!moved)return;
-   const t=e.changedTouches[0];
-   const dy=t.clientY-sy;
-   const dx=t.clientX-sx;
-
-   if(Math.abs(dy)>70 && Math.abs(dy)>Math.abs(dx)){
-      viewer.classList.toggle(
-        'is-memory-back',
-        dy<0
-      );
-   }
- },{passive:true});
-
-}
-
-
-/* 星空永久保存补强 */
-const STAR_KEY='zhenhui_future_stars_v2';
-
-window.addEventListener('beforeunload',()=>{
- try{
-   const stars=[];
-   document.querySelectorAll('.future-star').forEach(el=>{
-     stars.push({
-       html:el.innerHTML,
-       style:el.getAttribute('style')
-     });
-   });
-   localStorage.setItem(STAR_KEY,JSON.stringify(stars));
- }catch(e){}
-});
-
-})();
-</script>
-
-<style id="final-stability-fix">
-/* 班徽翻转：关闭旧状态冲突，使用独立卡面 */
-.emblem-space{
-  transform-style:preserve-3d !important;
-  -webkit-transform-style:preserve-3d !important;
-}
-.emblem-front,.emblem-back{
-  backface-visibility:hidden!important;
-  -webkit-backface-visibility:hidden!important;
-}
-.emblem-back{
-  transform:rotateY(180deg)!important;
-}
-.emblem-back-inner{
-  display:flex!important;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  width:100%;
-  height:100%;
-}
-.emblem-space.flipped,
-.emblem-is-flipped .emblem-space{
-  transform:rotateY(180deg)!important;
-}
-
-/* 禁止相册打开时甩入 */
-.photo-stage,
-.photo-stage.photo-opening,
-.photo-viewer.is-open .photo-stage{
-  animation:none!important;
-  transition:none!important;
-}
-
-/* 手势交给统一 JS，避免抖动 */
-.photo-viewer,
-.photo-stage,
-.photo-slide,
-.photo-slide img{
-  touch-action:none!important;
-}
-
-/* 删除按钮 */
-.photo-comment-delete{
-  margin-left:auto;
-  border:0;
-  background:none;
-  color:#b08b45;
-  font-size:12px;
-  cursor:pointer;
-}
-</style>
-
-<script id="final-stability-js">
-(function(){
-
-/* ========= 班徽翻转 ========= */
-const emblem=document.querySelector('.emblem-space');
-const emblemWrap=document.querySelector('.emblem-stage,.emblem-container');
-if(emblemWrap && emblem){
-  emblemWrap.addEventListener('click',function(e){
-    if(e.target.closest('button,input,a')) return;
-    emblemWrap.classList.toggle('emblem-is-flipped');
-  });
-}
-
-
-/* ========= 评论删除 ========= */
-window.deletePhotoComment = async function(id){
-
-  const clientId=localStorage.getItem('photo_comment_client_id')
-    || localStorage.getItem('client_id');
-
-  if(!id || !clientId) return;
-
-  if(!confirm('删除这条评论？')) return;
-
-  const res=await fetch('/api/photo-comments',{
-    method:'DELETE',
-    headers:{
-      'Content-Type':'application/json'
-    },
-    body:JSON.stringify({
-      id:id,
-      client_id:clientId
-    })
-  });
-
-  const data=await res.json().catch(()=>({}));
-
-  if(data.ok && typeof loadPhotoComments==='function'){
-    loadPhotoComments(false);
-  }
-};
-
-
-/* ========= 覆盖评论渲染，增加删除 ========= */
-const oldRender=window.renderPhotoComments;
-if(typeof oldRender==='function'){
-  window.renderPhotoComments=function(list){
-
-    oldRender(list);
-
-    const clientId=localStorage.getItem('photo_comment_client_id')
-      || localStorage.getItem('client_id');
-
-    document.querySelectorAll('.photo-comment-item').forEach((el,i)=>{
-
-      const item=list[i];
-
-      if(item && item.client_id===clientId){
-
-        if(!el.querySelector('.photo-comment-delete')){
-
-          const btn=document.createElement('button');
-          btn.className='photo-comment-delete';
-          btn.textContent='删除';
-          btn.onclick=()=>deletePhotoComment(item.id);
-
-          el.appendChild(btn);
-        }
-      }
-
-    });
-
-  }
-}
-
-
-/* ========= 稳定上下扫，不再震动 ========= */
-const viewer=document.getElementById('photoViewer');
-
-if(viewer){
-
- let startY=0;
- let locked=false;
-
- viewer.addEventListener('touchstart',e=>{
-   if(!viewer.classList.contains('is-open')) return;
-   startY=e.touches[0].clientY;
-   locked=false;
- },{passive:true});
-
-
- viewer.addEventListener('touchend',e=>{
-
-   if(locked) return;
-
-   const dy=e.changedTouches[0].clientY-startY;
-
-   if(Math.abs(dy)<90) return;
-
-   locked=true;
-
-   if(dy<0){
-      viewer.classList.add('is-memory-back');
-   }else{
-      viewer.classList.remove('is-memory-back');
-   }
-
- },{passive:true});
-
-}
-
-})();
-</script>
 
 </body>
 </html>
