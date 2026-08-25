@@ -6653,11 +6653,34 @@ body::after{
   var specBEl = document.getElementById('emblemSpecB');
   var envEl = document.getElementById('emblemEnv');
 
-  var STIFF = 0.12;
-  var DAMP = 0.73;
-  var DRAG = 0.16;
+  var isMobile = false;
+  try {
+    isMobile = (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) ||
+      /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
+  } catch (e) {}
+
+  /* 手机屏小、手指位移短、抬手最后一帧速度常接近 0：提高灵敏度并加大 Q 弹过冲 */
+  var STIFF = isMobile ? 0.17 : 0.145;
+  var DAMP = isMobile ? 0.865 : 0.85;
+  var DRAG = isMobile ? 0.38 : 0.19;
+  var MAX_RY = isMobile ? 60 : 50;
+  var MAX_RX = isMobile ? 38 : 30;
+  var RELEASE_K = isMobile ? 0.22 : 0.34;
+  var FLICK_BOOST = isMobile ? 3.4 : 1.85;
+  var VMAX_X = isMobile ? 9.5 : 6.8;
+  var VMAX_Y = isMobile ? 12.0 : 8.5;
+  var SETTLE = 0.055;
 
   function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+
+  function dragGain() {
+    var w = 280;
+    try {
+      var r = stage.getBoundingClientRect();
+      if (r && r.width > 1) w = r.width;
+    } catch (e) {}
+    return 280 / w;
+  }
 
   function pointerToSpec(e) {
     /* 相对班徽本体取点，不要用整块舞台（下方还有阴影区） */
@@ -6715,7 +6738,7 @@ body::after{
       specTy = REST_SPEC_Y;
       specX += (specTx - specX) * 0.12;
       specY += (specTy - specY) * 0.12;
-      if (energy() < 0.08) {
+      if (energy() < SETTLE) {
         rx = REST_X;
         ry = REST_Y;
         vx = 0;
@@ -6730,7 +6753,7 @@ body::after{
       specY += (specTy - specY) * 0.62;
     }
     apply();
-    if (inView && !reduce && (dragging || energy() >= 0.08)) {
+    if (inView && !reduce && (dragging || energy() >= SETTLE)) {
       raf = requestAnimationFrame(tick);
     }
   }
@@ -6768,10 +6791,13 @@ body::after{
     var dx = e.clientX - lastX;
     var dy = e.clientY - lastY;
     var dt = Math.max(8, now - lastT);
-    ry = clamp(ry + dx * DRAG, -42, 42);
-    rx = clamp(rx - dy * DRAG * 0.82, -24, 24);
-    vy = dx * DRAG * (16 / dt);
-    vx = -dy * DRAG * 0.82 * (16 / dt);
+    var gain = dragGain();
+    ry = clamp(ry + dx * DRAG * gain, -MAX_RY, MAX_RY);
+    rx = clamp(rx - dy * DRAG * 0.82 * gain, -MAX_RX, MAX_RX);
+    var instVy = dx * DRAG * gain * (16 / dt);
+    var instVx = -dy * DRAG * 0.82 * gain * (16 / dt);
+    vy = vy * 0.32 + instVy * 0.68;
+    vx = vx * 0.32 + instVx * 0.68;
     lastX = e.clientX;
     lastY = e.clientY;
     lastT = now;
@@ -6785,11 +6811,9 @@ body::after{
     if (!dragging) return;
     dragging = false;
     stage.classList.remove('is-dragging');
-    // 加大松手回弹：朝静止位加弹簧冲量，并放宽速度上限，过冲后再回正
-    vx += (REST_X - rx) * 0.24;
-    vy += (REST_Y - ry) * 0.24;
-    vx = clamp(vx, -3.8, 3.8);
-    vy = clamp(vy, -4.6, 4.6);
+    // 松手：放大甩动惯性，并叠加回正弹簧冲量，过冲后再 Q 弹回正
+    vx = clamp(vx * FLICK_BOOST + (REST_X - rx) * RELEASE_K, -VMAX_X, VMAX_X);
+    vy = clamp(vy * FLICK_BOOST + (REST_Y - ry) * RELEASE_K, -VMAX_Y, VMAX_Y);
     startLoop();
   }
   stage.addEventListener('pointerup', endDrag);
@@ -6807,8 +6831,6 @@ body::after{
 
 </body>
 </html>
-
-
 
 
 
