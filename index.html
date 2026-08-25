@@ -2103,90 +2103,28 @@ body:before{
 }
 
 
-/* ===== 优化补丁 ===== */
-
-/* 班徽轻触180°翻转 */
-.emblem-space{
-  transition: transform .7s cubic-bezier(.22,1,.36,1);
+/* 照片评论删除按钮 */
+.photo-comment-row{
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
 }
-.emblem-back{
-  position:absolute;
-  inset:0;
-  transform:rotateY(180deg) translateZ(.2px);
-  backface-visibility:hidden;
-  -webkit-backface-visibility:hidden;
-  border-radius:50%;
-  overflow:hidden;
-  background:transparent !important;
+.photo-comment-content{
+  flex:1;
+  min-width:0;
 }
-.emblem-front{
-  backface-visibility:hidden;
-  -webkit-backface-visibility:hidden;
+.photo-comment-delete{
+  flex:none;
+  border:0;
+  background:transparent;
+  color:#b08a42;
+  font-size:12px;
+  padding:3px 5px;
+  cursor:pointer;
+  opacity:.75;
 }
-.emblem-is-flipped .emblem-space{
-  transform:rotateY(180deg);
-}
-.emblem-back-inner{
-  width:100%;
-  height:100%;
-  border-radius:50%;
-  background:radial-gradient(circle,rgba(201,168,76,.16),rgba(20,18,15,.85));
-}
-
-/* 夜读模式取消班徽背后白圈 */
-.dark-mode .emblem-back,
-.night-mode .emblem-back,
-body.dark .emblem-back{
-  background:transparent !important;
-}
-.dark-mode .emblem-back-inner,
-.night-mode .emblem-back-inner,
-body.dark .emblem-back-inner{
-  background:radial-gradient(circle,rgba(201,168,76,.12),rgba(8,8,8,.92));
-}
-
-/* 相册 Shared Element / FLIP 平滑过渡 */
-.gallery-item,
-.gallery-item img{
-  will-change:transform,opacity;
-}
-.gallery-item.is-opening{
-  z-index:20;
-}
-.photo-stage.is-flip-opening{
-  animation:photoFlipOpen .45s cubic-bezier(.22,1,.36,1);
-}
-@keyframes photoFlipOpen{
-  from{transform:scale(.96);opacity:.72;}
-  to{transform:scale(1);opacity:1;}
-}
-
-/* PC端禁止相册上下拖动选中文字 */
-@media (min-width:769px){
-  .gallery-item,
-  .photo-viewer,
-  .photo-stage{
-    user-select:none;
-    -webkit-user-select:none;
-  }
-  .gallery-item:active{
-    transform:none;
-  }
-}
-
-/* 留言发送动画优化 */
-.fly-message{
-  animation:messageFloat .55s cubic-bezier(.22,1,.36,1);
-}
-@keyframes messageFloat{
-  from{
-    opacity:0;
-    transform:translate3d(0,18px,0) scale(.9);
-  }
-  to{
-    opacity:1;
-    transform:translate3d(0,0,0) scale(1);
-  }
+.photo-comment-delete:hover{
+  opacity:1;
 }
 
 </style>
@@ -4246,6 +4184,71 @@ body.candlelight .future-star-note{
 }
 </style>
 
+
+<style id="final-fix-css">
+/* ===== 最终交互修复 ===== */
+
+/* 班徽正反面真正3D叠层 */
+.emblem-space{
+  transform-style:preserve-3d !important;
+}
+.emblem-front,
+.emblem-back{
+  position:absolute !important;
+  inset:0 !important;
+  border-radius:50%;
+  backface-visibility:hidden !important;
+  -webkit-backface-visibility:hidden !important;
+}
+.emblem-front{
+  transform:translateZ(1px);
+}
+.emblem-back{
+  transform:rotateY(180deg) translateZ(1px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.emblem-stage.emblem-is-flipped .emblem-space{
+  transform:rotateY(180deg) !important;
+}
+
+/* 手机/电脑均开启上下手势 */
+.photo-stage,
+.photo-slide,
+.photo-slide img{
+  touch-action:none !important;
+}
+
+/* 相册打开 FLIP */
+.gallery-item{
+  view-transition-name:none;
+}
+.photo-stage.photo-opening{
+  animation:photoOpenFix .38s cubic-bezier(.22,1,.36,1);
+}
+@keyframes photoOpenFix{
+  from{
+    opacity:.5;
+    transform:scale(.94) translateY(12px);
+  }
+  to{
+    opacity:1;
+    transform:scale(1) translateY(0);
+  }
+}
+
+/* PC 禁止拖动选字 */
+@media(min-width:769px){
+  .photo-viewer,
+  .photo-stage,
+  .photo-slide,
+  .gallery-item{
+    user-select:none!important;
+    -webkit-user-select:none!important;
+  }
+}
+</style>
 </head>
 <body>
   <!-- ====================== 开册启封 ====================== -->
@@ -4472,7 +4475,7 @@ body.candlelight .future-star-note{
     </div>
 
     <div class="future-sky" id="futureSky" aria-label="写给未来的星空">
-      <div class="future-sky-caption">写给未来的星空 · 本机保存 · 刷新网页仍会保留</div>
+      <div class="future-sky-caption">写给未来的星空 · 仅本地可见 · 刷新网页后消失</div>
     </div>
 
   </div>
@@ -5014,8 +5017,6 @@ body.candlelight .future-star-note{
       renderPhotoSlides();
       photoTitle.textContent = activeGalleryTitle;
       photoViewer.classList.add('is-open');
-      photoStage && photoStage.classList.add('is-flip-opening');
-      setTimeout(()=>photoStage && photoStage.classList.remove('is-flip-opening'),500);
       document.body.classList.add('gallery-open');
       photoViewer.setAttribute('aria-hidden','false');
       document.body.style.overflow = 'hidden';
@@ -5388,17 +5389,71 @@ body.candlelight .future-star-note{
       safeList.slice(0, 50).forEach(item => {
         const wrap = document.createElement('div');
         wrap.className = 'photo-comment-item';
+        const row = document.createElement('div');
+        row.className = 'photo-comment-row';
+
+        const contentBox = document.createElement('div');
+        contentBox.className = 'photo-comment-content';
+
         const text = document.createElement('div');
         text.className = 'photo-comment-text';
         text.textContent = item.content || '';
+
         const time = document.createElement('div');
         time.className = 'photo-comment-time';
         time.textContent = formatTime(item.create_at);
-        wrap.appendChild(text);
-        wrap.appendChild(time);
+
+        contentBox.appendChild(text);
+        contentBox.appendChild(time);
+        row.appendChild(contentBox);
+
+        if (item.client_id === CLIENT_ID) {
+          const del = document.createElement('button');
+          del.className = 'photo-comment-delete';
+          del.textContent = '删除';
+          del.onclick = () => deletePhotoComment(item.id);
+          row.appendChild(del);
+        }
+
+        wrap.appendChild(row);
         photoMemoryComments.appendChild(wrap);
       });
       photoMemoryComments.scrollTop = photoMemoryComments.scrollHeight;
+    }
+
+
+    async function deletePhotoComment(id){
+      if (!id) return;
+
+      if (!confirm('确定删除这条评论吗？')) {
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/photo-comments', {
+          method:'DELETE',
+          headers:{
+            'Content-Type':'application/json',
+            'Accept':'application/json'
+          },
+          body:JSON.stringify({
+            id:id,
+            client_id:CLIENT_ID
+          })
+        });
+
+        const ret = await res.json().catch(() => ({}));
+
+        if (!res.ok || !ret.ok) {
+          throw new Error(ret.error || '删除失败');
+        }
+
+        await loadPhotoComments(false);
+
+      } catch(err){
+        console.warn('[PhotoComments] delete failed:', err);
+        alert('删除失败，请稍后再试。');
+      }
     }
 
     async function sendPhotoComment(){
@@ -5601,20 +5656,7 @@ body.candlelight .future-star-note{
     const futureSky = document.getElementById('futureSky');
 
     // 未来星星只存在当前页面内存：不写 Cookie / localStorage / sessionStorage / D1 / API。
-    const FUTURE_STAR_KEY = 'zhenhui_future_stars';
-    const futureLocalNotes = JSON.parse(localStorage.getItem(FUTURE_STAR_KEY) || '[]');
-
-    function saveFutureStars(){
-      try{
-        localStorage.setItem(FUTURE_STAR_KEY, JSON.stringify(futureLocalNotes));
-      }catch(e){}
-    }
-
-    function restoreFutureStars(){
-      futureLocalNotes.forEach(function(item){
-        createFutureStar(item.message,item.x,item.y);
-      });
-    }
+    const futureLocalNotes = [];
 
     function openFutureMessagePanel(){
       futureMessagePanel.classList.add('is-open');
@@ -5661,8 +5703,6 @@ body.candlelight .future-star-note{
         if (p < 1) requestAnimationFrame(animate);
         else {
           fly.remove();
-          futureLocalNotes.push({message:message,x:targetX,y:targetY});
-          saveFutureStars();
           createFutureStar(message, targetX, targetY);
         }
       }
@@ -5694,10 +5734,7 @@ body.candlelight .future-star-note{
       wrap.appendChild(star);
       wrap.appendChild(note);
       futureSky.appendChild(wrap);
-      saveFutureStars();
     }
-
-    restoreFutureStars();
 
     futureMessageBtn.addEventListener('click', openFutureMessagePanel);
     futureMessageClose.addEventListener('click', closeFutureMessagePanel);
@@ -9498,6 +9535,100 @@ body::after{
 })();
 </script>
 
+
+<script id="final-fix-js">
+(function(){
+
+/* 班徽点击翻转强制绑定 */
+const emblemStage=document.getElementById('emblemStage');
+if(emblemStage){
+  let lock=false;
+  emblemStage.addEventListener('click',function(e){
+    if(lock)return;
+    if(e.target.closest('button,a'))return;
+    lock=true;
+    setTimeout(()=>lock=false,300);
+    this.classList.toggle('emblem-is-flipped');
+  });
+}
+
+
+/* 相册 FLIP 开场 */
+const viewer=document.getElementById('photoViewer');
+const stage=document.getElementById('photoStage');
+const oldOpen=window.openGallery;
+
+if(stage){
+  const observer=new MutationObserver(()=>{
+    if(viewer && viewer.classList.contains('is-open')){
+      stage.classList.remove('photo-opening');
+      void stage.offsetWidth;
+      stage.classList.add('photo-opening');
+      setTimeout(()=>stage.classList.remove('photo-opening'),450);
+    }
+  });
+  if(viewer) observer.observe(viewer,{attributes:true});
+}
+
+
+/* 相册上下滑 */
+if(viewer){
+
+ let sy=0;
+ let sx=0;
+ let moved=false;
+
+ viewer.addEventListener('touchstart',e=>{
+   if(!viewer.classList.contains('is-open'))return;
+   const t=e.touches[0];
+   sy=t.clientY;
+   sx=t.clientX;
+   moved=false;
+ },{passive:true});
+
+
+ viewer.addEventListener('touchmove',e=>{
+   if(!viewer.classList.contains('is-open'))return;
+   const t=e.touches[0];
+   if(Math.abs(t.clientY-sy)>8)moved=true;
+ },{passive:true});
+
+
+ viewer.addEventListener('touchend',e=>{
+   if(!moved)return;
+   const t=e.changedTouches[0];
+   const dy=t.clientY-sy;
+   const dx=t.clientX-sx;
+
+   if(Math.abs(dy)>70 && Math.abs(dy)>Math.abs(dx)){
+      viewer.classList.toggle(
+        'is-memory-back',
+        dy<0
+      );
+   }
+ },{passive:true});
+
+}
+
+
+/* 星空永久保存补强 */
+const STAR_KEY='zhenhui_future_stars_v2';
+
+window.addEventListener('beforeunload',()=>{
+ try{
+   const stars=[];
+   document.querySelectorAll('.future-star').forEach(el=>{
+     stars.push({
+       html:el.innerHTML,
+       style:el.getAttribute('style')
+     });
+   });
+   localStorage.setItem(STAR_KEY,JSON.stringify(stars));
+ }catch(e){}
+});
+
+})();
+</script>
 </body>
 </html>
 
