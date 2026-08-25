@@ -5279,6 +5279,17 @@ body::after{
     transform: scale(.88);
   }
 
+  .music-play svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+    pointer-events: none;
+    flex-shrink: 0;
+  }
+  .music-play .icon-play {
+    margin-left: 1px;
+  }
+
   /* 播放态：只改阴影与高光，禁止覆盖 transition，否则展开/收缩动画会丢 */
   #musicCapsule.is-playing {
     box-shadow:
@@ -5419,7 +5430,11 @@ body::after{
         <div class="music-sub" id="musicStatus">已暂停播放</div>
         <div class="music-artist" id="musicArtist">欧雨馨，吴承恩，钟历诚</div>
       </div>
-      <button class="music-play" id="musicPlay" type="button" aria-label="播放音乐" aria-pressed="false">▶</button>
+      <button class="music-play" id="musicPlay" type="button" aria-label="播放音乐" aria-pressed="false">
+        <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7L8 5z"/></svg>
+        <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="display:none"><path d="M6 5h4v14H6V5zm8 0h4v14h-4V5z"/></svg>
+        <svg class="icon-loading" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="display:none"><circle cx="5" cy="12" r="2.2"/><circle cx="12" cy="12" r="2.2"/><circle cx="19" cy="12" r="2.2"/></svg>
+      </button>
     </div>
 
     <!-- 【功能1】胶囊2：iOS 风格完整控件 -->
@@ -5719,8 +5734,18 @@ body::after{
     capsule.classList.toggle('is-playing', playing);
     playButton.setAttribute('aria-label', playing ? '暂停音乐' : '播放音乐');
     playButton.setAttribute('aria-pressed', String(!!playing));
-    if (isLoading) playButton.textContent = '…';
-    else playButton.textContent = playing ? '❙❙' : '▶';
+    var ipMini = playButton.querySelector('.icon-play');
+    var iuMini = playButton.querySelector('.icon-pause');
+    var ilMini = playButton.querySelector('.icon-loading');
+    if (isLoading) {
+      if (ipMini) ipMini.style.display = 'none';
+      if (iuMini) iuMini.style.display = 'none';
+      if (ilMini) ilMini.style.display = 'block';
+    } else {
+      if (ipMini) ipMini.style.display = playing ? 'none' : 'block';
+      if (iuMini) iuMini.style.display = playing ? 'block' : 'none';
+      if (ilMini) ilMini.style.display = 'none';
+    }
     // 胶囊2 中央大按钮 SVG
     if (playMain) {
       playMain.setAttribute('aria-label', playing ? '暂停' : '播放');
@@ -6628,8 +6653,8 @@ body::after{
   var specBEl = document.getElementById('emblemSpecB');
   var envEl = document.getElementById('emblemEnv');
 
-  var STIFF = 0.075;
-  var DAMP = 0.82;
+  var STIFF = 0.12;
+  var DAMP = 0.73;
   var DRAG = 0.16;
 
   function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
@@ -6760,8 +6785,11 @@ body::after{
     if (!dragging) return;
     dragging = false;
     stage.classList.remove('is-dragging');
-    vx = clamp(vx, -1.8, 1.8);
-    vy = clamp(vy, -2.2, 2.2);
+    // 加大松手回弹：朝静止位加弹簧冲量，并放宽速度上限，过冲后再回正
+    vx += (REST_X - rx) * 0.24;
+    vy += (REST_Y - ry) * 0.24;
+    vx = clamp(vx, -3.8, 3.8);
+    vy = clamp(vy, -4.6, 4.6);
     startLoop();
   }
   stage.addEventListener('pointerup', endDrag);
