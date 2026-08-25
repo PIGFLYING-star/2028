@@ -9522,6 +9522,157 @@ body::after{
 </script>
 
 
+
+<style id="final-verified-fix">
+
+/* ===== 班徽：恢复提示文字 ===== */
+.emblem-hint{
+  display:block!important;
+}
+
+/* 删除背面内部提示，避免背面文字被遮挡 */
+.emblem-back-hint{
+  display:none!important;
+}
+
+/* 修复背面层级：背面在3D空间中，不被正面覆盖 */
+.emblem-space{
+  transform-style:preserve-3d!important;
+  -webkit-transform-style:preserve-3d!important;
+}
+
+.emblem-front,
+.emblem-back{
+  backface-visibility:hidden!important;
+  -webkit-backface-visibility:hidden!important;
+}
+
+.emblem-back{
+  z-index:30!important;
+  display:grid!important;
+  place-items:center!important;
+  transform:rotateY(180deg) translateZ(0.2px)!important;
+}
+
+.emblem-front{
+  z-index:20!important;
+}
+
+
+/* ===== 删除斜入动画，只保留缓入 ===== */
+.photo-stage.photo-opening{
+  animation:photoFadeIn .32s cubic-bezier(.22,1,.36,1)!important;
+  transform:none!important;
+}
+
+@keyframes photoFadeIn{
+  from{
+    opacity:0;
+  }
+  to{
+    opacity:1;
+  }
+}
+
+
+/* ===== 删除旧甩入 transform ===== */
+.photo-viewer.is-open .photo-stage{
+  transform:none!important;
+}
+
+
+/* ===== 上下扫稳定处理 ===== */
+.photo-stage,
+.photo-slide,
+.photo-slide img,
+.photo-viewer{
+  touch-action:none!important;
+  overscroll-behavior:none!important;
+}
+
+
+</style>
+
+
+<script id="final-verified-js">
+(function(){
+
+/* 恢复班徽点击翻转，不影响拖动 */
+const stage=document.getElementById('emblemStage');
+
+if(stage){
+
+  stage.addEventListener('click',function(e){
+
+    if(e.target.closest('button,a,input')) return;
+
+    this.classList.toggle('emblem-is-flipped');
+
+  });
+
+}
+
+
+
+/* 上下扫：增加明确返回逻辑 */
+const viewer=document.getElementById('photoViewer');
+
+if(viewer){
+
+ let startY=0;
+
+ viewer.addEventListener('touchstart',e=>{
+
+   if(!viewer.classList.contains('is-open')) return;
+
+   startY=e.touches[0].clientY;
+
+ },{
+   passive:true
+ });
+
+
+
+ viewer.addEventListener('touchend',e=>{
+
+   if(!startY) return;
+
+   const endY=e.changedTouches[0].clientY;
+
+   const distance=endY-startY;
+
+
+   if(Math.abs(distance)<100){
+      startY=0;
+      return;
+   }
+
+
+   if(distance<0){
+
+      viewer.classList.add('is-memory-back');
+
+   }else{
+
+      viewer.classList.remove('is-memory-back');
+
+   }
+
+
+   startY=0;
+
+
+ },{
+   passive:true
+ });
+
+
+}
+
+
+})();
+</script>
+
 </body>
 </html>
 
