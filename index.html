@@ -2624,42 +2624,66 @@ body.book-open-lock {
   transform: translateY(0);
 }
 .book-open-motto {
-  min-height: 4.8em;
+  min-height: 5.6em;
   font-family: 'Ma Shan Zheng', cursive, "KaiTi", "STKaiti", serif;
   font-size: clamp(18px, 4.5vw, 22px);
-  line-height: 1.85;
-  color: rgba(255, 248, 230, 0.88);
-  letter-spacing: 0.06em;
+  line-height: 1.9;
+  color: rgba(255, 248, 230, 0.9);
+  letter-spacing: 0.08em;
   margin-bottom: 36px;
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.45s ease;
+  text-align: center;
 }
 .book-open-overlay.is-motto .book-open-motto {
   opacity: 1;
-}
-.book-open-motto {
-  text-align: center;
 }
 .book-open-motto-inner {
   display: inline-block;
   text-align: left;
   max-width: 100%;
+  vertical-align: top;
 }
 .book-open-motto .book-open-line {
   display: block;
+  text-align: left;
+  min-height: 1.9em;
+  white-space: nowrap;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  color: inherit;
 }
 .book-open-motto .book-open-line--sign {
   text-align: right;
-  color: rgba(232, 213, 163, 0.92);
+  color: rgba(232, 213, 163, 0.95);
+}
+.book-open-motto .book-open-line-text {
+  display: inline;
+}
+.book-open-motto .book-open-ch {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.18em);
+  animation: bookOpenChIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes bookOpenChIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .book-open-motto .book-open-cursor {
   display: inline-block;
-  width: 0.08em;
-  height: 1em;
-  margin-left: 2px;
-  vertical-align: -0.08em;
-  background: rgba(201,168,76,0.85);
-  animation: bookOpenBlink 0.9s step-end infinite;
+  width: 0.07em;
+  height: 0.95em;
+  margin-left: 1px;
+  vertical-align: -0.05em;
+  border-radius: 1px;
+  background: rgba(232, 213, 163, 0.9);
+  box-shadow: 0 0 10px rgba(201,168,76,0.45);
+  animation: bookOpenBlink 1s step-end infinite;
 }
 @keyframes bookOpenBlink {
   50% { opacity: 0; }
@@ -2783,6 +2807,11 @@ body.book-open-lock {
     transform: none;
   }
   .book-open-motto .book-open-cursor { display: none; }
+  .book-open-motto .book-open-ch {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 /* 班徽印记 */
@@ -2811,6 +2840,376 @@ body.book-open-lock {
   .emblem-seal-mark {
     transition: opacity 0.2s ease;
     transform: none;
+  }
+}
+</style>
+
+<style id="tl-seal-and-candle">
+/* ====================== 时间线首次启封 + 烛光夜读 ====================== */
+.tl-month-modal-box {
+  position: relative;
+}
+.tl-seal-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 24px;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 42%, rgba(255,248,230,0.55), transparent 70%),
+    linear-gradient(165deg, rgba(255,255,255,0.72), rgba(250,246,238,0.88));
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0.55s,
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.tl-seal-layer.is-on {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+.tl-seal-layer.is-breaking {
+  opacity: 0;
+  transform: scale(1.04);
+  pointer-events: none;
+}
+.tl-seal-glow {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,168,76,0.35), transparent 68%);
+  filter: blur(18px);
+  pointer-events: none;
+  animation: tlSealPulse 2.4s ease-in-out infinite;
+}
+@keyframes tlSealPulse {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.12); opacity: 1; }
+}
+.tl-seal-wax {
+  position: relative;
+  z-index: 1;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.55);
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255,255,255,0.55), transparent 42%),
+    radial-gradient(circle at 50% 50%, #e4c57a 0%, #c9a84c 48%, #8a6a28 100%);
+  box-shadow:
+    0 16px 40px rgba(140, 100, 30, 0.35),
+    inset 0 1px 0 rgba(255,255,255,0.65),
+    inset 0 -8px 18px rgba(80, 50, 10, 0.25);
+  color: rgba(40, 28, 10, 0.88);
+  font-family: 'Noto Serif SC', serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  padding-left: 0.28em;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  display: grid;
+  place-items: center;
+  transform: scale(0.86);
+  transition: transform 0.55s cubic-bezier(0.22, 1.35, 0.36, 1), box-shadow 0.35s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.tl-seal-layer.is-on .tl-seal-wax {
+  transform: scale(1);
+}
+.tl-seal-wax:active {
+  transform: scale(0.92);
+}
+.tl-seal-ring {
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(255,255,255,0.35);
+  pointer-events: none;
+}
+.tl-seal-core {
+  position: relative;
+  z-index: 1;
+}
+.tl-seal-caption {
+  position: relative;
+  z-index: 1;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: rgba(90, 70, 30, 0.72);
+  font-weight: 600;
+}
+.tl-month-modal-body.is-sealed {
+  filter: blur(6px) saturate(0.85);
+  opacity: 0.35;
+  transition: filter 0.55s ease, opacity 0.55s ease;
+}
+.tl-month-modal-body.is-revealed {
+  filter: none;
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tl-seal-glow { animation: none !important; }
+  .tl-seal-layer,
+  .tl-seal-wax,
+  .tl-month-modal-body.is-sealed {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------- 烛光夜读 ---------- */
+.candle-toggle {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(22px, env(safe-area-inset-bottom));
+  z-index: 999980;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.5);
+  background:
+    radial-gradient(circle at 30% 22%, rgba(255,255,255,0.55), transparent 42%),
+    rgba(255,255,255,0.28);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    0 12px 32px rgba(0,0,0,0.14),
+    inset 0 1px 0 rgba(255,255,255,0.75);
+  color: #5a4a28;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1.25, 0.36, 1),
+    background 0.4s ease,
+    color 0.35s ease,
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
+}
+.candle-toggle-glow {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,168,76,0.35), transparent 70%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.candle-toggle-icon {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+}
+.candle-toggle .candle-icon-sun { display: none; }
+.candle-toggle .candle-icon-moon { display: block; }
+.candle-toggle:active {
+  transform: scale(0.9);
+}
+body.gallery-open .candle-toggle,
+body.book-open-lock .candle-toggle {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+body.candlelight .candle-toggle {
+  background:
+    radial-gradient(circle at 30% 22%, rgba(255,220,150,0.35), transparent 42%),
+    rgba(40, 32, 22, 0.72);
+  border-color: rgba(201,168,76,0.4);
+  color: #e8d5a3;
+  box-shadow:
+    0 12px 36px rgba(0,0,0,0.35),
+    0 0 20px rgba(201,168,76,0.18),
+    inset 0 1px 0 rgba(255,255,255,0.2);
+}
+body.candlelight .candle-toggle-glow {
+  opacity: 1;
+}
+body.candlelight .candle-toggle .candle-icon-moon { display: none; }
+body.candlelight .candle-toggle .candle-icon-sun { display: block; }
+
+/* 双向主题过渡：明亮 ⇄ 烛光，避免回亮时硬切 */
+body {
+  transition:
+    background 0.95s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.95s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+.hero,
+.class-name,
+.motto,
+.motto-sign,
+.about-title,
+.about-sub,
+.timeline-title,
+.timeline-sub,
+.gallery-title,
+.gallery-sub,
+.memory-title,
+.memory-class,
+.emblem-title,
+.emblem-sub,
+.emblem-hint,
+.wall-title,
+.wall-sub,
+.wall-section,
+.danmaku-container,
+.wall-input,
+.footer,
+.footer-name,
+.footer-motto,
+.footer-slogan,
+.footer-copy,
+.tl-card,
+.tl-title,
+.tl-desc,
+.tl-year,
+.tl-hint,
+.blessing-line,
+.blessing-year,
+.bless-tag,
+.my-msg-modal-box,
+.tl-month-modal-box,
+.tl-month-modal-title,
+.tl-month-event,
+.tl-month-label,
+.tl-seal-layer,
+.tl-seal-caption,
+.candle-toggle {
+  transition:
+    background 0.95s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.95s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.95s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.95s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.95s cubic-bezier(0.22, 1, 0.36, 1),
+    text-shadow 0.95s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.95s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.95s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+/* 烛光主题：暖暗、低对比、减少装饰 */
+body.candlelight {
+  --cream: #1a1612;
+  --dark: #f3e9d4;
+  --text-main: #e6dcc8;
+  --text-sub: #9a8b72;
+  --border: rgba(201,168,76,0.22);
+  --gold: #d4b56a;
+  --gold-light: #e8d5a3;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(201,168,76,0.1), transparent 40%),
+    #16120e !important;
+  color: var(--text-main);
+}
+body.candlelight .hero {
+  background: linear-gradient(180deg, #1e1a16 0%, #16120e 100%);
+}
+body.candlelight .class-name {
+  color: #f3e9d4;
+  text-shadow: 0 0 24px rgba(201,168,76,0.2);
+}
+body.candlelight .motto {
+  color: #cbb89a;
+}
+body.candlelight .about-section,
+body.candlelight .timeline-section,
+body.candlelight .gallery-section,
+body.candlelight .blessings,
+body.candlelight .memory-section,
+body.candlelight .emblem-section {
+  background: transparent;
+}
+body.candlelight .about-title,
+body.candlelight .timeline-title,
+body.candlelight .gallery-title,
+body.candlelight .memory-class,
+body.candlelight .emblem-title,
+body.candlelight .wall-title {
+  color: #f0e6d2;
+}
+body.candlelight .tl-card {
+  background:
+    linear-gradient(155deg, rgba(50,42,32,0.72), rgba(30,26,20,0.55)) !important;
+  border-color: rgba(201,168,76,0.28) !important;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.28) !important;
+}
+body.candlelight .tl-title { color: #f0e6d2; }
+body.candlelight .tl-desc { color: #b8a890; }
+body.candlelight .wall-section {
+  background: rgba(28, 24, 18, 0.92);
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.25);
+}
+body.candlelight .danmaku-container {
+  background: linear-gradient(180deg, #221e18, #1a1612);
+  border-color: rgba(201,168,76,0.18);
+}
+body.candlelight .wall-input {
+  background: rgba(40, 34, 26, 0.85);
+  border-color: rgba(201,168,76,0.28);
+  color: #e6dcc8;
+}
+body.candlelight .footer {
+  background: #0e0c0a;
+}
+body.candlelight .gallery-item {
+  box-shadow: 0 12px 36px rgba(0,0,0,0.35);
+}
+body.candlelight .petal {
+  opacity: 0.28 !important;
+  filter: saturate(0.7);
+}
+body.candlelight::before,
+body.candlelight::after,
+body.candlelight .liquid-light-orb {
+  opacity: 0.22 !important;
+  filter: blur(40px) !important;
+}
+body.candlelight .blessing-year {
+  color: #f3e9d4;
+  text-shadow: 0 0 30px rgba(201,168,76,0.25);
+}
+body.candlelight .my-msg-modal-box,
+body.candlelight .tl-month-modal-box {
+  background: rgba(36, 30, 22, 0.88) !important;
+  border-color: rgba(201,168,76,0.28) !important;
+  color: #e6dcc8;
+}
+body.candlelight .tl-month-modal-title,
+body.candlelight .my-msg-modal-title {
+  color: #f0e6d2;
+}
+body.candlelight .tl-month-event {
+  color: #d4c6ae;
+}
+body.candlelight .tl-seal-layer {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 42%, rgba(80,60,30,0.45), transparent 70%),
+    linear-gradient(165deg, rgba(40,32,22,0.92), rgba(28,24,18,0.95));
+}
+body.candlelight .tl-seal-caption {
+  color: rgba(232, 213, 163, 0.7);
+}
+@media (max-width: 768px) {
+  .candle-toggle {
+    width: 44px;
+    height: 44px;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(18px, env(safe-area-inset-bottom));
   }
 }
 </style>
@@ -3039,6 +3438,15 @@ body.book-open-lock {
         <button type="button" class="tl-month-modal-close" id="tlMonthModalClose" aria-label="关闭">&times;</button>
       </div>
       <div class="tl-month-modal-body" id="tlMonthModalBody"></div>
+      <!-- 首次启封蜡印层：仅该年第一次打开时出现 -->
+      <div class="tl-seal-layer" id="tlSealLayer" aria-hidden="true">
+        <div class="tl-seal-glow" aria-hidden="true"></div>
+        <button type="button" class="tl-seal-wax" id="tlSealWax" aria-label="启封这一年">
+          <span class="tl-seal-ring"></span>
+          <span class="tl-seal-core">启封</span>
+        </button>
+        <div class="tl-seal-caption" id="tlSealCaption">轻触启封这一年</div>
+      </div>
     </div>
   </div>
 
@@ -3796,14 +4204,19 @@ body.book-open-lock {
      * 创建单个花瓣DOM元素
      */
     function createPetal() {
+      // 烛光模式：更低频率由 interval 控制，这里再降低存在感
+      const candle = document.body.classList.contains('candlelight');
+      if (candle && Math.random() > 0.35) return;
       const petal = document.createElement('div');
       petal.className = 'petal';
       petal.innerHTML = '❀';
       petal.style.left = Math.random() * 100 + 'vw';
       petal.style.fontSize = (Math.random() * 10 + 12) + 'px';
-      const colors = ['#e8d5a3', '#f0d9b5', '#d4af37', '#c9a84c'];
+      const colors = candle
+        ? ['#8a7340', '#a08050', '#c9a84c']
+        : ['#e8d5a3', '#f0d9b5', '#d4af37', '#c9a84c'];
       petal.style.color = colors[Math.floor(Math.random() * colors.length)];
-      petal.style.animationDuration = (Math.random() * 4 + 6) + 's';
+      petal.style.animationDuration = ((Math.random() * 4 + 6) * (candle ? 1.35 : 1)) + 's';
       document.body.appendChild(petal);
       setTimeout(() => petal.remove(), 10000);
     }
@@ -6807,6 +7220,82 @@ body::after{
     modalBody.innerHTML = html;
   }
 
+  var sealLayer = document.getElementById('tlSealLayer');
+  var sealWax = document.getElementById('tlSealWax');
+  var sealCaption = document.getElementById('tlSealCaption');
+  var SEAL_KEY = 'zhenhui_tl_sealed_years';
+  var sealBusy = false;
+  var reduceMotion = false;
+  try {
+    reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch (e) {}
+
+  function readSealedYears() {
+    try {
+      var raw = sessionStorage.getItem(SEAL_KEY);
+      if (!raw) return {};
+      var obj = JSON.parse(raw);
+      return obj && typeof obj === 'object' ? obj : {};
+    } catch (e) {
+      return {};
+    }
+  }
+  function markYearSealed(year) {
+    try {
+      var obj = readSealedYears();
+      obj[String(year)] = 1;
+      sessionStorage.setItem(SEAL_KEY, JSON.stringify(obj));
+    } catch (e) {}
+  }
+  function yearNeedsSeal(year) {
+    var obj = readSealedYears();
+    return !obj[String(year)];
+  }
+
+  function hideSealLayer(immediate) {
+    if (!sealLayer) return;
+    sealLayer.classList.remove('is-on');
+    sealLayer.classList.remove('is-breaking');
+    sealLayer.setAttribute('aria-hidden', 'true');
+    if (modalBody) {
+      modalBody.classList.remove('is-sealed');
+      modalBody.classList.add('is-revealed');
+    }
+  }
+
+  function playSealBreak(year, done) {
+    if (!sealLayer) {
+      if (done) done();
+      return;
+    }
+    if (reduceMotion) {
+      markYearSealed(year);
+      hideSealLayer(true);
+      if (done) done();
+      return;
+    }
+    sealBusy = true;
+    sealLayer.classList.add('is-breaking');
+    setTimeout(function () {
+      markYearSealed(year);
+      hideSealLayer(true);
+      sealBusy = false;
+      if (done) done();
+    }, 520);
+  }
+
+  function showSealForYear(year) {
+    if (!sealLayer) return;
+    if (sealCaption) sealCaption.textContent = '轻触启封 · ' + year;
+    if (modalBody) {
+      modalBody.classList.add('is-sealed');
+      modalBody.classList.remove('is-revealed');
+    }
+    sealLayer.classList.remove('is-breaking');
+    sealLayer.classList.add('is-on');
+    sealLayer.setAttribute('aria-hidden', 'false');
+  }
+
   function openTlModal(year) {
     if (!modal) return;
     if (modalTitle) modalTitle.textContent = year + ' · 月度纪事';
@@ -6814,6 +7303,11 @@ body::after{
     modal.classList.add('active');
     modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
+    if (yearNeedsSeal(year)) {
+      showSealForYear(year);
+    } else {
+      hideSealLayer(true);
+    }
   }
 
   function closeTlModal() {
@@ -6821,6 +7315,27 @@ body::after{
     modal.classList.remove('active');
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+    hideSealLayer(true);
+    sealBusy = false;
+  }
+
+  if (sealWax) {
+    sealWax.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (sealBusy) return;
+      if (!sealLayer || !sealLayer.classList.contains('is-on')) return;
+      var y = (modalTitle && modalTitle.textContent) ? String(modalTitle.textContent).slice(0, 4) : '';
+      playSealBreak(y || '0');
+    });
+  }
+  if (sealLayer) {
+    sealLayer.addEventListener('click', function (e) {
+      if (e.target === sealLayer) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
   }
 
   document.querySelectorAll('.tl-card[data-tl-year]').forEach(function (card) {
@@ -7226,54 +7741,101 @@ body::after{
   overlay.addEventListener('touchstart', swallowBlank, { capture: true, passive: false });
 
   function typeLines(done) {
-    var htmlLines = [];
-    for (var n = 0; n < lines.length; n++) htmlLines.push('');
+    /* 稳定结构 + 逐字淡入：班训与署名同一节奏，署名行始终右对齐 */
+    var CHAR_MS = 70;
+    var LINE_GAP_MS = 340;
+
+    function renderFinal() {
+      var inner = document.createElement('div');
+      inner.className = 'book-open-motto-inner';
+      for (var i = 0; i < lines.length; i++) {
+        var line = document.createElement('div');
+        line.className = 'book-open-line' + (i === lines.length - 1 ? ' book-open-line--sign' : '');
+        var tx = document.createElement('span');
+        tx.className = 'book-open-line-text';
+        tx.textContent = lines[i];
+        line.appendChild(tx);
+        inner.appendChild(line);
+      }
+      mottoEl.innerHTML = '';
+      mottoEl.appendChild(inner);
+    }
 
     if (reduce) {
-      mottoEl.innerHTML = '<div class="book-open-motto-inner">' + lines.map(function (l, i) {
-        return '<span class="book-open-line' + (i === lines.length - 1 ? ' book-open-line--sign' : '') + '">' + l + '</span>';
-      }).join('') + '</div>';
+      renderFinal();
       overlay.classList.add('is-motto');
       done();
       return;
     }
+
+    overlay.classList.add('is-motto');
+    mottoEl.innerHTML = '';
+    var inner = document.createElement('div');
+    inner.className = 'book-open-motto-inner';
+
+    // 先测最长行宽度，避免逐字时版心左右跳动
+    var probe = document.createElement('span');
+    probe.style.cssText = 'position:absolute;left:-9999px;top:0;white-space:nowrap;visibility:hidden;pointer-events:none;';
+    probe.style.font = 'inherit';
+    probe.style.letterSpacing = 'inherit';
+    mottoEl.appendChild(probe);
+    var maxW = 0;
+    for (var p = 0; p < lines.length; p++) {
+      probe.textContent = lines[p];
+      maxW = Math.max(maxW, probe.offsetWidth || 0);
+    }
+    if (probe.parentNode) probe.parentNode.removeChild(probe);
+    if (maxW > 0) inner.style.minWidth = maxW + 'px';
+
+    var rows = [];
+    for (var i = 0; i < lines.length; i++) {
+      var line = document.createElement('div');
+      line.className = 'book-open-line' + (i === lines.length - 1 ? ' book-open-line--sign' : '');
+      var tx = document.createElement('span');
+      tx.className = 'book-open-line-text';
+      line.appendChild(tx);
+      inner.appendChild(line);
+      rows.push({ line: line, tx: tx, full: lines[i] });
+    }
+    mottoEl.appendChild(inner);
+
+    var cursor = document.createElement('span');
+    cursor.className = 'book-open-cursor';
+    cursor.setAttribute('aria-hidden', 'true');
+
     var lineIdx = 0;
     var charIdx = 0;
-    overlay.classList.add('is-motto');
 
-    function paint() {
-      var parts = [];
-      for (var i = 0; i < lines.length; i++) {
-        var t = htmlLines[i] || '';
-        var cursor = (i === lineIdx && lineIdx < lines.length) ? '<span class="book-open-cursor"></span>' : '';
-        if (t || i <= lineIdx) {
-          var cls = 'book-open-line' + (i === lines.length - 1 ? ' book-open-line--sign' : '');
-          parts.push('<span class="' + cls + '">' + t + cursor + '</span>');
-        }
-      }
-      mottoEl.innerHTML = '<div class="book-open-motto-inner">' + parts.join('') + '</div>';
+    function placeCursor(row) {
+      if (cursor.parentNode) cursor.parentNode.removeChild(cursor);
+      if (row) row.line.appendChild(cursor);
     }
 
     function tick() {
-      if (lineIdx >= lines.length) {
-        mottoEl.innerHTML = '<div class="book-open-motto-inner">' + lines.map(function (l, i) {
-          return '<span class="book-open-line' + (i === lines.length - 1 ? ' book-open-line--sign' : '') + '">' + l + '</span>';
-        }).join('') + '</div>';
+      if (lineIdx >= rows.length) {
+        if (cursor.parentNode) cursor.parentNode.removeChild(cursor);
         done();
         return;
       }
-      var cur = lines[lineIdx];
-      if (charIdx < cur.length) {
-        htmlLines[lineIdx] = cur.slice(0, charIdx + 1);
+      var row = rows[lineIdx];
+      var full = row.full;
+      if (charIdx < full.length) {
+        var ch = document.createElement('span');
+        ch.className = 'book-open-ch';
+        ch.textContent = full.charAt(charIdx);
+        row.tx.appendChild(ch);
         charIdx++;
-        paint();
-        setTimeout(tick, 58);
+        placeCursor(row);
+        setTimeout(tick, CHAR_MS);
       } else {
         lineIdx++;
         charIdx = 0;
-        setTimeout(tick, 280);
+        if (lineIdx < rows.length) placeCursor(rows[lineIdx]);
+        else if (cursor.parentNode) cursor.parentNode.removeChild(cursor);
+        setTimeout(tick, LINE_GAP_MS);
       }
     }
+    placeCursor(rows[0]);
     tick();
   }
 
@@ -7317,6 +7879,49 @@ body::after{
       e.preventDefault();
       onBtnActivate(e);
     }
+  });
+})();
+</script>
+
+
+  <!-- 烛光夜读切换 -->
+  <button type="button" class="candle-toggle" id="candleToggle" aria-label="切换烛光夜读" aria-pressed="false" title="烛光夜读">
+    <span class="candle-toggle-glow" aria-hidden="true"></span>
+    <span class="candle-toggle-icon" aria-hidden="true">
+      <svg class="candle-icon-moon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12.1 2.1a9.9 9.9 0 0 0-1.3.1 10 10 0 1 0 11 11.5 8 8 0 0 1-9.7-11.6z"/></svg>
+      <svg class="candle-icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 4.5a1 1 0 0 1 1 1V7a1 1 0 1 1-2 0V5.5a1 1 0 0 1 1-1zm0 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm7.5-2.5a1 1 0 0 1 0 2H18a1 1 0 1 1 0-2h1.5zM6 12a1 1 0 0 1-1 1H3.5a1 1 0 1 1 0-2H5a1 1 0 0 1 1 1zm11.3 5.3a1 1 0 0 1 0 1.4l-1.1 1.1a1 1 0 1 1-1.4-1.4l1.1-1.1a1 1 0 0 1 1.4 0zM8.2 6.2a1 1 0 0 1 0 1.4L7.1 8.7A1 1 0 0 1 5.7 7.3l1.1-1.1a1 1 0 0 1 1.4 0zm9.1 0a1 1 0 0 1 1.4 0l1.1 1.1a1 1 0 1 1-1.4 1.4L17.3 7.6a1 1 0 0 1 0-1.4zM8.2 17.8a1 1 0 0 1-1.4 0L5.7 16.7a1 1 0 1 1 1.4-1.4l1.1 1.1a1 1 0 0 1 0 1.4zM12 17a1 1 0 0 1 1 1v1.5a1 1 0 1 1-2 0V18a1 1 0 0 1 1-1z"/></svg>
+    </span>
+  </button>
+
+
+<script>
+/* 烛光夜读：暖暗主题 + 减弱花瓣观感 */
+(function () {
+  'use strict';
+  var btn = document.getElementById('candleToggle');
+  if (!btn) return;
+  var KEY = 'zhenhui_candlelight';
+
+  function apply(on) {
+    document.body.classList.toggle('candlelight', !!on);
+    btn.setAttribute('aria-pressed', String(!!on));
+    btn.setAttribute('aria-label', on ? '关闭烛光夜读' : '开启烛光夜读');
+    btn.title = on ? '关闭烛光夜读' : '烛光夜读';
+    try {
+      localStorage.setItem(KEY, on ? '1' : '0');
+    } catch (e) {}
+  }
+
+  var initial = false;
+  try {
+    initial = localStorage.getItem(KEY) === '1';
+  } catch (e) {}
+  apply(initial);
+
+  btn.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    apply(!document.body.classList.contains('candlelight'));
   });
 })();
 </script>
