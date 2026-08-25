@@ -9673,10 +9673,130 @@ if(viewer){
 })();
 </script>
 
+
+<style id="final-cleanup-v5">
+
+/* ===== 完全移除班徽翻转 ===== */
+.emblem-space,
+.emblem-stage,
+.emblem-container{
+    transform:none!important;
+}
+
+.emblem-front,
+.emblem-back{
+    transform:none!important;
+    backface-visibility:visible!important;
+    -webkit-backface-visibility:visible!important;
+}
+
+.emblem-back{
+    display:none!important;
+}
+
+/* 恢复提示，但删除翻转提示 */
+.emblem-hint{
+    display:block!important;
+}
+
+.flip-hint,
+.emblem-flip-hint,
+.click-flip-tip{
+    display:none!important;
+}
+
+
+/* ===== 删除相册打开斜入/甩入 ===== */
+
+/* 禁止所有进入时位移动画 */
+.photo-stage,
+.photo-slide,
+.photo-slide img,
+.photo-viewer img{
+    animation:none!important;
+}
+
+
+/* 只保留透明缓入 */
+.photo-stage{
+    transform:none!important;
+}
+
+.photo-stage.photo-opening{
+    animation:softPhotoFade .28s ease-out!important;
+    transform:none!important;
+}
+
+
+@keyframes softPhotoFade{
+
+    from{
+        opacity:0;
+    }
+
+    to{
+        opacity:1;
+    }
+
+}
+
+
+/* 禁止旧 FLIP 位移动画 */
+.photo-viewer.is-open .photo-slide,
+.photo-viewer.is-open .photo-stage{
+    transform:none!important;
+}
+
+
+</style>
+
+
+<script id="final-cleanup-js">
+(function(){
+
+/* 禁止所有班徽点击翻转状态 */
+const emblem =
+document.querySelector('.emblem-stage,.emblem-container');
+
+if(emblem){
+
+    emblem.classList.remove('emblem-is-flipped');
+
+    const clone = emblem.cloneNode(true);
+
+    emblem.parentNode.replaceChild(clone, emblem);
+
+}
+
+
+/* 清除相册打开残留 transform 状态 */
+document.addEventListener('click',function(e){
+
+    const target=e.target.closest('.gallery-item');
+
+    if(target){
+
+        setTimeout(()=>{
+
+            document.querySelectorAll(
+              '.photo-stage,.photo-slide'
+            ).forEach(el=>{
+
+                el.style.transform='none';
+
+            });
+
+        },50);
+
+    }
+
+});
+
+
+})();
+</script>
+
 </body>
 </html>
-
-
-
 
 
