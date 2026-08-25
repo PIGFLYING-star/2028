@@ -1,42 +1,62 @@
+const JSON_HEADERS = {
+  'Content-Type': 'application/json; charset=UTF-8',
+  'Cache-Control': 'no-store',
+  'Access-Control-Allow-Origin': '*'
+};
+
+
 function json(data, status = 200) {
+
   return new Response(
     JSON.stringify(data),
     {
       status,
-      headers: {
-        "Content-Type": "application/json; charset=UTF-8",
-        "Access-Control-Allow-Origin": "*",
-        "Cache-Control": "no-store"
-      }
+      headers: JSON_HEADERS
     }
   );
+
 }
 
 
-function cleanText(value, max = 500) {
 
-  return String(value ?? "")
+function cleanText(value, max = 200) {
+
+  return String(value ?? '')
     .trim()
     .slice(0, max);
 
 }
 
 
-function validClientId(id){
 
-  return /^[a-zA-Z0-9_-]{1,128}$/.test(id);
+function validClientId(value) {
+
+  return /^[A-Za-z0-9._:-]{8,128}$/
+    .test(String(value ?? ''));
 
 }
 
 
 
-// 自动创建评论表
-async function ensureTable(db){
+function validPhotoIndex(value) {
+
+  const n = Number(value);
+
+  return Number.isInteger(n)
+    && n >= 0
+    && n <= 999;
+
+}
+
+
+
+async function ensureTable(db) {
 
   await db.prepare(`
+
     CREATE TABLE IF NOT EXISTS photo_comments (
 
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id TEXT PRIMARY KEY,
 
       gallery_group TEXT NOT NULL,
 
@@ -49,30 +69,82 @@ async function ensureTable(db){
       create_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 
     )
-  `)
-  .run();
+
+  `).run();
+
+
+
+  await db.prepare(`
+
+    CREATE INDEX IF NOT EXISTS idx_photo_comments_lookup
+
+    ON photo_comments
+    (
+      gallery_group,
+      photo_index,
+      create_at
+    )
+
+  `).run();
 
 }
 
 
 
 
-export async function onRequest(context){
 
-  const {
-    request,
-    env
-  } = context;
 
+// =========================
+// 获取评论
+// =========================
+
+export async function onRequestGet({
+  request,
+  env
+}) {
 
 
   if(!env.DB){
 
     return json(
       {
-        error:"D1 binding DB is not configured."
+        error:'D1 binding DB is not configured.'
       },
-     500
+      500
+    );
+
+  }
+
+
+
+  const url =
+    new URL(request.url);
+
+
+
+  const gallery =
+    cleanText(
+      url.searchParams.get('gallery'),
+      64
+    );
+
+
+
+  const photo =
+    url.searchParams.get('photo');
+
+
+
+  if(
+    !gallery ||
+    !validPhotoIndex(photo)
+  ){
+
+    return json(
+      {
+        error:'Invalid gallery/photo.'
+      },
+      400
     );
 
   }
@@ -86,302 +158,302 @@ export async function onRequest(context){
 
 
 
-    const method =
-      request.method.toUpperCase();
+    const {
+      results=[]
+    } =
+    await env.DB.prepare(`
 
+      SELECT
 
-
-
-    // ============================
-    // GET 获取评论
-    // ============================
-
-    if(method==="GET"){
-
-
-      const url =
-        new URL(request.url);
-
-
-
-      const gallery =
-        cleanText(
-          url.searchParams.get("gallery"),
-          200
-        );
-
-
-      const photo =
-        Number(
-          url.searchParams.get("photo")
-        );
-
-
-
-      if(!gallery || Number.isNaN(photo)){
-
-        return json(
-          {
-            error:"Invalid parameters."
-          },
-         400
-        );
-
-      }
-
-
-
-      const result =
-        await env.DB.prepare(`
-          SELECT
-            id,
-            gallery_group,
-            photo_index,
-            content,
-            client_id,
-            create_at
-
-          FROM photo_comments
-
-          WHERE gallery_group=?
-          AND photo_index=?
-
-          ORDER BY id ASC
-        `)
-        .bind(
-          gallery,
-          photo
-        )
-        .all();
-
-
-
-      return json({
-
-        comments:
-          result.results || []
-
-      });
-
-
-
-    }
-
-
-
-
-
-
-
-    // ============================
-    // POST 发布评论
-    // ============================
-
-    if(method==="POST"){
-
-
-      const body =
-        await request.json()
-        .catch(()=>null);
-
-
-
-      const gallery =
-        cleanText(
-          body?.gallery,
-          200
-        );
-
-
-      const photo =
-        Number(
-          body?.photo
-        );
-
-
-      const content =
-        cleanText(
-          body?.content,
-          500
-        );
-
-
-      const clientId =
-        cleanText(
-          body?.client_id,
-          128
-        );
-
-
-
-      if(
-        !gallery ||
-        Number.isNaN(photo) ||
-        !content ||
-        !validClientId(clientId)
-      ){
-
-        return json(
-          {
-            error:"Invalid request."
-          },
-         400
-        );
-
-      }
-
-
-
-
-
-      await env.DB.prepare(`
-        INSERT INTO photo_comments
-        (
-          gallery_group,
-          photo_index,
-          content,
-          client_id
-        )
-
-        VALUES(?,?,?,?)
-
-      `)
-      .bind(
-        gallery,
-        photo,
-        content,
-        clientId
-      )
-      .run();
-
-
-
-
-      return json({
-
-        ok:true
-
-      });
-
-
-
-    }
-
-
-
-
-
-
-
-    // ============================
-    // DELETE 删除评论
-    // ============================
-
-    if(method==="DELETE"){
-
-
-      const body =
-        await request.json()
-        .catch(()=>null);
-
-
-
-      const id =
-        cleanText(
-          body?.id,
-          128
-        );
-
-
-      const clientId =
-        cleanText(
-          body?.client_id,
-          128
-        );
-
-
-
-      if(
-        !id ||
-        !validClientId(clientId)
-      ){
-
-        return json(
-          {
-            error:"Invalid request."
-          },
-         400
-        );
-
-      }
-
-
-
-
-      await env.DB.prepare(`
-        DELETE FROM photo_comments
-
-        WHERE id=?
-
-        AND client_id=?
-
-      `)
-      .bind(
         id,
-        clientId
+
+        gallery_group,
+
+        photo_index,
+
+        content,
+
+        client_id,
+
+        create_at
+
+
+      FROM photo_comments
+
+
+      WHERE gallery_group=?
+
+      AND photo_index=?
+
+
+      ORDER BY create_at ASC
+
+
+      LIMIT 50
+
+
+    `)
+    .bind(
+      gallery,
+      Number(photo)
+    )
+    .all();
+
+
+
+    return json({
+
+      comments:results
+
+    });
+
+
+
+  }catch(error){
+
+
+    console.error(
+      'photo-comments GET failed',
+      error
+    );
+
+
+    return json(
+      {
+        error:'Failed to load photo comments.'
+      },
+      500
+    );
+
+  }
+
+}
+
+
+
+
+
+
+
+
+// =========================
+// 发布评论
+// =========================
+
+export async function onRequestPost({
+  request,
+  env
+}) {
+
+
+  if(!env.DB){
+
+    return json(
+      {
+        error:'D1 binding DB is not configured.'
+      },
+      500
+    );
+
+  }
+
+
+
+  let body;
+
+
+  try{
+
+    body =
+      await request.json();
+
+
+  }catch{
+
+
+    return json(
+      {
+        error:'Invalid JSON.'
+      },
+      400
+    );
+
+  }
+
+
+
+
+
+  const gallery =
+    cleanText(
+      body?.gallery_group,
+      64
+    );
+
+
+
+  const photoIndex =
+    Number(
+      body?.photo_index
+    );
+
+
+
+  const content =
+    cleanText(
+      body?.content,
+      200
+    );
+
+
+
+  const clientId =
+    cleanText(
+      body?.client_id,
+      128
+    );
+
+
+
+
+
+  if(
+    !gallery ||
+    !validPhotoIndex(photoIndex)
+  ){
+
+    return json(
+      {
+        error:'Invalid gallery/photo.'
+      },
+      400
+    );
+
+  }
+
+
+
+  if(!content){
+
+    return json(
+      {
+        error:'Comment cannot be empty.'
+      },
+      400
+    );
+
+  }
+
+
+
+  if(!validClientId(clientId)){
+
+
+    return json(
+      {
+        error:'Invalid client_id.'
+      },
+      400
+    );
+
+  }
+
+
+
+
+
+
+  try{
+
+
+    await ensureTable(env.DB);
+
+
+
+    const id =
+      crypto.randomUUID();
+
+
+
+    const createdAt =
+      new Date().toISOString();
+
+
+
+
+
+    await env.DB.prepare(`
+
+      INSERT INTO photo_comments
+
+      (
+
+        id,
+
+        gallery_group,
+
+        photo_index,
+
+        content,
+
+        client_id,
+
+        create_at
+
       )
-      .run();
 
 
+      VALUES (?,?,?,?,?,?)
 
 
-      return json({
+    `)
+    .bind(
 
-        ok:true
+      id,
 
-      });
+      gallery,
 
+      photoIndex,
 
+      content,
 
-    }
+      clientId,
 
+      createdAt
 
-
-
-
-
-    // ============================
-    // OPTIONS 跨域
-    // ============================
-
-    if(method==="OPTIONS"){
-
-      return new Response(
-        null,
-        {
-          headers:{
-            "Access-Control-Allow-Origin":"*",
-
-            "Access-Control-Allow-Methods":
-              "GET,POST,DELETE,OPTIONS",
-
-            "Access-Control-Allow-Headers":
-              "Content-Type"
-          }
-        }
-      );
-
-    }
+    )
+    .run();
 
 
 
 
 
     return json(
+
       {
-        error:"Method not allowed."
+
+        ok:true,
+
+        comment:{
+
+          id,
+
+          gallery_group:gallery,
+
+          photo_index:photoIndex,
+
+          content,
+
+          client_id:clientId,
+
+          create_at:createdAt
+
+        }
+
       },
-     405
+
+      201
+
     );
 
 
@@ -390,19 +462,217 @@ export async function onRequest(context){
 
 
     console.error(
-      "photo-comments error:",
+      'photo-comments POST failed',
       error
     );
 
 
     return json(
       {
-        error:"Server error."
+        error:'Failed to save photo comment.'
       },
-     500
+      500
+    );
+
+  }
+
+}
+
+
+
+
+
+
+
+
+
+// =========================
+// 删除评论
+// =========================
+
+export async function onRequestDelete({
+  request,
+  env
+}) {
+
+
+  if(!env.DB){
+
+    return json(
+      {
+        error:'D1 binding DB is not configured.'
+      },
+      500
+    );
+
+  }
+
+
+
+
+  let body;
+
+
+  try{
+
+    body =
+      await request.json();
+
+  }catch{
+
+
+    return json(
+      {
+        error:'Invalid JSON.'
+      },
+      400
+    );
+
+  }
+
+
+
+
+
+  const id =
+    cleanText(
+      body?.id,
+      128
     );
 
 
+
+  const clientId =
+    cleanText(
+      body?.client_id,
+      128
+    );
+
+
+
+
+
+  if(
+    !id ||
+    !validClientId(clientId)
+  ){
+
+    return json(
+      {
+        error:'Invalid delete request.'
+      },
+      400
+    );
+
   }
+
+
+
+
+
+
+  try{
+
+
+    await ensureTable(env.DB);
+
+
+
+    await env.DB.prepare(`
+
+      DELETE FROM photo_comments
+
+      WHERE id=?
+
+      AND client_id=?
+
+    `)
+    .bind(
+
+      id,
+
+      clientId
+
+    )
+    .run();
+
+
+
+
+
+    return json({
+
+      ok:true
+
+    });
+
+
+
+
+
+  }catch(error){
+
+
+    console.error(
+      'photo-comments DELETE failed',
+      error
+    );
+
+
+    return json(
+      {
+        error:'Failed to delete photo comment.'
+      },
+      500
+    );
+
+  }
+
+}
+
+
+
+
+
+
+
+
+// =========================
+// OPTIONS
+// =========================
+
+export async function onRequestOptions(){
+
+  return new Response(
+
+    null,
+
+    {
+
+      status:204,
+
+
+      headers:{
+
+
+        'Access-Control-Allow-Origin':'*',
+
+
+        'Access-Control-Allow-Methods':
+
+          'GET,POST,DELETE,OPTIONS',
+
+
+
+        'Access-Control-Allow-Headers':
+
+          'Content-Type, Accept'
+
+
+      }
+
+    }
+
+  );
 
 }
