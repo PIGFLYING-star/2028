@@ -2102,6 +2102,93 @@ body:before{
  rgba(255,255,255,.38)!important;
 }
 
+
+/* ===== 优化补丁 ===== */
+
+/* 班徽轻触180°翻转 */
+.emblem-space{
+  transition: transform .7s cubic-bezier(.22,1,.36,1);
+}
+.emblem-back{
+  position:absolute;
+  inset:0;
+  transform:rotateY(180deg) translateZ(.2px);
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+  border-radius:50%;
+  overflow:hidden;
+  background:transparent !important;
+}
+.emblem-front{
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+}
+.emblem-is-flipped .emblem-space{
+  transform:rotateY(180deg);
+}
+.emblem-back-inner{
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(201,168,76,.16),rgba(20,18,15,.85));
+}
+
+/* 夜读模式取消班徽背后白圈 */
+.dark-mode .emblem-back,
+.night-mode .emblem-back,
+body.dark .emblem-back{
+  background:transparent !important;
+}
+.dark-mode .emblem-back-inner,
+.night-mode .emblem-back-inner,
+body.dark .emblem-back-inner{
+  background:radial-gradient(circle,rgba(201,168,76,.12),rgba(8,8,8,.92));
+}
+
+/* 相册 Shared Element / FLIP 平滑过渡 */
+.gallery-item,
+.gallery-item img{
+  will-change:transform,opacity;
+}
+.gallery-item.is-opening{
+  z-index:20;
+}
+.photo-stage.is-flip-opening{
+  animation:photoFlipOpen .45s cubic-bezier(.22,1,.36,1);
+}
+@keyframes photoFlipOpen{
+  from{transform:scale(.96);opacity:.72;}
+  to{transform:scale(1);opacity:1;}
+}
+
+/* PC端禁止相册上下拖动选中文字 */
+@media (min-width:769px){
+  .gallery-item,
+  .photo-viewer,
+  .photo-stage{
+    user-select:none;
+    -webkit-user-select:none;
+  }
+  .gallery-item:active{
+    transform:none;
+  }
+}
+
+/* 留言发送动画优化 */
+.fly-message{
+  animation:messageFloat .55s cubic-bezier(.22,1,.36,1);
+}
+@keyframes messageFloat{
+  from{
+    opacity:0;
+    transform:translate3d(0,18px,0) scale(.9);
+  }
+  to{
+    opacity:1;
+    transform:translate3d(0,0,0) scale(1);
+  }
+}
+
 </style>
 
 
@@ -4385,7 +4472,7 @@ body.candlelight .future-star-note{
     </div>
 
     <div class="future-sky" id="futureSky" aria-label="写给未来的星空">
-      <div class="future-sky-caption">写给未来的星空 · 仅本地可见 · 刷新网页后消失</div>
+      <div class="future-sky-caption">写给未来的星空 · 本机保存 · 刷新网页仍会保留</div>
     </div>
 
   </div>
@@ -4927,6 +5014,8 @@ body.candlelight .future-star-note{
       renderPhotoSlides();
       photoTitle.textContent = activeGalleryTitle;
       photoViewer.classList.add('is-open');
+      photoStage && photoStage.classList.add('is-flip-opening');
+      setTimeout(()=>photoStage && photoStage.classList.remove('is-flip-opening'),500);
       document.body.classList.add('gallery-open');
       photoViewer.setAttribute('aria-hidden','false');
       document.body.style.overflow = 'hidden';
@@ -5512,7 +5601,20 @@ body.candlelight .future-star-note{
     const futureSky = document.getElementById('futureSky');
 
     // 未来星星只存在当前页面内存：不写 Cookie / localStorage / sessionStorage / D1 / API。
-    const futureLocalNotes = [];
+    const FUTURE_STAR_KEY = 'zhenhui_future_stars';
+    const futureLocalNotes = JSON.parse(localStorage.getItem(FUTURE_STAR_KEY) || '[]');
+
+    function saveFutureStars(){
+      try{
+        localStorage.setItem(FUTURE_STAR_KEY, JSON.stringify(futureLocalNotes));
+      }catch(e){}
+    }
+
+    function restoreFutureStars(){
+      futureLocalNotes.forEach(function(item){
+        createFutureStar(item.message,item.x,item.y);
+      });
+    }
 
     function openFutureMessagePanel(){
       futureMessagePanel.classList.add('is-open');
@@ -5559,6 +5661,8 @@ body.candlelight .future-star-note{
         if (p < 1) requestAnimationFrame(animate);
         else {
           fly.remove();
+          futureLocalNotes.push({message:message,x:targetX,y:targetY});
+          saveFutureStars();
           createFutureStar(message, targetX, targetY);
         }
       }
@@ -5590,7 +5694,10 @@ body.candlelight .future-star-note{
       wrap.appendChild(star);
       wrap.appendChild(note);
       futureSky.appendChild(wrap);
+      saveFutureStars();
     }
+
+    restoreFutureStars();
 
     futureMessageBtn.addEventListener('click', openFutureMessagePanel);
     futureMessageClose.addEventListener('click', closeFutureMessagePanel);
