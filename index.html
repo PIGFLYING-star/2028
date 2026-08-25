@@ -5786,6 +5786,7 @@ body.candlelight .future-star-note{
     const danmakuContainer = document.getElementById('danmakuContainer');
     const wallTip = document.getElementById('wallTip');
     let allMessages = [];         // 完整留言池，轮询接口更新这个数组
+    let pendingLocalMessages = []; // 等待服务器确认的本地留言，防止轮询覆盖
     let playIndex = 0;            // 播放索引指针，记录下一条要播放的留言下标
     let danmakuScheduler = null;  // 弹幕循环调度定时器
     /**
@@ -5985,7 +5986,7 @@ body.candlelight .future-star-note{
           wallTip.textContent = '暂无留言，快来发布第一条回忆吧✨';
           wallTip.className = 'wall-tip';
         } else if (Array.isArray(data)) {
-          allMessages = data;
+          allMessages = [...pendingLocalMessages, ...data.filter(item => !pendingLocalMessages.some(p => p.id === item.id && p.content === item.content))];
           wallTip.style.display = 'none';
         } else {
           throw new Error('返回数据格式错误');
@@ -6070,7 +6071,21 @@ body.candlelight .future-star-note{
           throw new Error((ret && ret.error) || ('发布失败 HTTP ' + res.status));
         }
         msgInput.value = '';
-        // 不手动改 allMessages，等轮询拉取真实数据
+        // 修复：发布成功后立即写入当前留言池，保证“我的留言”即时显示
+        // 后续轮询仍会用服务器数据校准，避免等待 POLL_INTERVAL 导致看不到记录
+        const localRecord = {
+          id: ret && ret.id ? ret.id : ('local_' + Date.now()),
+          content: text,
+          client_id: CLIENT_ID,
+          create_at: new Date().toISOString()
+        };
+        pendingLocalMessages.unshift(localRecord);
+        allMessages = [localRecord, ...allMessages.filter(item => item.id !== localRecord.id)];
+        renderMyMessages(allMessages);
+        // 下一轮同步后，如果服务器已返回真实记录，清除临时缓存
+        setTimeout(() => {
+          pendingLocalMessages = pendingLocalMessages.filter(item => !allMessages.some(m => m.content === item.content && m.id !== item.id));
+        }, POLL_INTERVAL + 1000);
       } catch (err) {
         const isNetwork = err && (err.name === 'TypeError' || /Failed to fetch|NetworkError/i.test(String(err.message)));
         alert(isNetwork
