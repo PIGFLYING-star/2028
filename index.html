@@ -2102,31 +2102,6 @@ body:before{
  rgba(255,255,255,.38)!important;
 }
 
-
-/* 照片评论删除按钮 */
-.photo-comment-row{
-  display:flex;
-  align-items:flex-start;
-  gap:8px;
-}
-.photo-comment-content{
-  flex:1;
-  min-width:0;
-}
-.photo-comment-delete{
-  flex:none;
-  border:0;
-  background:transparent;
-  color:#b08a42;
-  font-size:12px;
-  padding:3px 5px;
-  cursor:pointer;
-  opacity:.75;
-}
-.photo-comment-delete:hover{
-  opacity:1;
-}
-
 </style>
 
 
@@ -5389,71 +5364,17 @@ body.candlelight .future-star-note{
       safeList.slice(0, 50).forEach(item => {
         const wrap = document.createElement('div');
         wrap.className = 'photo-comment-item';
-        const row = document.createElement('div');
-        row.className = 'photo-comment-row';
-
-        const contentBox = document.createElement('div');
-        contentBox.className = 'photo-comment-content';
-
         const text = document.createElement('div');
         text.className = 'photo-comment-text';
         text.textContent = item.content || '';
-
         const time = document.createElement('div');
         time.className = 'photo-comment-time';
         time.textContent = formatTime(item.create_at);
-
-        contentBox.appendChild(text);
-        contentBox.appendChild(time);
-        row.appendChild(contentBox);
-
-        if (item.client_id === CLIENT_ID) {
-          const del = document.createElement('button');
-          del.className = 'photo-comment-delete';
-          del.textContent = '删除';
-          del.onclick = () => deletePhotoComment(item.id);
-          row.appendChild(del);
-        }
-
-        wrap.appendChild(row);
+        wrap.appendChild(text);
+        wrap.appendChild(time);
         photoMemoryComments.appendChild(wrap);
       });
       photoMemoryComments.scrollTop = photoMemoryComments.scrollHeight;
-    }
-
-
-    async function deletePhotoComment(id){
-      if (!id) return;
-
-      if (!confirm('确定删除这条评论吗？')) {
-        return;
-      }
-
-      try {
-        const res = await fetch('/api/photo-comments', {
-          method:'DELETE',
-          headers:{
-            'Content-Type':'application/json',
-            'Accept':'application/json'
-          },
-          body:JSON.stringify({
-            id:id,
-            client_id:CLIENT_ID
-          })
-        });
-
-        const ret = await res.json().catch(() => ({}));
-
-        if (!res.ok || !ret.ok) {
-          throw new Error(ret.error || '删除失败');
-        }
-
-        await loadPhotoComments(false);
-
-      } catch(err){
-        console.warn('[PhotoComments] delete failed:', err);
-        alert('删除失败，请稍后再试。');
-      }
     }
 
     async function sendPhotoComment(){
@@ -9629,6 +9550,174 @@ window.addEventListener('beforeunload',()=>{
 
 })();
 </script>
+
+<style id="final-stability-fix">
+/* 班徽翻转：关闭旧状态冲突，使用独立卡面 */
+.emblem-space{
+  transform-style:preserve-3d !important;
+  -webkit-transform-style:preserve-3d !important;
+}
+.emblem-front,.emblem-back{
+  backface-visibility:hidden!important;
+  -webkit-backface-visibility:hidden!important;
+}
+.emblem-back{
+  transform:rotateY(180deg)!important;
+}
+.emblem-back-inner{
+  display:flex!important;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  height:100%;
+}
+.emblem-space.flipped,
+.emblem-is-flipped .emblem-space{
+  transform:rotateY(180deg)!important;
+}
+
+/* 禁止相册打开时甩入 */
+.photo-stage,
+.photo-stage.photo-opening,
+.photo-viewer.is-open .photo-stage{
+  animation:none!important;
+  transition:none!important;
+}
+
+/* 手势交给统一 JS，避免抖动 */
+.photo-viewer,
+.photo-stage,
+.photo-slide,
+.photo-slide img{
+  touch-action:none!important;
+}
+
+/* 删除按钮 */
+.photo-comment-delete{
+  margin-left:auto;
+  border:0;
+  background:none;
+  color:#b08b45;
+  font-size:12px;
+  cursor:pointer;
+}
+</style>
+
+<script id="final-stability-js">
+(function(){
+
+/* ========= 班徽翻转 ========= */
+const emblem=document.querySelector('.emblem-space');
+const emblemWrap=document.querySelector('.emblem-stage,.emblem-container');
+if(emblemWrap && emblem){
+  emblemWrap.addEventListener('click',function(e){
+    if(e.target.closest('button,input,a')) return;
+    emblemWrap.classList.toggle('emblem-is-flipped');
+  });
+}
+
+
+/* ========= 评论删除 ========= */
+window.deletePhotoComment = async function(id){
+
+  const clientId=localStorage.getItem('photo_comment_client_id')
+    || localStorage.getItem('client_id');
+
+  if(!id || !clientId) return;
+
+  if(!confirm('删除这条评论？')) return;
+
+  const res=await fetch('/api/photo-comments',{
+    method:'DELETE',
+    headers:{
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify({
+      id:id,
+      client_id:clientId
+    })
+  });
+
+  const data=await res.json().catch(()=>({}));
+
+  if(data.ok && typeof loadPhotoComments==='function'){
+    loadPhotoComments(false);
+  }
+};
+
+
+/* ========= 覆盖评论渲染，增加删除 ========= */
+const oldRender=window.renderPhotoComments;
+if(typeof oldRender==='function'){
+  window.renderPhotoComments=function(list){
+
+    oldRender(list);
+
+    const clientId=localStorage.getItem('photo_comment_client_id')
+      || localStorage.getItem('client_id');
+
+    document.querySelectorAll('.photo-comment-item').forEach((el,i)=>{
+
+      const item=list[i];
+
+      if(item && item.client_id===clientId){
+
+        if(!el.querySelector('.photo-comment-delete')){
+
+          const btn=document.createElement('button');
+          btn.className='photo-comment-delete';
+          btn.textContent='删除';
+          btn.onclick=()=>deletePhotoComment(item.id);
+
+          el.appendChild(btn);
+        }
+      }
+
+    });
+
+  }
+}
+
+
+/* ========= 稳定上下扫，不再震动 ========= */
+const viewer=document.getElementById('photoViewer');
+
+if(viewer){
+
+ let startY=0;
+ let locked=false;
+
+ viewer.addEventListener('touchstart',e=>{
+   if(!viewer.classList.contains('is-open')) return;
+   startY=e.touches[0].clientY;
+   locked=false;
+ },{passive:true});
+
+
+ viewer.addEventListener('touchend',e=>{
+
+   if(locked) return;
+
+   const dy=e.changedTouches[0].clientY-startY;
+
+   if(Math.abs(dy)<90) return;
+
+   locked=true;
+
+   if(dy<0){
+      viewer.classList.add('is-memory-back');
+   }else{
+      viewer.classList.remove('is-memory-back');
+   }
+
+ },{passive:true});
+
+}
+
+})();
+</script>
+
 </body>
 </html>
 
