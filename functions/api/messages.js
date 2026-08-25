@@ -1,120 +1,209 @@
 /**
  * Cloudflare Pages Functions 留言接口
- * 功能：GET获取所有留言、POST提交新留言、DELETE删除本人留言
- * 绑定：D1数据库环境变量名为 DB
+ * 功能：
+ * GET 获取留言
+ * POST 发布留言
+ *
+ * 保持原 /api/messages 不变
+ * 自动保证 messages 表存在
+ * 不需要新建 D1，不需要执行 SQL 命令
  */
 
+const JSON_HEADERS = {
+  'Content-Type': 'application/json; charset=UTF-8',
+  'Access-Control-Allow-Origin': '*',
+  'Cache-Control': 'no-store'
+};
+
+
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: JSON_HEADERS
+  });
+}
+
+
+function cleanText(value, max = 200) {
+  return String(value ?? '')
+    .trim()
+    .slice(0, max);
+}
+
+
+// 自动检查留言表
+async function ensureMessagesTable(db) {
+
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      content TEXT NOT NULL,
+      create_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `).run();
+
+}
+
+
+
 export async function onRequest(context) {
-  const { request, env } = context;
-  const method = request.method.toUpperCase();
 
-  // 统一设置响应头
-  const headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type'
-  };
+  const {
+    request,
+    env
+  } = context;
 
-  // 处理预检请求
-  if (method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers });
+
+  if (!env.DB) {
+
+    return json(
+      {
+        error: 'D1 binding DB is not configured.'
+      },
+      500
+    );
+
   }
 
-  // 1. GET请求：获取全部留言（时间倒序）
-  if (method === 'GET') {
-    try {
-      const { results } = await env.DB.prepare(
-        `SELECT id, content, client_id, create_at FROM messages ORDER BY create_at DESC`
-      ).all();
 
-      return new Response(JSON.stringify(results), { headers });
-    } catch (err) {
-      console.error('查询失败:', err);
-      return new Response(
-        JSON.stringify({ error: '服务器内部错误' }),
-        { status: 500, headers }
-      );
+  try {
+
+
+    // 自动保证表存在
+    await ensureMessagesTable(env.DB);
+
+
+
+    const method = request.method.toUpperCase();
+
+
+
+    // =========================
+    // 获取留言
+    // =========================
+
+    if (method === 'GET') {
+
+
+      const {
+        results = []
+      } = await env.DB.prepare(`
+        SELECT
+          id,
+          content,
+          create_at
+        FROM messages
+        ORDER BY create_at DESC
+      `).all();
+
+
+
+      return json(results);
+
+
     }
-  }
 
-  // 2. POST请求：提交新留言
-  if (method === 'POST') {
-    try {
-      const body = await request.json().catch(() => null);
-      // 参数校验
-      if (!body || !body.content?.trim() || !body.client_id?.trim()) {
-        return new Response(
-          JSON.stringify({ error: '参数不完整' }),
-          { status: 400, headers }
+
+
+
+
+    // =========================
+    // 发布留言
+    // =========================
+
+    if (method === 'POST') {
+
+
+      const body =
+        await request.json()
+        .catch(() => null);
+
+
+
+      const content =
+        cleanText(body?.content);
+
+
+
+      if (!content) {
+
+        return json(
+          {
+            error: '留言内容不能为空'
+          },
+          400
         );
+
       }
 
-      const content = body.content.trim();
-      const clientId = body.client_id.trim();
 
-      // 写入数据库
-      const result = await env.DB.prepare(
-        `INSERT INTO messages (content, client_id) VALUES (?, ?)`
-      ).bind(content, clientId).run();
 
-      if (!result.success) throw new Error('写入失败');
+      const result =
+        await env.DB.prepare(`
+          INSERT INTO messages
+          (
+            content
+          )
+          VALUES (?)
+        `)
+        .bind(content)
+        .run();
 
-      return new Response(
-        JSON.stringify({ success: true, message: '发布成功' }),
-        { status: 200, headers }
-      );
 
-    } catch (err) {
-      console.error('提交失败:', err);
-      return new Response(
-        JSON.stringify({ error: '发布失败，请稍后重试' }),
-        { status: 500, headers }
-      );
-    }
-  }
 
-  // 3. DELETE请求：删除本人留言
-  if (method === 'DELETE') {
-    try {
-      const body = await request.json().catch(() => null);
-      if (!body || !body.id || !body.client_id) {
-        return new Response(
-          JSON.stringify({ error: '参数不完整' }),
-          { status: 400, headers }
+      if (!result.success) {
+
+        throw new Error(
+          '写入数据库失败'
         );
+
       }
 
-      // 校验：只能删除 client_id 匹配的留言
-      const result = await env.DB.prepare(
-        `DELETE FROM messages WHERE id = ? AND client_id = ?`
-      ).bind(body.id, body.client_id).run();
 
-      // 影响行数为0说明无权限或留言不存在
-      if (result.meta.changes === 0) {
-        return new Response(
-          JSON.stringify({ error: '删除失败，无权限或留言不存在' }),
-          { status: 403, headers }
-        );
-      }
 
-      return new Response(
-        JSON.stringify({ success: true, message: '删除成功' }),
-        { status: 200, headers }
+      return json(
+        {
+          success: true,
+          message: '发布成功'
+        }
       );
 
-    } catch (err) {
-      console.error('删除失败:', err);
-      return new Response(
-        JSON.stringify({ error: '删除失败，请稍后重试' }),
-        { status: 500, headers }
-      );
+
     }
+
+
+
+
+
+    // 其他请求
+
+    return json(
+      {
+        error: '不支持的请求方法'
+      },
+      405
+    );
+
+
+
+  } catch (err) {
+
+
+    console.error(
+      'messages API failed:',
+      err
+    );
+
+
+    return json(
+      {
+        error: '服务器内部错误'
+      },
+      500
+    );
+
+
   }
 
-  // 其他方法返回405
-  return new Response(
-    JSON.stringify({ error: '不支持的请求方法' }),
-    { status: 405, headers }
-  );
+
 }
