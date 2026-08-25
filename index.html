@@ -4551,29 +4551,16 @@ body.candlelight .future-star-note{
           <div class="ex ex-2"><img src="/assets/img/111.webp" alt="" draggable="false"></div>
           <div class="ex ex-1"><img src="/assets/img/111.webp" alt="" draggable="false"></div>
         </div>
-        <div class="emblem-front" id="emblemFrontFace">
+        <div class="emblem-front">
           <img class="emblem-photo" src="/assets/img/111.webp" alt="臻辉班班徽" width="300" height="300" decoding="async" draggable="false">
           <span class="emblem-coat emblem-env" id="emblemEnv"></span>
           <span class="emblem-coat emblem-spec" id="emblemSpec"></span>
           <span class="emblem-coat emblem-spec-b" id="emblemSpecB"></span>
           <span class="emblem-coat emblem-rim" id="emblemRim"></span>
         </div>
-        <div class="emblem-back" id="emblemBackFace" aria-hidden="true">
-          <div class="emblem-back-inner">
-            <div class="emblem-back-kicker">Z H · CLASS</div>
-            <div class="emblem-back-title">臻辉班</div>
-            <div class="emblem-back-meta">
-              <span>2026—2028</span>
-              <span>威远县凤翔学校</span>
-            </div>
-            <div class="emblem-back-divider"></div>
-            <div class="emblem-back-slogan">Together · Forever</div>
-            <div class="emblem-back-hint">轻触班徽，返回正面</div>
-          </div>
-        </div>
       </div>
     </div>
-    <div class="emblem-hint">拖动 · 松手回正 · 点击翻转</div>
+    <div class="emblem-hint">拖动 · 松手回正</div>
     <div class="emblem-seal-mark" id="emblemSealMark" aria-live="polite"></div>
   </section>
 
@@ -9031,12 +9018,8 @@ body::after{
   var specTy = REST_SPEC_Y;
   var dragging = false;
   var lastX = 0, lastY = 0, lastT = 0;
-  var movedSinceDown = false;
   var raf = 0;
   var inView = true;
-  var flipped = false;
-  var flipAngle = 0;
-  var flipTarget = 0;
   var specEl = document.getElementById('emblemSpec');
   var specBEl = document.getElementById('emblemSpecB');
   var envEl = document.getElementById('emblemEnv');
@@ -9100,8 +9083,7 @@ body::after{
   }
 
   function apply() {
-    space.style.transform =
-      'rotateX(' + rx.toFixed(3) + 'deg) rotateY(' + (ry + flipAngle).toFixed(3) + 'deg)';
+    space.style.transform = 'rotateX(' + rx.toFixed(3) + 'deg) rotateY(' + ry.toFixed(3) + 'deg)';
     var fres = Math.min(1, (Math.abs(rx) + Math.abs(ry)) / 52);
     stage.style.setProperty('--fresnel', fres.toFixed(3));
     stage.style.setProperty('--sh-x', (-ry * 0.42).toFixed(2) + 'px');
@@ -9111,8 +9093,7 @@ body::after{
 
   function energy() {
     return Math.abs(vx) + Math.abs(vy) + Math.abs(rx - REST_X) + Math.abs(ry - REST_Y)
-      + Math.abs(specX - specTx) + Math.abs(specY - specTy)
-      + Math.abs(flipTarget - flipAngle) * 0.22;
+      + Math.abs(specX - specTx) + Math.abs(specY - specTy);
   }
 
   function tick() {
@@ -9126,7 +9107,6 @@ body::after{
       ry += vy;
       specTx = REST_SPEC_X;
       specTy = REST_SPEC_Y;
-      flipAngle += (flipTarget - flipAngle) * 0.16;
       specX += (specTx - specX) * 0.12;
       specY += (specTy - specY) * 0.12;
       if (energy() < SETTLE) {
@@ -9158,7 +9138,6 @@ body::after{
   stage.addEventListener('pointerdown', function (e) {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     dragging = true;
-    movedSinceDown = false;
     vx = 0;
     vy = 0;
     lastX = e.clientX;
@@ -9182,7 +9161,6 @@ body::after{
     var now = performance.now();
     var dx = e.clientX - lastX;
     var dy = e.clientY - lastY;
-    if (Math.abs(e.clientX - lastX) + Math.abs(e.clientY - lastY) > 4) movedSinceDown = true;
     var dt = Math.max(8, now - lastT);
     var gain = dragGain();
     ry = clamp(ry + dx * DRAG * gain, -MAX_RY, MAX_RY);
@@ -9227,20 +9205,8 @@ body::after{
     showEmblemSeal();
     startLoop();
   }
-  stage.addEventListener('pointerup', function(e){
-    var wasMoved = movedSinceDown;
-    endDrag();
-    if (!wasMoved) {
-      flipped = !flipped;
-      flipTarget = flipped ? 180 : 0;
-      stage.classList.toggle('emblem-is-flipped', flipped);
-      stage.setAttribute('aria-label', flipped ? '班徽背面信息，轻触返回正面' : '可拖动旋转的立体班徽');
-      startLoop();
-    }
-  });
-  stage.addEventListener('pointercancel', function(){
-    endDrag();
-  });
+  stage.addEventListener('pointerup', endDrag);
+  stage.addEventListener('pointercancel', endDrag);
 
   if ('IntersectionObserver' in window) {
     var obs = new IntersectionObserver(function (entries) {
@@ -9597,20 +9563,7 @@ body::after{
 <script id="final-verified-js">
 (function(){
 
-/* 恢复班徽点击翻转，不影响拖动 */
-const stage=document.getElementById('emblemStage');
-
-if(stage){
-
-  stage.addEventListener('click',function(e){
-
-    if(e.target.closest('button,a,input')) return;
-
-    this.classList.toggle('emblem-is-flipped');
-
-  });
-
-}
+/* 班徽仅保留拖动旋转功能，删除点击翻转背面功能 */
 
 
 
@@ -9674,129 +9627,26 @@ if(viewer){
 </script>
 
 
-<style id="final-cleanup-v5">
 
-/* ===== 完全移除班徽翻转 ===== */
-.emblem-space,
-.emblem-stage,
-.emblem-container{
-    transform:none!important;
+
+
+
+
+
+<style id="emblem-drag-fix">
+.emblem-space{
+  transform-style:preserve-3d!important;
+  -webkit-transform-style:preserve-3d!important;
 }
-
-.emblem-front,
-.emblem-back{
-    transform:none!important;
-    backface-visibility:visible!important;
-    -webkit-backface-visibility:visible!important;
+.emblem-front,.emblem-back{
+  backface-visibility:hidden!important;
+  -webkit-backface-visibility:hidden!important;
 }
-
-.emblem-back{
-    display:none!important;
-}
-
-/* 恢复提示，但删除翻转提示 */
-.emblem-hint{
-    display:block!important;
-}
-
-.flip-hint,
-.emblem-flip-hint,
-.click-flip-tip{
-    display:none!important;
-}
-
-
-/* ===== 删除相册打开斜入/甩入 ===== */
-
-/* 禁止所有进入时位移动画 */
-.photo-stage,
-.photo-slide,
-.photo-slide img,
-.photo-viewer img{
-    animation:none!important;
-}
-
-
-/* 只保留透明缓入 */
-.photo-stage{
-    transform:none!important;
-}
-
-.photo-stage.photo-opening{
-    animation:softPhotoFade .28s ease-out!important;
-    transform:none!important;
-}
-
-
-@keyframes softPhotoFade{
-
-    from{
-        opacity:0;
-    }
-
-    to{
-        opacity:1;
-    }
-
-}
-
-
-/* 禁止旧 FLIP 位移动画 */
-.photo-viewer.is-open .photo-slide,
-.photo-viewer.is-open .photo-stage{
-    transform:none!important;
-}
-
-
 </style>
-
-
-<script id="final-cleanup-js">
-(function(){
-
-/* 禁止所有班徽点击翻转状态 */
-const emblem =
-document.querySelector('.emblem-stage,.emblem-container');
-
-if(emblem){
-
-    emblem.classList.remove('emblem-is-flipped');
-
-    const clone = emblem.cloneNode(true);
-
-    emblem.parentNode.replaceChild(clone, emblem);
-
-}
-
-
-/* 清除相册打开残留 transform 状态 */
-document.addEventListener('click',function(e){
-
-    const target=e.target.closest('.gallery-item');
-
-    if(target){
-
-        setTimeout(()=>{
-
-            document.querySelectorAll(
-              '.photo-stage,.photo-slide'
-            ).forEach(el=>{
-
-                el.style.transform='none';
-
-            });
-
-        },50);
-
-    }
-
-});
-
-
-})();
-</script>
-
 </body>
 </html>
+
+
+
 
 
