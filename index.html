@@ -5030,7 +5030,7 @@ body.candlelight .future-star-note{
     }
 
     function openGallery(item){
-      activeGallery = parseGalleryImages(item);
+      activeGallery = [...new Set(parseGalleryImages(item))];
       activeGalleryTitle = item.dataset.galleryTitle || item.querySelector('img')?.alt || '班级相册';
       activeIndex = 0;
       if (!activeGallery.length) activeGallery = [item.querySelector('img')?.getAttribute('src') || ''];
@@ -5190,13 +5190,8 @@ body.candlelight .future-star-note{
           img.classList.remove('is-broken');
           img.classList.add('is-loaded');
 
-          if (!img.dataset.revealed) {
-            img.dataset.revealed = '1';
-            img.classList.add('is-reveal');
-            const clearReveal = () => img.classList.remove('is-reveal');
-            img.addEventListener('animationend', clearReveal, { once: true });
-            setTimeout(clearReveal, 900);
-          }
+          // 相册打开不再添加任何入场动画标记，避免旧/新图片叠层造成双图甩入。
+          img.classList.remove('is-reveal');
 
           const slide = img.closest('.photo-slide');
           if (slide && window.__fitPhotoFrame) window.__fitPhotoFrame(slide, img);
@@ -9778,9 +9773,29 @@ if(viewer){
 }
 </style>
 
+
+<style id="photo-double-render-final-fix">
+/* 最终修复：禁止相册首次打开出现两层同图动画叠加 */
+.photo-track-viewport{
+  overflow:hidden!important;
+}
+.photo-slide img,
+.photo-slide img.is-loaded,
+.photo-slide.is-current img,
+.photo-slide img.is-loaded.is-reveal{
+  animation:none!important;
+}
+.photo-slide img.is-loaded{
+  opacity:1!important;
+  transform:translate3d(0,0,0) scale(1)!important;
+  filter:none!important;
+}
+/* 非当前页面只允许作为滑动备用，不参与首次显示 */
+.photo-slide:not(.is-current) img{
+  animation:none!important;
+}
+</style>
 </body>
 </html>
-
-
 
 
