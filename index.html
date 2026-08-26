@@ -5273,6 +5273,120 @@ body.candlelight .future-star-note{
  to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
 }
 </style>
+<style>
+/* ===== 夜读模式：图片回忆页完整适配（补充） =====
+body.candlelight .photo-memory-card{
+  background:
+    radial-gradient(100% 80% at 12% 0%, rgba(255,220,150,.18), transparent 48%),
+    linear-gradient(145deg,#211b15 0%,#18130f 55%,#120f0c 100%) !important;
+  color:#ead8aa !important;
+  border-color:rgba(212,181,106,.32) !important;
+  box-shadow:
+    0 34px 100px rgba(0,0,0,.65),
+    inset 0 1px 0 rgba(255,230,160,.18) !important;
+}
+
+body.candlelight .photo-memory-kicker{
+  color:#d4b56a !important;
+}
+
+body.candlelight .photo-memory-title{
+  color:#f1dfb2 !important;
+}
+
+body.candlelight .photo-memory-rule{
+  background:linear-gradient(90deg,transparent,#d4b56a,transparent) !important;
+}
+
+body.candlelight .photo-comment-item{
+  background:linear-gradient(135deg,rgba(255,220,150,.14),rgba(255,255,255,.06)) !important;
+  border-color:rgba(212,181,106,.28) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,230,160,.16),
+    0 10px 30px rgba(0,0,0,.28) !important;
+}
+
+body.candlelight .photo-comment-text{
+  color:#f0dfb7 !important;
+}
+
+body.candlelight .photo-comment-time,
+body.candlelight .photo-memory-back-hint,
+body.candlelight .photo-comment-empty{
+  color:#bda879 !important;
+}
+
+body.candlelight .photo-comment-editor textarea{
+  background:rgba(255,255,255,.10) !important;
+  border-color:rgba(212,181,106,.35) !important;
+  color:#f4e5be !important;
+}
+
+body.candlelight .photo-comment-editor textarea::placeholder{
+  color:rgba(240,220,170,.55) !important;
+}
+
+body.candlelight .photo-comment-send{
+  background:linear-gradient(145deg,rgba(212,181,106,.35),rgba(120,82,25,.55)) !important;
+  color:#f5dfaa !important;
+  border-color:rgba(212,181,106,.45) !important;
+}
+
+body.candlelight .photo-comment-btn{
+  color:#f0dca6 !important;
+  border-color:rgba(212,181,106,.38) !important;
+  background:rgba(40,28,15,.38) !important;
+}
+
+body.candlelight .photo-comment-count{
+  color:#f5dfaa !important;
+  background:rgba(212,181,106,.18) !important;
+}
+
+body.candlelight .photo-comment-delete{
+  color:#d4b56a !important;
+}
+
+body.candlelight .photo-comment-delete:hover{
+  color:#e8d5a3 !important;
+}
+</style>
+
+<style id="smooth-modal-close-fix">
+/* 弹窗关闭流畅优化：避免 opacity/blur 瞬间切断 */
+.my-msg-modal{
+  transition:
+    opacity .32s cubic-bezier(.22,1,.36,1),
+    visibility .32s ease,
+    background .32s ease;
+}
+.my-msg-modal.is-closing{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  background:rgba(0,0,0,0);
+}
+.my-msg-modal.is-closing .my-msg-modal-box{
+  transform:translateY(18px) scale(.96);
+  opacity:.15;
+}
+
+/* 未来留言关闭优化 */
+#futureMessagePanel.is-closing{
+  pointer-events:none;
+}
+#futureMessagePanel.is-closing .future-message-box{
+  will-change:transform,opacity;
+}
+
+/* 避免关闭瞬间触发大面积重绘 */
+.future-message-box,
+.my-msg-modal-box{
+  backface-visibility:hidden;
+  transform-origin:center center;
+  contain:paint;
+}
+</style>
 </head>
 <body>
   <!-- ====================== 开册启封 ====================== -->
@@ -6931,8 +7045,13 @@ body.candlelight .future-star-note{
      * 关闭我的留言弹窗
      */
     function closeMyMsgModal(){
-      myMsgModal.classList.remove('active');
-      document.body.style.overflow = '';
+      if(!myMsgModal.classList.contains('active')) return;
+      // 保留退出动画，不直接移除 active，避免玻璃层瞬间消失造成卡顿
+      myMsgModal.classList.add('is-closing');
+      setTimeout(()=>{
+        myMsgModal.classList.remove('active','is-closing');
+        document.body.style.overflow = '';
+      },320);
     }
     // 绑定弹窗打开按钮
     openMyMsgModalBtn.addEventListener('click', openMyMsgModal);
@@ -12083,85 +12202,8 @@ if(track){
   }
 })();
 
-</script>
-
-
-/* ===== 夜读模式：图片回忆页完整适配（补充） =====
-body.candlelight .photo-memory-card{
-  background:
-    radial-gradient(100% 80% at 12% 0%, rgba(255,220,150,.18), transparent 48%),
-    linear-gradient(145deg,#211b15 0%,#18130f 55%,#120f0c 100%) !important;
-  color:#ead8aa !important;
-  border-color:rgba(212,181,106,.32) !important;
-  box-shadow:
-    0 34px 100px rgba(0,0,0,.65),
-    inset 0 1px 0 rgba(255,230,160,.18) !important;
-}
-
-body.candlelight .photo-memory-kicker{
-  color:#d4b56a !important;
-}
-
-body.candlelight .photo-memory-title{
-  color:#f1dfb2 !important;
-}
-
-body.candlelight .photo-memory-rule{
-  background:linear-gradient(90deg,transparent,#d4b56a,transparent) !important;
-}
-
-body.candlelight .photo-comment-item{
-  background:linear-gradient(135deg,rgba(255,220,150,.14),rgba(255,255,255,.06)) !important;
-  border-color:rgba(212,181,106,.28) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,230,160,.16),
-    0 10px 30px rgba(0,0,0,.28) !important;
-}
-
-body.candlelight .photo-comment-text{
-  color:#f0dfb7 !important;
-}
-
-body.candlelight .photo-comment-time,
-body.candlelight .photo-memory-back-hint,
-body.candlelight .photo-comment-empty{
-  color:#bda879 !important;
-}
-
-body.candlelight .photo-comment-editor textarea{
-  background:rgba(255,255,255,.10) !important;
-  border-color:rgba(212,181,106,.35) !important;
-  color:#f4e5be !important;
-}
-
-body.candlelight .photo-comment-editor textarea::placeholder{
-  color:rgba(240,220,170,.55) !important;
-}
-
-body.candlelight .photo-comment-send{
-  background:linear-gradient(145deg,rgba(212,181,106,.35),rgba(120,82,25,.55)) !important;
-  color:#f5dfaa !important;
-  border-color:rgba(212,181,106,.45) !important;
-}
-
-body.candlelight .photo-comment-btn{
-  color:#f0dca6 !important;
-  border-color:rgba(212,181,106,.38) !important;
-  background:rgba(40,28,15,.38) !important;
-}
-
-body.candlelight .photo-comment-count{
-  color:#f5dfaa !important;
-  background:rgba(212,181,106,.18) !important;
-}
-
-body.candlelight .photo-comment-delete{
-  color:#d4b56a !important;
-}
-
-body.candlelight .photo-comment-delete:hover{
-  color:#e8d5a3 !important;
-}
-
-</body>
+</script></body>
 </html>
+
+
+
