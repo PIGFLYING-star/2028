@@ -2098,6 +2098,292 @@ body:before{
  rgba(255,255,255,.38)!important;
 }
 
+
+/* ===== v5 photo comment real override =====
+   The previous override only changed the child appearance.
+   This version targets the dynamically generated .photo-comment-item
+   and forces glass rendering above the old white-card rules.
+*/
+.photo-memory-comments .photo-comment-item{
+  isolation:isolate;
+  position:relative;
+  overflow:hidden;
+
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:22px !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.78),
+      rgba(255,255,255,.30)
+    ) !important;
+
+  border:1px solid rgba(255,255,255,.72) !important;
+
+  -webkit-backdrop-filter:blur(24px) saturate(180%) !important;
+  backdrop-filter:blur(24px) saturate(180%) !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.95),
+    inset 0 -1px 0 rgba(255,255,255,.18),
+    0 18px 45px rgba(50,40,20,.12) !important;
+
+  opacity:0;
+  transform:translateY(16px) scale(.96);
+  animation:photoCommentRealIn .5s cubic-bezier(.22,1,.36,1) forwards;
+}
+
+.photo-memory-comments .photo-comment-item::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  background:
+    radial-gradient(
+      120% 80% at 0% 0%,
+      rgba(255,255,255,.8),
+      transparent 55%
+    );
+  pointer-events:none;
+}
+
+.photo-memory-comments .photo-comment-item .photo-comment-text{
+  position:relative;
+}
+
+@keyframes photoCommentRealIn{
+  0%{
+    opacity:0;
+    transform:translateY(20px) scale(.94);
+    filter:blur(8px);
+  }
+  60%{
+    opacity:1;
+    transform:translateY(-2px) scale(1.01);
+    filter:blur(0);
+  }
+  100%{
+    opacity:1;
+    transform:translateY(0) scale(1);
+  }
+}
+
+.photo-memory-comments .photo-comment-item.comment-leave{
+  animation:photoCommentRealOut .3s cubic-bezier(.4,0,1,1) forwards;
+}
+
+@keyframes photoCommentRealOut{
+  from{
+    opacity:1;
+    transform:translateY(0) scale(1);
+    filter:blur(0);
+  }
+  to{
+    opacity:0;
+    transform:translateY(-12px) scale(.96);
+    filter:blur(8px);
+  }
+}
+
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
+}
+
+/* ===== photo memory comment panel material fix ===== */
+/* 只处理照片查看器评论区域，不改图片浏览逻辑 */
+.photo-memory-comments{
+  position:relative;
+  min-height:150px;
+  padding:18px;
+  border-radius:28px;
+
+  background:
+    linear-gradient(135deg,
+      rgba(255,255,255,.42),
+      rgba(255,255,255,.16));
+
+  border:1px solid rgba(255,255,255,.58);
+
+  backdrop-filter:blur(26px) saturate(150%);
+  -webkit-backdrop-filter:blur(26px) saturate(150%);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.75),
+    0 20px 55px rgba(0,0,0,.12);
+
+  animation:memoryCommentPanelIn .5s cubic-bezier(.22,1,.36,1);
+}
+
+.photo-comment-empty{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:110px;
+
+  color:rgba(85,75,60,.72);
+  letter-spacing:.08em;
+
+  background:rgba(255,255,255,.18);
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.35);
+
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+}
+
+.photo-comment-editor{
+  background:
+    linear-gradient(135deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.22));
+
+  border-radius:26px;
+  padding:8px;
+
+  border:1px solid rgba(255,255,255,.65);
+
+  backdrop-filter:blur(24px) saturate(160%);
+  -webkit-backdrop-filter:blur(24px) saturate(160%);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.85),
+    0 12px 35px rgba(0,0,0,.08);
+}
+
+#photoCommentInput{
+  background:rgba(255,255,255,.25)!important;
+  border-color:rgba(255,255,255,.45)!important;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+
+.photo-comment-send{
+  transition:
+    transform .35s cubic-bezier(.22,1,.36,1),
+    box-shadow .35s ease,
+    filter .35s ease;
+}
+
+.photo-comment-send:active{
+  transform:scale(.94);
+}
+
+@keyframes memoryCommentPanelIn{
+  from{
+    opacity:0;
+    transform:translateY(18px) scale(.98);
+    filter:blur(8px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0) scale(1);
+    filter:blur(0);
+  }
+}
+
+
+/* ===== photo comment panel use existing my-message glass material ===== */
+.photo-memory-comments,
+.photo-comment-item,
+.photo-comment-empty,
+.photo-comment-editor,
+.photo-comment-send,
+#photoCommentInput{
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.42),
+      rgba(255,255,255,.12)
+    ) !important;
+
+  border-color:rgba(255,255,255,.55) !important;
+
+  backdrop-filter:
+    blur(28px)
+    saturate(180%) !important;
+
+  -webkit-backdrop-filter:
+    blur(28px)
+    saturate(180%) !important;
+
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.12),
+    inset 0 1px 1px rgba(255,255,255,.85),
+    inset 0 -10px 30px rgba(255,255,255,.08) !important;
+}
+
+.photo-comment-item,
+.photo-comment-empty,
+.photo-comment-editor{
+  position:relative;
+  overflow:hidden;
+}
+
+.photo-comment-item::before,
+.photo-comment-empty::before,
+.photo-comment-editor::before{
+  content:"";
+  position:absolute;
+  inset:1px;
+  pointer-events:none;
+  background:
+    radial-gradient(
+      circle at 30% 10%,
+      rgba(255,255,255,.75),
+      transparent 38%
+    );
+  opacity:.65;
+}
+
+.photo-comment-item > *,
+.photo-comment-empty > *,
+.photo-comment-editor > *,
+#photoCommentInput{
+  position:relative;
+  z-index:1;
+}
+
 </style>
 
 
@@ -2316,6 +2602,48 @@ body:before{
 }
 @media(prefers-reduced-motion:reduce){
   .photo-viewer,.photo-viewer::before,.photo-viewer-topbar,.photo-stage,.photo-track,.photo-slide img,.photo-nav,.photo-viewer-close{transition:none!important;animation:none!important;}
+}
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
 }
 </style>
   <!--
@@ -2541,6 +2869,48 @@ body:before{
     @media (prefers-reduced-motion: reduce) {
       .emblem-space { transition: none !important; }
     }
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
+}
 </style>
 
 
@@ -3225,6 +3595,48 @@ body:before{
   .future-star,
   .future-star-wrap{animation:none!important;transition:none!important}
 }
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
+}
 </style>
 
 <style id="book-open-and-seal">
@@ -3521,6 +3933,48 @@ body.book-open-lock {
     transition: opacity 0.2s ease;
     transform: none;
   }
+}
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
 }
 </style>
 
@@ -4125,6 +4579,48 @@ body.candlelight .future-star-note{
   color:rgba(255,248,230,.74);
 }
 
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
+}
 </style>
 
 <style id="zhenhui-shared-element-patch">
@@ -4141,6 +4637,48 @@ body.candlelight .future-star-note{
 @media(max-width:768px){
   .photo-shared-clone{box-shadow:0 14px 36px rgba(0,0,0,.20)!important}
 }
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
+}
 </style>
 
 
@@ -4152,6 +4690,48 @@ body.candlelight .future-star-note{
   letter-spacing:.10em;
   color:var(--text-sub);
   opacity:.86;
+}
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
 }
 </style>
 
@@ -4219,6 +4799,48 @@ body.candlelight .future-star-note{
     -webkit-user-select:none!important;
   }
 }
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
+}
 </style>
 
 <style id="final-cleanup-fixes">
@@ -4256,6 +4878,48 @@ body.candlelight .future-star-note{
  font-size:12px;
  cursor:pointer;
 }
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
+}
 </style>
 
 <style id="bugfix-v2">
@@ -4274,12 +4938,54 @@ body.candlelight .future-star-note{
 
 /* 样式微调：拉大两个留言按钮之间距离 */
 .open-my-msg-btn-wrap{
-  margin-bottom:42px;
+  margin-bottom:102px;
 }
 
 /* 相册：仅移除缩略图进入时动画，保留其它悬浮/点击/图片动画 */
 .gallery-item.visible{
   animation:none !important;
+}
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
 }
 </style>
 
@@ -4296,6 +5002,48 @@ body.candlelight .future-star-note{
   opacity:0 !important;
   visibility:hidden !important;
   pointer-events:none !important;
+}
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
 }
 </style>
 
@@ -4319,6 +5067,48 @@ body.candlelight .future-star-note{
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
+}
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
 }
 </style>
 <script id="final-focus-fix">
@@ -4348,6 +5138,48 @@ body.candlelight .future-star-note{
 .photo-shared-clone{display:none!important;}
 .photo-slide img.is-reveal{animation:none!important;}
 .photo-slide img{animation:none!important;}
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
+}
 </style>
 <style>
 /* v13 iOS26 photo paging refinement: only affects between-photo switching */
@@ -4376,6 +5208,48 @@ body.candlelight .future-star-note{
 }
 .photo-slide.is-current img{
   transform:scale(1);
+}
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
 }
 </style>
 </head>
@@ -5758,18 +6632,47 @@ body.candlelight .future-star-note{
     // 未来星星只存在当前页面内存：不写 Cookie / localStorage / sessionStorage / D1 / API。
     const futureLocalNotes = [];
 
+    let futureCloseTimer = null;
+
     function openFutureMessagePanel(){
-      futureMessagePanel.classList.add('is-open');
-      futureMessagePanel.setAttribute('aria-hidden','false');
+      if (futureCloseTimer) {
+        clearTimeout(futureCloseTimer);
+        futureCloseTimer = null;
+      }
+
+      /* 清掉上一次状态，确保每次打开都重新触发弹簧动画 */
+      futureMessagePanel.classList.remove('is-closing');
+      futureMessagePanel.classList.remove('is-open');
+
+      /* 双 requestAnimationFrame：让浏览器先提交隐藏状态，再播放新一轮动画 */
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          futureMessagePanel.classList.add('is-open');
+          futureMessagePanel.setAttribute('aria-hidden','false');
+        });
+      });
+
       setTimeout(() => futureMessageInput && futureMessageInput.focus({preventScroll:true}), 180);
       document.body.style.overflow = 'hidden';
     }
+
     function closeFutureMessagePanel(){
-      futureMessagePanel.classList.remove('is-open');
+      if (!futureMessagePanel.classList.contains('is-open')) return;
+
+      if (futureCloseTimer) clearTimeout(futureCloseTimer);
+
+      /* 不立即 remove is-open，先让退出弹簧完整播放 */
+      futureMessagePanel.classList.add('is-closing');
       futureMessagePanel.setAttribute('aria-hidden','true');
-      if (!photoViewer.classList.contains('is-open') && !document.getElementById('myMsgModal')?.classList.contains('active')) {
-        document.body.style.overflow = '';
-      }
+
+      futureCloseTimer = setTimeout(() => {
+        futureMessagePanel.classList.remove('is-open','is-closing');
+        futureCloseTimer = null;
+
+        if (!photoViewer.classList.contains('is-open') && !document.getElementById('myMsgModal')?.classList.contains('active')) {
+          document.body.style.overflow = '';
+        }
+      }, 430);
     }
 
     function spawnFutureStar(message){
@@ -6572,6 +7475,48 @@ body::after{
   display:none;
  }
 }
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
+}
 </style>
 
 <style>
@@ -6948,6 +7893,48 @@ body::after{
   .photo-frame::before{
     transition:none !important;
   }
+}
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
 }
 </style>
 
@@ -7795,6 +8782,48 @@ body::after{
       animation-iteration-count: 1 !important;
     }
   }
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
+}
 </style>
 
 
@@ -7833,6 +8862,48 @@ body::after{
   .music-cover {
     animation: none !important;
   }
+}
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
 }
 </style>
 
@@ -9148,6 +10219,48 @@ body::after{
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
+}
 </style>
 
 
@@ -9717,6 +10830,48 @@ body::after{
 }
 
 
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
+}
 </style>
 
 
@@ -9802,6 +10957,48 @@ if(viewer){
   backface-visibility:hidden!important;
   -webkit-backface-visibility:hidden!important;
 }
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
+}
 </style>
 
 <style id="bugfix-five">
@@ -9822,7 +11019,7 @@ if(viewer){
 
 /* BUG4: 两个留言按钮增加间距，仅调整间隔 */
 .open-my-msg-btn-wrap{
-  margin-bottom:18px;
+  margin-bottom:102px;
 }
 .future-message-wrap{
   margin-top:18px!important;
@@ -9855,6 +11052,48 @@ if(viewer){
     transform .72s cubic-bezier(.22,1,.36,1),
     filter .45s ease;
 }
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
+}
 </style>
 
 
@@ -9881,6 +11120,48 @@ if(viewer){
 .photo-track {
   will-change: transform;
 }
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
+}
 </style>
 
 
@@ -9904,6 +11185,48 @@ if(viewer){
 .photo-slide:not(.is-current) img{
   animation:none!important;
 }
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
+}
 </style>
 
 <style id="photo-root-cause-final-fix">
@@ -9925,6 +11248,48 @@ if(viewer){
 .photo-viewer.is-open .photo-stage {
   transform:none!important;
   filter:none!important;
+}
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
 }
 </style>
 
@@ -9954,6 +11319,590 @@ if(viewer){
   transform:scale(.75)!important;
   pointer-events:none!important;
 }
+
+/* ===== Photo comment glass material override v4 =====
+   Only affects photo comment cards.
+   Reuses project glass language: blur + saturation + highlight + soft shadow.
+*/
+.photo-comment-item{
+  position:relative;
+  overflow:hidden;
+  padding:14px 15px;
+  margin-bottom:10px;
+  border-radius:22px;
+
+  background:
+    radial-gradient(120% 120% at 0% 0%,
+      rgba(255,255,255,.82),
+      rgba(255,255,255,.38) 45%,
+      rgba(255,255,255,.18) 100%),
+    rgba(255,255,255,.26);
+
+  border:1px solid rgba(255,255,255,.72);
+
+  -webkit-backdrop-filter:blur(22px) saturate(170%);
+  backdrop-filter:blur(22px) saturate(170%);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.95),
+    inset 0 -1px 0 rgba(255,255,255,.22),
+    0 12px 34px rgba(60,48,28,.10);
+
+  transform:translateY(8px);
+  opacity:0;
+  animation:photoCommentGlassIn .45s cubic-bezier(.22,1,.36,1) forwards;
+}
+
+.photo-comment-item::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.42),
+      transparent 42%
+    );
+}
+
+.photo-comment-item > *{
+  position:relative;
+  z-index:1;
+}
+
+.photo-comment-item.is-removing{
+  animation:photoCommentGlassOut .28s cubic-bezier(.4,0,1,1) forwards;
+}
+
+@keyframes photoCommentGlassIn{
+  from{
+    opacity:0;
+    transform:translateY(14px) scale(.97);
+    filter:blur(6px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0) scale(1);
+    filter:blur(0);
+  }
+}
+
+@keyframes photoCommentGlassOut{
+  from{
+    opacity:1;
+    transform:translateY(0) scale(1);
+    filter:blur(0);
+  }
+  to{
+    opacity:0;
+    transform:translateY(-8px) scale(.97);
+    filter:blur(5px);
+  }
+}
+
+
+/* ===== FINAL photo comment override v6 (must be last) ===== */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:14px 16px !important;
+  margin-bottom:12px !important;
+  border-radius:24px !important;
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.18)
+    ) !important;
+  border:1px solid rgba(255,255,255,.65) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter:blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(180%) !important;
+  opacity:1 !important;
+  transform:none !important;
+  animation:commentGlassShow .45s cubic-bezier(.2,.9,.2,1) both !important;
+}
+.photo-memory-comments .photo-comment-item:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 45%);
+}
+.photo-memory-comments .photo-comment-item.comment-leave{
+ animation:commentGlassHide .28s ease forwards !important;
+}
+@keyframes commentGlassShow{
+ from{opacity:0;transform:translateY(18px) scale(.96);filter:blur(8px)}
+ to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes commentGlassHide{
+ from{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+ to{opacity:0;transform:translateY(-10px) scale(.96);filter:blur(8px)}
+}
+
+/* ===== Photo memory main panel glass material match =====
+   Only replaces the large white background panel material.
+   Layout, size, spacing and interaction are untouched.
+*/
+.photo-memory-modal,
+.photo-memory-card,
+.photo-viewer-card,
+.photo-memory-container{
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.48),
+      rgba(255,255,255,.18)
+    ),
+    rgba(255,255,255,.22) !important;
+
+  -webkit-backdrop-filter:blur(28px) saturate(180%) !important;
+  backdrop-filter:blur(28px) saturate(180%) !important;
+
+  border:1px solid rgba(255,255,255,.65) !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    inset 0 -1px 0 rgba(255,255,255,.18),
+    0 30px 80px rgba(0,0,0,.16) !important;
+}
+
+/* main glass highlight */
+.photo-memory-modal::before,
+.photo-memory-card::before,
+.photo-viewer-card::before,
+.photo-memory-container::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  border-radius:inherit;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.35),
+      transparent 38%
+    );
+}
+
+
+/* ===== iOS26 Liquid Glass style refinement =====
+   Only refines the main photo memory glass material.
+   Keeps existing geometry and interaction.
+*/
+.photo-memory-modal,
+.photo-memory-card,
+.photo-viewer-card,
+.photo-memory-container{
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.34),
+      rgba(255,255,255,.12) 42%,
+      rgba(255,255,255,.20)
+    ),
+    rgba(255,255,255,.14) !important;
+
+  -webkit-backdrop-filter:
+    blur(42px)
+    saturate(190%)
+    brightness(108%) !important;
+
+  backdrop-filter:
+    blur(42px)
+    saturate(190%)
+    brightness(108%) !important;
+
+  border:1px solid rgba(255,255,255,.48) !important;
+
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,.85),
+    inset 0 -1px 12px rgba(255,255,255,.12),
+    0 25px 70px rgba(0,0,0,.18),
+    0 0 80px rgba(255,255,255,.12) !important;
+
+  isolation:isolate;
+}
+
+.photo-memory-modal::before,
+.photo-memory-card::before,
+.photo-viewer-card::before,
+.photo-memory-container::before{
+  background:
+    linear-gradient(
+      120deg,
+      rgba(255,255,255,.48),
+      rgba(255,255,255,0) 35%
+    ) !important;
+  opacity:.7;
+}
+
+.photo-memory-modal::after,
+.photo-memory-card::after,
+.photo-viewer-card::after,
+.photo-memory-container::after{
+  content:"";
+  position:absolute;
+  inset:1px;
+  border-radius:inherit;
+  pointer-events:none;
+  background:
+    radial-gradient(
+      80% 60% at 50% 0%,
+      rgba(255,255,255,.25),
+      transparent 70%
+    );
+  mix-blend-mode:screen;
+  opacity:.45;
+}
+
+
+/* ===== Animation refinement: iOS Photos + smooth comment panel ===== */
+
+/* 评论区域进入/退出：不改变材质，只调整运动 */
+.photo-memory-comments{
+  will-change:transform,opacity,filter;
+  transform:translateY(18px) scale(.985);
+  opacity:0;
+  filter:blur(8px);
+  transition:
+    transform .48s cubic-bezier(.22,1,.36,1),
+    opacity .38s ease,
+    filter .42s ease;
+}
+
+.photo-memory-comments.is-visible,
+.photo-memory-comments.show,
+.photo-memory-comments.active{
+  transform:translateY(0) scale(1);
+  opacity:1;
+  filter:blur(0);
+}
+
+.photo-memory-comments.is-closing,
+.photo-memory-comments.hide{
+  transform:translateY(12px) scale(.985);
+  opacity:0;
+  filter:blur(6px);
+}
+
+/* 动态评论条：更柔和的出现 */
+.photo-memory-comments .photo-comment-item{
+  animation:
+    photoCommentSpringIn .55s cubic-bezier(.22,1,.36,1) both;
+  will-change:transform,opacity,filter;
+}
+
+@keyframes photoCommentSpringIn{
+  0%{
+    opacity:0;
+    transform:translateY(20px) scale(.96);
+    filter:blur(8px);
+  }
+  65%{
+    opacity:1;
+    transform:translateY(-2px) scale(1.01);
+    filter:blur(0);
+  }
+  100%{
+    opacity:1;
+    transform:translateY(0) scale(1);
+  }
+}
+
+.photo-comment-leaving{
+  animation:photoCommentSmoothOut .34s cubic-bezier(.4,0,1,1) forwards!important;
+}
+
+@keyframes photoCommentSmoothOut{
+  from{
+    opacity:1;
+    transform:translateY(0) scale(1);
+    filter:blur(0);
+  }
+  to{
+    opacity:0;
+    transform:translateY(-10px) scale(.97);
+    filter:blur(6px);
+  }
+}
+
+
+/* ===== iOS Photos style swipe transition ===== */
+
+/* 覆盖原滑轨切换，不改变布局 */
+.photo-track{
+  transition:
+    transform .58s cubic-bezier(.25,1,.5,1)!important;
+  will-change:transform;
+}
+
+/* 当前照片轻微稳定感 */
+.photo-slide{
+  will-change:transform,opacity;
+  transition:
+    transform .58s cubic-bezier(.25,1,.5,1),
+    opacity .42s ease!important;
+}
+
+/* 非当前页轻微缩放，接近 iOS Photos 空间感 */
+.photo-slide:not(.active){
+  transform:scale(.965);
+  opacity:.72;
+}
+
+.photo-slide.active{
+  transform:scale(1);
+  opacity:1;
+}
+
+/* 拖动过程中关闭额外动画，避免粘滞 */
+.photo-track.is-dragging,
+.photo-track.dragging{
+  transition:none!important;
+}
+
+
+/* ===== Future message modal viewport positioning fix =====
+   Force true viewport centering. Do not use trigger button position.
+*/
+#futureMessagePanel.future-message-panel{
+  position:fixed !important;
+  inset:0 !important;
+  width:100% !important;
+  height:100dvh !important;
+  min-height:0 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  padding:
+    max(16px, env(safe-area-inset-top))
+    max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left)) !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+}
+
+#futureMessagePanel .future-message-box{
+  position:relative !important;
+  top:auto !important;
+  left:auto !important;
+  right:auto !important;
+  bottom:auto !important;
+  margin:auto !important;
+  transform:translate3d(0,24px,0) scale(.97) !important;
+  max-height:calc(100dvh - 32px) !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain;
+}
+
+#futureMessagePanel.is-open .future-message-box{
+  transform:translate3d(0,0,0) scale(1);
+}
+
+@supports not (height:100dvh){
+  #futureMessagePanel.future-message-panel{
+    height:100vh !important;
+  }
+}
+
+
+/* ===== Future message modal final viewport lock ===== */
+#futureMessagePanel.future-message-panel{
+  position:fixed !important;
+  left:0 !important;
+  top:0 !important;
+  right:0 !important;
+  bottom:0 !important;
+  width:100vw !important;
+  height:100vh !important;
+  height:100dvh !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  padding:0 !important;
+  margin:0 !important;
+  transform:none !important;
+}
+
+#futureMessagePanel .future-message-box{
+  position:relative !important;
+  inset:auto !important;
+  margin:0 auto !important;
+  top:auto !important;
+  left:auto !important;
+  right:auto !important;
+  bottom:auto !important;
+
+  max-width:calc(100vw - 32px) !important;
+  max-height:calc(100dvh - 32px) !important;
+  overflow-y:auto !important;
+
+  /* transform 不加 !important，避免压住关键帧 */
+  transform:translate3d(0,20px,0) scale(.97);
+}
+
+#futureMessagePanel.is-open .future-message-box{
+  transform:translate3d(0,0,0) scale(1);
+}
+
+
+/* ===== Future message convert to independent viewport modal =====
+   Remove any relation with trigger button position.
+*/
+#futureMessagePanel{
+  position:fixed !important;
+  inset:0 !important;
+  z-index:99999 !important;
+  display:grid !important;
+  place-items:center !important;
+  width:100vw !important;
+  height:100vh !important;
+  height:100dvh !important;
+  overflow:hidden !important;
+  transform:none !important;
+}
+
+#futureMessagePanel > *,
+#futureMessagePanel .future-message-box{
+  position:relative !important;
+  inset:auto !important;
+  top:auto !important;
+  left:auto !important;
+  right:auto !important;
+  bottom:auto !important;
+  margin:0 !important;
+  /* 不锁定 transform；由弹窗状态动画接管 */
+}
+
+#futureMessagePanel .future-message-box{
+  width:min(90vw,720px) !important;
+  max-height:calc(100dvh - 40px) !important;
+  overflow:auto !important;
+  animation:futureModalIn .42s cubic-bezier(.22,1,.36,1) both;
+}
+
+@keyframes futureModalIn{
+  from{
+    opacity:0;
+    transform:translateY(18px) scale(.96);
+    filter:blur(8px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0) scale(1);
+    filter:blur(0);
+  }
+}
+
+@media(max-width:600px){
+  #futureMessagePanel .future-message-box{
+    width:calc(100vw - 32px) !important;
+    max-height:calc(100dvh - 32px) !important;
+  }
+}
+
+
+/* ===== Future message modal spring animation refinement =====
+   修复：
+   1. 原来的 transform: !important 会压掉弹簧关键帧；
+   2. backdrop 动画只在页面加载时播放，打开弹窗时不会再次播放；
+   3. 关闭时没有真正等待退出动画完成。
+*/
+#futureMessagePanel .future-message-box{
+  transform-origin:center center;
+  will-change:transform,opacity,filter;
+  animation:none !important;
+}
+
+#futureMessagePanel.is-open .future-message-box{
+  animation:futureModalSpringIn .88s cubic-bezier(.16,1.25,.32,1) both !important;
+}
+
+#futureMessagePanel.is-closing .future-message-box{
+  animation:futureModalSpringOut .46s cubic-bezier(.4,0,.2,1) forwards !important;
+}
+
+/* Q弹增强：更明显的压缩 → 上弹 → 回落 → 轻微二次回弹，保持 iOS 弹性但不夸张 */
+/* Q弹 + 轻微缩放：保留原有位移回弹，仅加入细微的缩放呼吸感 */
+@keyframes futureModalSpringIn{
+  0%{
+    opacity:0;
+    transform:translateY(44px) scale(.96);
+    filter:blur(14px);
+  }
+  28%{
+    opacity:1;
+    transform:translateY(-13px) scale(1.018);
+    filter:blur(3px);
+  }
+  46%{
+    transform:translateY(6px) scale(.993);
+    filter:blur(1px);
+  }
+  61%{
+    transform:translateY(-5px) scale(1.008);
+  }
+  74%{
+    transform:translateY(2px) scale(.997);
+  }
+  86%{
+    transform:translateY(-1px) scale(1.003);
+  }
+  100%{
+    opacity:1;
+    transform:translateY(0) scale(1);
+    filter:blur(0);
+  }
+}
+
+@keyframes futureModalSpringOut{
+  0%{
+    opacity:1;
+    transform:translateY(0) scale(1);
+    filter:blur(0);
+  }
+  18%{
+    transform:translateY(-5px) scale(1.006);
+  }
+  42%{
+    transform:translateY(2px) scale(.997);
+  }
+  100%{
+    opacity:0;
+    transform:translateY(30px) scale(.96);
+    filter:blur(10px);
+  }
+}
+
+/* backdrop：每次打开/关闭都播放 */
+#futureMessagePanel{
+  animation:none !important;
+}
+
+#futureMessagePanel.is-open{
+  animation:futureBackdropIn .38s ease both !important;
+}
+
+#futureMessagePanel.is-closing{
+  animation:futureBackdropOut .42s ease both !important;
+}
+
+@keyframes futureBackdropIn{
+  from{opacity:0}
+  to{opacity:1}
+}
+
+@keyframes futureBackdropOut{
+  from{opacity:1}
+  to{opacity:0}
+}
+
 </style>
 <script id="final-v12-js">
 (function(){
@@ -9986,134 +11935,124 @@ if(track){
  track.classList.add('photo-smooth-slide');
 }
 })();
-</script>
 
-<style id="precision-fix-v3">
-/* ===== 精准修复 v3：仅覆盖目标问题 ===== */
-
-/* 1. 查看我的留言按钮与星空模块间距 */
-.future-message-wrap{
-  margin-bottom:64px !important;
-}
-
-/* 2. 未来留言弹窗：完全脱离触发按钮坐标，严格按视觉视口居中 */
-#futureMessagePanel.future-message-panel{
-  position:fixed !important;
-  inset:0 !important;
-  width:100vw !important;
-  height:100dvh !important;
-  padding:16px !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  overflow:hidden !important;
-}
-
-#futureMessagePanel .future-message-box{
-  position:relative !important;
-  margin:0 auto !important;
-  transform:translate3d(0,0,0) scale(.97) !important;
-  max-height:calc(100dvh - 32px) !important;
-  overflow-y:auto !important;
-  overscroll-behavior:contain;
-  transition:transform .45s cubic-bezier(.22,1,.36,1) !important;
-}
-
-#futureMessagePanel.is-open .future-message-box{
-  transform:translate3d(0,0,0) scale(1) !important;
-}
-
-@supports not (height:100dvh){
- #futureMessagePanel.future-message-panel{height:100vh !important;}
-}
-
-@media(max-width:768px){
- #futureMessagePanel.future-message-panel{
-   padding:
-    max(12px,env(safe-area-inset-top))
-    12px
-    max(12px,env(safe-area-inset-bottom))
-    12px !important;
- }
- #futureMessagePanel .future-message-box{
-   width:min(520px,94vw) !important;
-   max-height:calc(100dvh - 24px) !important;
- }
-}
-
-/* 3. 时间轴移动端释放阴影空间 */
-@media(max-width:768px){
- .timeline-section,
- .timeline-track,
- .timeline,
- .tl-item,
- .timeline-card{
-   overflow:visible !important;
- }
- .timeline-section{
-   padding-left:28px !important;
-   padding-right:28px !important;
- }
- .timeline-card{
-   margin-left:4px;
-   margin-right:4px;
- }
-}
-
-/* 4-1 相册：iOS Photos 风格滑动 */
-.photo-track{
- transition:transform .55s cubic-bezier(.25,1,.5,1) !important;
- will-change:transform;
-}
-.photo-slide{
- transition:opacity .32s ease, transform .55s cubic-bezier(.25,1,.5,1) !important;
-}
-
-/* 4-2 评论卡片玻璃材质与柔和过渡 */
-.photo-comment-item{
- border:1px solid rgba(255,255,255,.55) !important;
- background:
-   radial-gradient(120% 100% at 0 0,rgba(255,255,255,.75),transparent 45%),
-   rgba(255,255,255,.42) !important;
- backdrop-filter:blur(20px) saturate(150%) !important;
- -webkit-backdrop-filter:blur(20px) saturate(150%) !important;
- box-shadow:
-   inset 0 1px 0 rgba(255,255,255,.9),
-   0 18px 45px rgba(0,0,0,.08) !important;
- opacity:0;
- transform:translateY(12px) scale(.985);
- animation:commentGlassIn .45s cubic-bezier(.22,1,.36,1) forwards;
-}
-@keyframes commentGlassIn{
- from{opacity:0;transform:translateY(12px) scale(.985);filter:blur(4px)}
- to{opacity:1;transform:none;filter:blur(0)}
-}
-.photo-comment-item.is-leaving{
- animation:commentGlassOut .3s cubic-bezier(.4,0,1,1) forwards;
-}
-@keyframes commentGlassOut{
- to{opacity:0;transform:translateY(-8px) scale(.98);filter:blur(4px)}
-}
-</style>
-<script id="precision-fix-v3-js">
+/* v5 comment lifecycle animation */
 (function(){
- const panel=document.getElementById('futureMessagePanel');
- if(!panel) return;
- function sync(){
-   const vv=window.visualViewport;
-   const h=vv ? vv.height : window.innerHeight;
-   const top=vv ? vv.offsetTop : 0;
-   panel.style.height=h+'px';
-   panel.style.top=top+'px';
- }
- window.addEventListener('resize',sync,{passive:true});
- window.addEventListener('orientationchange',sync,{passive:true});
- if(window.visualViewport){
-   visualViewport.addEventListener('resize',sync,{passive:true});
-   visualViewport.addEventListener('scroll',sync,{passive:true});
- }
- sync();
+ const box=document.getElementById('photoMemoryComments');
+ if(!box) return;
+ const mo=new MutationObserver(()=>{
+   box.querySelectorAll('.photo-comment-item:not([data-glass-ready])')
+   .forEach(el=>{
+      el.dataset.glassReady='1';
+   });
+ });
+ mo.observe(box,{childList:true});
 })();
+
+
+/* ===== Dynamic viewport correction for keyboard / browser bars ===== */
+(function(){
+  const panel = document.getElementById('futureMessagePanel');
+  if(!panel) return;
+
+  function updateFutureViewport(){
+    const vv = window.visualViewport;
+    const h = vv ? vv.height : window.innerHeight;
+    const top = vv ? vv.offsetTop : 0;
+
+    panel.style.height = h + 'px';
+    panel.style.top = top + 'px';
+  }
+
+  updateFutureViewport();
+
+  window.addEventListener('resize', updateFutureViewport, {passive:true});
+  window.addEventListener('orientationchange', updateFutureViewport, {passive:true});
+
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', updateFutureViewport, {passive:true});
+    window.visualViewport.addEventListener('scroll', updateFutureViewport, {passive:true});
+  }
+})();
+
+
+/* ===== Future modal viewport sync + remove focus scroll jump ===== */
+(function(){
+  const panel=document.getElementById('futureMessagePanel');
+  if(!panel) return;
+
+  function syncFuturePanel(){
+    const vv=window.visualViewport;
+    if(vv){
+      panel.style.height=vv.height+'px';
+      panel.style.top=vv.offsetTop+'px';
+    }else{
+      panel.style.height=window.innerHeight+'px';
+      panel.style.top='0px';
+    }
+  }
+
+  syncFuturePanel();
+
+  if(window.visualViewport){
+    visualViewport.addEventListener('resize',syncFuturePanel,{passive:true});
+    visualViewport.addEventListener('scroll',syncFuturePanel,{passive:true});
+  }
+  window.addEventListener('resize',syncFuturePanel,{passive:true});
+
+  // 覆盖原打开函数中的 focus 自动滚动行为
+  const oldOpen=window.openFutureMessagePanel;
+  if(typeof oldOpen==='function'){
+    window.openFutureMessagePanel=function(){
+      oldOpen();
+      syncFuturePanel();
+      // 防止输入框自动聚焦导致页面 viewport 跳动
+      const input=document.getElementById('futureMessageInput');
+      if(input){
+        setTimeout(()=>{
+          input.blur();
+        },50);
+      }
+    };
+  }
+})();
+
+
+/* ===== Move modal out of document flow after open ===== */
+(function(){
+  const panel=document.getElementById('futureMessagePanel');
+  if(!panel) return;
+
+  function detachModal(){
+    if(panel.parentElement !== document.body){
+      document.body.appendChild(panel);
+    }
+  }
+
+  detachModal();
+
+  const observer=new MutationObserver(()=>{
+    detachModal();
+  });
+
+  observer.observe(document.documentElement,{
+    childList:true,
+    subtree:true
+  });
+
+  function resize(){
+    const vv=window.visualViewport;
+    panel.style.height=(vv ? vv.height : innerHeight)+'px';
+    panel.style.top=(vv ? vv.offsetTop : 0)+'px';
+  }
+
+  resize();
+  if(window.visualViewport){
+    visualViewport.addEventListener('resize',resize);
+    visualViewport.addEventListener('scroll',resize);
+  }
+})();
+
 </script>
 </body>
 </html>
