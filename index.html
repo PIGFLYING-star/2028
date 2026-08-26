@@ -9821,3 +9821,47 @@ if(viewer){
 </html>
 
 
+
+
+
+
+
+<style id="photo-real-root-fix">
+/* 仅修复相册查看器打开异常，不触碰按钮/导航样式 */
+
+/* 彻底禁止历史入场动画链 */
+.photo-stage.photo-opening,
+.photo-viewer.is-open .photo-stage,
+.photo-viewer.is-open .photo-slide.is-current img.is-loaded.is-reveal,
+.photo-viewer.is-open .photo-slide img.is-reveal{
+  animation:none !important;
+}
+
+/* 关闭 stage 自身位移动画，避免打开瞬间产生第二次位移 */
+.photo-stage,
+.photo-viewer.is-open .photo-stage{
+  transform:none !important;
+  filter:none !important;
+}
+
+/* 根因：非当前 slide 仍参与渲染，造成同图双层 */
+.photo-slide:not(.is-current) img{
+  opacity:0 !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+  transform:none !important;
+}
+
+.photo-slide.is-current img{
+  opacity:1 !important;
+  visibility:visible !important;
+  animation:none !important;
+  transform:none !important;
+}
+
+/* 打开时禁止图片自身 transition 造成“甩入” */
+.photo-viewer.is-open .photo-slide img{
+  transition:opacity .2s ease !important;
+}
+</style>
+
