@@ -4283,6 +4283,21 @@ body.candlelight .future-star-note{
 }
 </style>
 
+
+<style id="photo-open-final-fix">
+/* 相册打开最终修复：仅关闭异常入场，不修改导航/滑动/评论 */
+.photo-viewer.is-open .photo-slide.is-current img,
+.photo-viewer.is-open .photo-slide.is-current img.is-loaded,
+.photo-viewer.is-open .photo-slide.is-current img.is-reveal,
+.lightbox img {
+  animation: none !important;
+}
+.photo-viewer.is-open .photo-slide:not(.is-current) img {
+  opacity:0 !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+</style>
 </head>
 <body>
   <!-- ====================== 开册启封 ====================== -->
@@ -9820,74 +9835,4 @@ if(viewer){
 </body>
 </html>
 
-
-
-
-
-
-
-<style id="photo-real-root-fix">
-/* 仅修复相册查看器打开异常，不触碰按钮/导航样式 */
-
-/* 彻底禁止历史入场动画链 */
-.photo-stage.photo-opening,
-.photo-viewer.is-open .photo-stage,
-.photo-viewer.is-open .photo-slide.is-current img.is-loaded.is-reveal,
-.photo-viewer.is-open .photo-slide img.is-reveal{
-  animation:none !important;
-}
-
-/* 关闭 stage 自身位移动画，避免打开瞬间产生第二次位移 */
-.photo-stage,
-.photo-viewer.is-open .photo-stage{
-  transform:none !important;
-  filter:none !important;
-}
-
-/* 根因：非当前 slide 仍参与渲染，造成同图双层 */
-.photo-slide:not(.is-current) img{
-  opacity:0 !important;
-  visibility:hidden !important;
-  pointer-events:none !important;
-  transform:none !important;
-}
-
-.photo-slide.is-current img{
-  opacity:1 !important;
-  visibility:visible !important;
-  animation:none !important;
-  transform:none !important;
-}
-
-/* 打开时禁止图片自身 transition 造成“甩入” */
-.photo-viewer.is-open .photo-slide img{
-  transition:opacity .2s ease !important;
-}
-</style>
-
-
-/* ===== FINAL PHOTO OPEN FIX =====
-   根因修复：关闭 lightbox img 的所有重复入场动画。
-   不触碰 photo-nav、滑动、评论等交互。
-*/
-.lightbox img,
-.photo-slide img,
-.photo-slide.is-current img,
-.photo-slide img.is-loaded,
-.photo-viewer.is-open .photo-slide.is-current img.is-loaded.is-reveal {
-  animation: none !important;
-}
-
-.lightbox img {
-  transform: none !important;
-  opacity: 1;
-  transition: opacity .25s ease !important;
-}
-
-/* 禁止隐藏/非当前照片参与打开瞬间动画合成 */
-.photo-slide:not(.is-current) img {
-  animation: none !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-}
 
