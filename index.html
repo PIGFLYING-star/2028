@@ -4257,6 +4257,32 @@ body.candlelight .future-star-note{
  cursor:pointer;
 }
 </style>
+
+<style id="bugfix-v2">
+/* BUG修复：未来留言输入卡片位置稳定，下移避免顶部裁切与透出底层内容 */
+.future-message-panel{
+  align-items:center;
+  padding-top:70px;
+  padding-bottom:20px;
+}
+.future-message-box{
+  transform:translateY(35px) scale(.97);
+}
+.future-message-panel.is-open .future-message-box{
+  transform:translateY(35px) scale(1);
+}
+
+/* 样式微调：拉大两个留言按钮之间距离 */
+.open-my-msg-btn-wrap{
+  margin-bottom:42px;
+}
+
+/* 相册：仅移除缩略图进入时动画，保留其它悬浮/点击/图片动画 */
+.gallery-item.visible{
+  animation:none !important;
+}
+</style>
+
 </head>
 <body>
   <!-- ====================== 开册启封 ====================== -->
@@ -9728,7 +9754,6 @@ if(viewer){
 
 </body>
 </html>
-
 
 
 
