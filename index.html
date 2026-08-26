@@ -5710,14 +5710,16 @@ body.candlelight .future-star-note{
     const futureMessageInput = document.getElementById('futureMessageInput');
 
     // 未来留言输入框获得焦点时隐藏夜读按钮，避免键盘输入误触
-    if (futureMessageInput && candleToggle) {
+    // 注意：这里不能提前引用后面 const candleToggle，避免 TDZ 导致整个初始化脚本中断
+    const futureCandleToggle = document.getElementById('candleToggle');
+    if (futureMessageInput && futureCandleToggle) {
       futureMessageInput.addEventListener('focus', () => {
-        candleToggle.style.visibility = 'hidden';
-        candleToggle.style.pointerEvents = 'none';
+        futureCandleToggle.style.visibility = 'hidden';
+        futureCandleToggle.style.pointerEvents = 'none';
       });
       futureMessageInput.addEventListener('blur', () => {
-        candleToggle.style.visibility = '';
-        candleToggle.style.pointerEvents = '';
+        futureCandleToggle.style.visibility = '';
+        futureCandleToggle.style.pointerEvents = '';
       });
     }
     const futureMessageSend = document.getElementById('futureMessageSend');
@@ -9897,3 +9899,4 @@ if(viewer){
 </style>
 </body>
 </html>
+
