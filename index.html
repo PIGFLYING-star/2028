@@ -2098,6 +2098,112 @@ body:before{
  rgba(255,255,255,.38)!important;
 }
 
+
+/* ===== 修复补丁：四项定向优化 ===== */
+
+/* 1. 查看我的留言按钮 -> 星空模块预留一个标题高度间距 */
+.open-my-msg-btn-wrap{
+  margin-bottom:32px;
+}
+
+/* 2. 未来留言弹窗：固定视口居中，适配动态视口/软键盘 */
+.future-message-panel{
+  position:fixed;
+  inset:0;
+  inset-block-start:0;
+  width:100%;
+  height:100dvh;
+  min-height:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:
+    max(20px, env(safe-area-inset-top))
+    max(20px, env(safe-area-inset-right))
+    max(20px, env(safe-area-inset-bottom))
+    max(20px, env(safe-area-inset-left));
+  overflow:hidden;
+}
+.future-message-box{
+  max-height:calc(100dvh - 40px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  transform:translate3d(0,24px,0) scale(.97);
+  will-change:transform;
+}
+.future-message-panel.is-open .future-message-box{
+  transform:translate3d(0,0,0) scale(1);
+}
+@supports (height:100svh){
+  .future-message-panel{
+    height:100svh;
+  }
+}
+
+/* 3. 时间轴阴影释放空间（移动端仅修复裁切） */
+.timeline-section,
+.timeline,
+.tl-item{
+  overflow:visible;
+}
+.timeline-section{
+  padding-left:28px;
+  padding-right:28px;
+}
+@media(max-width:768px){
+  .timeline-section{
+    padding-left:20px;
+    padding-right:20px;
+    overflow:visible;
+  }
+  .tl-item{
+    padding-left:4px;
+    padding-right:4px;
+  }
+  .tl-card{
+    overflow:visible;
+  }
+}
+
+/* 4-1 iOS Photos 风格滑动过渡 */
+.photo-track{
+  transition:transform .55s cubic-bezier(.22,1,.36,1)!important;
+  will-change:transform;
+}
+.photo-slide{
+  transition:opacity .38s cubic-bezier(.22,1,.36,1),
+             filter .38s cubic-bezier(.22,1,.36,1);
+}
+
+/* 4-2 评论卡片复用玻璃材质并优化过渡 */
+.photo-comment-item{
+  background:rgba(255,255,255,.48);
+  border:1px solid rgba(255,255,255,.55);
+  backdrop-filter:blur(18px) saturate(160%);
+  -webkit-backdrop-filter:blur(18px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.85),
+    0 15px 45px rgba(0,0,0,.10);
+  transform:translateY(12px) scale(.98);
+  opacity:0;
+  animation:photoCommentIn .42s cubic-bezier(.22,1,.36,1) forwards;
+}
+.photo-comment-item.is-leaving{
+  animation:photoCommentOut .28s ease forwards;
+}
+@keyframes photoCommentIn{
+  to{
+    opacity:1;
+    transform:translateY(0) scale(1);
+  }
+}
+@keyframes photoCommentOut{
+  to{
+    opacity:0;
+    transform:translateY(-8px) scale(.98);
+  }
+}
+
 </style>
 
 
@@ -9986,6 +10092,24 @@ if(track){
  track.classList.add('photo-smooth-slide');
 }
 })();
+
+/* ===== 修复补丁 JS：动态视口居中 ===== */
+(function(){
+  const panel=document.getElementById('futureMessagePanel');
+  if(!panel) return;
+  const syncFutureModalViewport=()=>{
+    const h=window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    panel.style.height=h+'px';
+  };
+  ['resize','orientationchange'].forEach(e=>window.addEventListener(e,syncFutureModalViewport,{passive:true}));
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize',syncFutureModalViewport,{passive:true});
+    window.visualViewport.addEventListener('scroll',syncFutureModalViewport,{passive:true});
+  }
+  syncFutureModalViewport();
+})();
+
 </script>
 </body>
 </html>
+
