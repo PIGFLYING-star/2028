@@ -9752,6 +9752,32 @@ if(viewer){
 }
 </style>
 
+
+<style id="bugfix-photo-entry-final">
+/* 最终修复：彻底关闭相册大图进入时所有甩入/回弹/位移动画，仅保留稳定显示 */
+.photo-stage.photo-opening,
+.photo-viewer.is-open .photo-stage,
+.photo-viewer.is-open .photo-slide.is-current img.is-loaded.is-reveal,
+.photo-viewer.is-open .photo-slide img.is-reveal {
+  animation: none !important;
+}
+
+/* 首次打开时禁止任何 translate/scale 导致图片从侧面甩入 */
+.photo-slide img,
+.photo-slide.is-current img,
+.photo-slide img.is-loaded,
+.photo-slide img.is-loaded.is-reveal {
+  transform: translate3d(0,0,0) scale(1) !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* 保留切换时 track 的滑动逻辑，不影响左右浏览 */
+.photo-track {
+  will-change: transform;
+}
+</style>
+
 </body>
 </html>
 
