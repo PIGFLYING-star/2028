@@ -4349,6 +4349,35 @@ body.candlelight .future-star-note{
 .photo-slide img.is-reveal{animation:none!important;}
 .photo-slide img{animation:none!important;}
 </style>
+<style>
+/* v13 iOS26 photo paging refinement: only affects between-photo switching */
+.photo-track{
+  transition:transform .72s cubic-bezier(.22,1,.36,1);
+  will-change:transform;
+}
+.photo-slide{
+  transition:opacity .55s cubic-bezier(.22,1,.36,1),filter .55s ease,transform .72s cubic-bezier(.22,1,.36,1);
+}
+.photo-slide:not(.is-current){
+  filter:saturate(.92) brightness(.96);
+}
+.photo-slide.is-current{
+  filter:saturate(1.05) brightness(1);
+}
+.photo-slide img{
+  transition:
+    opacity .5s cubic-bezier(.22,1,.36,1),
+    transform .72s cubic-bezier(.22,1,.36,1),
+    filter .55s ease;
+}
+.photo-slide:not(.is-current) img{
+  transform:scale(.965);
+  filter:blur(.2px);
+}
+.photo-slide.is-current img{
+  transform:scale(1);
+}
+</style>
 </head>
 <body>
   <!-- ====================== 开册启封 ====================== -->
@@ -5682,7 +5711,8 @@ body.candlelight .future-star-note{
     openGallery = function(item){
       _openGallery(item);
       setPhotoMemoryMode(false, false);
-      photoCommentCount.textContent = '0';
+      /* 打开照片时后台预加载评论数量，不需要进入评论面板 */
+      loadPhotoComments(false);
       /* 已移除相册共享元素放大动画：避免缩略图克隆层与大图同时运动 */
     };
 
@@ -9959,3 +9989,6 @@ if(track){
 </script>
 </body>
 </html>
+
+
+
