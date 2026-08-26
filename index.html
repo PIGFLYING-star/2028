@@ -4342,6 +4342,13 @@ body.candlelight .future-star-note{
   else hideNightWhenTyping();
 })();
 </script>
+
+<style>
+/* FINAL PHOTO OPEN FIX: 禁止缩略图共享元素/打开瞬间位移动画，只保留稳定显示 */
+.photo-shared-clone{display:none!important;}
+.photo-slide img.is-reveal{animation:none!important;}
+.photo-slide img{animation:none!important;}
+</style>
 </head>
 <body>
   <!-- ====================== 开册启封 ====================== -->
@@ -5676,7 +5683,7 @@ body.candlelight .future-star-note{
       _openGallery(item);
       setPhotoMemoryMode(false, false);
       photoCommentCount.textContent = '0';
-      setTimeout(() => playPhotoSharedElement(item), 90);
+      /* 已移除相册共享元素放大动画：避免缩略图克隆层与大图同时运动 */
     };
 
     const _goToPhoto = goToPhoto;
@@ -5701,6 +5708,18 @@ body.candlelight .future-star-note{
     const futureMessagePanel = document.getElementById('futureMessagePanel');
     const futureMessageClose = document.getElementById('futureMessageClose');
     const futureMessageInput = document.getElementById('futureMessageInput');
+
+    // 未来留言输入框获得焦点时隐藏夜读按钮，避免键盘输入误触
+    if (futureMessageInput && candleToggle) {
+      futureMessageInput.addEventListener('focus', () => {
+        candleToggle.style.visibility = 'hidden';
+        candleToggle.style.pointerEvents = 'none';
+      });
+      futureMessageInput.addEventListener('blur', () => {
+        candleToggle.style.visibility = '';
+        candleToggle.style.pointerEvents = '';
+      });
+    }
     const futureMessageSend = document.getElementById('futureMessageSend');
     const futureSky = document.getElementById('futureSky');
 
