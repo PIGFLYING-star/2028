@@ -9897,6 +9897,65 @@ if(viewer){
   filter:none!important;
 }
 </style>
+
+
+<!-- FINAL OPTIMIZATION V12 -->
+<style id="final-v12-optimize">
+/* 相册照片之间滑动过渡：只作用切换，不影响打开动画 */
+#photoTrack.photo-smooth-slide{
+  transition:transform .48s cubic-bezier(.22,.8,.22,1)!important;
+  will-change:transform;
+}
+#photoTrack .photo-slide{
+  transition:opacity .28s ease,filter .28s ease!important;
+}
+#photoTrack .photo-slide:not(.is-current){
+  opacity:.72;
+  filter:brightness(.94);
+}
+#photoTrack .photo-slide.is-current{
+  opacity:1;
+  filter:none;
+}
+
+/* 输入时隐藏夜读按钮 */
+#candleToggle.is-input-hidden{
+  opacity:0!important;
+  transform:scale(.75)!important;
+  pointer-events:none!important;
+}
+</style>
+<script id="final-v12-js">
+(function(){
+'use strict';
+
+/* 输入框焦点控制夜读按钮：任何输入区域获得光标均隐藏 */
+const candle=document.getElementById('candleToggle');
+if(candle){
+ const sync=()=>{
+   const el=document.activeElement;
+   const hide=!!(el&&(
+     el.tagName==='TEXTAREA'||
+     el.tagName==='INPUT'||
+     el.isContentEditable
+   ));
+   candle.classList.toggle('is-input-hidden',hide);
+ };
+ document.addEventListener('focusin',sync,true);
+ document.addEventListener('focusout',()=>setTimeout(sync,80),true);
+ sync();
+}
+
+/* 相册切换增强：只增强照片与照片之间过渡，不改变打开流程 */
+const track=document.getElementById('photoTrack');
+if(track){
+ const observer=new MutationObserver(()=>{
+   track.classList.add('photo-smooth-slide');
+ });
+ observer.observe(track,{attributes:true,attributeFilter:['style']});
+ track.classList.add('photo-smooth-slide');
+}
+})();
+</script>
 </body>
 </html>
-
