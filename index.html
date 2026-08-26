@@ -2405,6 +2405,21 @@ body.night-reading .photo-comment-delete:hover{
   z-index:1;
 }
 
+
+
+/* ===== photo comment empty state single glass panel fix =====
+   去掉“还没有评论...”内部重复矩形，只保留 photo-memory-comments 外层玻璃卡片
+*/
+.photo-comment-empty{
+  background:transparent !important;
+  border:none !important;
+  border-radius:0 !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  box-shadow:none !important;
+  min-height:110px;
+}
+
 </style>
 
 
@@ -12204,6 +12219,3 @@ if(track){
 
 </script></body>
 </html>
-
-
-
