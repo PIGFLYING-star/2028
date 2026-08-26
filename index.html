@@ -4298,6 +4298,50 @@ body.candlelight .future-star-note{
   pointer-events:none !important;
 }
 </style>
+
+<style id="final-photo-root-fix">
+/* 相册最终修复：只禁止打开瞬间的空间动画，不影响滑动按钮和切换逻辑 */
+.lightbox img,
+.lightbox.active img,
+.photo-viewer.is-open .photo-slide.is-current img,
+.photo-viewer.is-open .photo-slide.is-current img.is-loaded,
+.photo-viewer.is-open .photo-slide.is-current img.is-reveal {
+  animation: none !important;
+}
+
+/* 禁止旧 shared/spatial/reveal transform 在打开瞬间接管图片 */
+.lightbox img,
+.photo-slide img {
+  transform-origin: center center !important;
+}
+
+.photo-viewer.is-open .photo-slide:not(.is-current) img {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+</style>
+<script id="final-focus-fix">
+(function(){
+  function hideNightWhenTyping(){
+    var btn=document.getElementById('candleToggle');
+    var input=document.getElementById('futureMessageInput') || document.querySelector('.wall-input, textarea');
+    if(!btn || !input) return;
+    input.addEventListener('focus',function(){
+      btn.style.opacity='0';
+      btn.style.visibility='hidden';
+      btn.style.pointerEvents='none';
+    }, {passive:true});
+    input.addEventListener('blur',function(){
+      btn.style.opacity='';
+      btn.style.visibility='';
+      btn.style.pointerEvents='';
+    }, {passive:true});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',hideNightWhenTyping);
+  else hideNightWhenTyping();
+})();
+</script>
 </head>
 <body>
   <!-- ====================== 开册启封 ====================== -->
@@ -9834,5 +9878,3 @@ if(viewer){
 </style>
 </body>
 </html>
-
-
