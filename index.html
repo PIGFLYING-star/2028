@@ -9795,6 +9795,28 @@ if(viewer){
   animation:none!important;
 }
 </style>
+
+<style id="photo-root-cause-final-fix">
+/* 根因修复：photo-track 内备用 slide 不得参与首次打开渲染，避免同图双层叠加 */
+.photo-slide:not(.is-current) img {
+  opacity:0!important;
+  pointer-events:none!important;
+  animation:none!important;
+  transform:translate3d(0,0,0) scale(1)!important;
+  filter:none!important;
+}
+/* 当前图片只保留单一渲染层 */
+.photo-slide.is-current img {
+  opacity:1!important;
+  animation:none!important;
+  transform:translate3d(0,0,0) scale(1)!important;
+}
+/* 打开阶段禁止 stage 自身过渡产生第二个视觉位移层 */
+.photo-viewer.is-open .photo-stage {
+  transform:none!important;
+  filter:none!important;
+}
+</style>
 </body>
 </html>
 
