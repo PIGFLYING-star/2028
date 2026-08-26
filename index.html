@@ -9866,3 +9866,28 @@ if(viewer){
 </style>
 
 
+/* ===== FINAL PHOTO OPEN FIX =====
+   根因修复：关闭 lightbox img 的所有重复入场动画。
+   不触碰 photo-nav、滑动、评论等交互。
+*/
+.lightbox img,
+.photo-slide img,
+.photo-slide.is-current img,
+.photo-slide img.is-loaded,
+.photo-viewer.is-open .photo-slide.is-current img.is-loaded.is-reveal {
+  animation: none !important;
+}
+
+.lightbox img {
+  transform: none !important;
+  opacity: 1;
+  transition: opacity .25s ease !important;
+}
+
+/* 禁止隐藏/非当前照片参与打开瞬间动画合成 */
+.photo-slide:not(.is-current) img {
+  animation: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
