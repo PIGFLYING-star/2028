@@ -12526,8 +12526,63 @@ body.candlelight .photo-comment-send{
 }
 </style>
 
+
+<style id="photo-comment-ui-refine">
+/* 仅照片评论弹窗视觉微调：不改变尺寸、位置、交互与内容 */
+.photo-memory-card,
+.photo-memory-container{
+  background:
+    linear-gradient(155deg, rgba(255,255,255,.78), rgba(255,248,232,.58) 55%, rgba(255,255,255,.68)) !important;
+  backdrop-filter: blur(32px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(180%) !important;
+}
+
+/* 评论列表去除内部卡片感：取消分割线、边框、阴影，仅保留玻璃文字层 */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item{
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-radius: 0 !important;
+}
+.photo-memory-comments .photo-comment-item::before,
+.photo-memory-comments .photo-comment-item::after,
+.photo-comment-item::before,
+.photo-comment-item::after{
+  display:none !important;
+}
+
+/* 评论编辑区域不再出现顶部隔断线 */
+.photo-comment-editor{
+  border-top-color: transparent !important;
+}
+
+/* 夜读/烛光模式适配：提高外围玻璃不透明度，同时保持暖金液态玻璃 */
+body.candlelight .photo-memory-card,
+body.candlelight .photo-memory-container,
+body.night-reading .photo-memory-card,
+body.night-reading .photo-memory-container{
+  background:
+    linear-gradient(155deg, rgba(70,56,34,.72), rgba(25,20,12,.62) 55%, rgba(48,38,22,.68)) !important;
+  border-color: rgba(201,168,76,.26) !important;
+  backdrop-filter: blur(30px) saturate(170%) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(170%) !important;
+}
+
+body.candlelight .photo-memory-comments .photo-comment-item,
+body.night-reading .photo-memory-comments .photo-comment-item,
+body.candlelight .photo-comment-item,
+body.night-reading .photo-comment-item{
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+</style>
 </body>
 </html>
+
 
 
 
