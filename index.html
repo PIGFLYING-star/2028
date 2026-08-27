@@ -478,6 +478,20 @@
       transform: translateY(0) scale(1);
       opacity: 1;
     }
+
+    /* 月度纪事关闭优化：关闭时冻结内部内容，只让外层淡出，避免
+       transform / blur / backdrop-filter 在同一帧反复重绘造成抽搐。 */
+    .tl-month-modal.is-closing {
+      opacity: 0;
+      visibility: visible;
+      pointer-events: none;
+      background: rgba(0,0,0,0);
+    }
+    .tl-month-modal.is-closing .tl-month-modal-box {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+      transition: none !important;
+    }
     .tl-month-modal-header {
       display: flex;
       justify-content: space-between;
@@ -5402,6 +5416,533 @@ body.candlelight .photo-comment-delete:hover{
   contain:paint;
 }
 </style>
+<style id="candlelight-all-ui-adaptation">
+/* =========================================================
+   烛光夜读 · 全界面适配补丁
+   仅适配现有弹窗 / 覆盖层 / 独立界面，不改变布局与交互逻辑。
+   ========================================================= */
+
+/* ---------- 通用覆盖层 ---------- */
+body.candlelight .my-msg-modal,
+body.candlelight .tl-month-modal,
+body.candlelight .future-message-panel,
+body.candlelight .lightbox {
+  background: rgba(8,7,5,.68) !important;
+}
+
+body.candlelight .my-msg-modal,
+body.candlelight .tl-month-modal,
+body.candlelight .future-message-panel,
+body.candlelight .lightbox {
+  backdrop-filter: blur(22px) saturate(105%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(105%) !important;
+}
+
+/* ---------- 我的留言 ---------- */
+body.candlelight .my-msg-modal-box {
+  background:
+    radial-gradient(100% 70% at 12% 0%, rgba(255,220,160,.10), transparent 50%),
+    linear-gradient(145deg, rgba(48,40,30,.96), rgba(27,23,18,.96)) !important;
+  border-color: rgba(201,168,76,.30) !important;
+  box-shadow:
+    0 28px 90px rgba(0,0,0,.52),
+    0 0 0 1px rgba(201,168,76,.06),
+    inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+
+body.candlelight .my-msg-modal-box::before {
+  background:
+    radial-gradient(circle at top left, rgba(255,220,160,.13), transparent 38%) !important;
+}
+
+body.candlelight .my-msg-modal-header {
+  background: linear-gradient(90deg, rgba(201,168,76,.12), transparent) !important;
+  border-bottom-color: rgba(201,168,76,.18) !important;
+}
+
+body.candlelight .my-msg-modal-close {
+  color: #b9aa91 !important;
+}
+
+body.candlelight .my-msg-modal-count {
+  background: rgba(201,168,76,.14) !important;
+  color: #e8d5a3 !important;
+}
+
+body.candlelight .my-msg-modal-body {
+  color: #e6dcc8 !important;
+}
+
+body.candlelight .my-msg-item {
+  border-bottom-color: rgba(201,168,76,.12) !important;
+}
+
+body.candlelight .my-msg-item:hover {
+  background: rgba(255,255,255,.035) !important;
+}
+
+body.candlelight .my-msg-content {
+  color: #e1d5c1 !important;
+}
+
+body.candlelight .my-msg-time {
+  color: #9b8d76 !important;
+}
+
+body.candlelight .my-msg-delete {
+  color: #857864 !important;
+}
+
+body.candlelight .my-msg-delete:hover {
+  color: #e0b66a !important;
+  background: rgba(201,168,76,.09) !important;
+}
+
+body.candlelight .my-msg-empty {
+  color: #9b8d76 !important;
+}
+
+/* ---------- 时间轴月度纪事 ---------- */
+body.candlelight .tl-month-modal-box {
+  background:
+    radial-gradient(100% 70% at 10% 0%, rgba(255,220,160,.09), transparent 50%),
+    linear-gradient(145deg, rgba(47,39,29,.97), rgba(27,23,18,.97)) !important;
+  border-color: rgba(201,168,76,.30) !important;
+  box-shadow:
+    0 28px 90px rgba(0,0,0,.52),
+    inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+
+body.candlelight .tl-month-modal-header {
+  background: linear-gradient(90deg, rgba(201,168,76,.12), transparent) !important;
+  border-bottom-color: rgba(201,168,76,.18) !important;
+}
+
+body.candlelight .tl-month-modal-close {
+  color: #b9aa91 !important;
+}
+
+body.candlelight .tl-month {
+  border-bottom-color: rgba(201,168,76,.11) !important;
+}
+
+body.candlelight .tl-month-label {
+  color: #d9ba73 !important;
+}
+
+body.candlelight .tl-month-event {
+  color: #d8cbb7 !important;
+}
+
+body.candlelight .tl-month-modal-body::-webkit-scrollbar-thumb {
+  background: rgba(201,168,76,.26) !important;
+}
+
+/* ---------- 启封蜡印层：暖暗融合 ---------- */
+body.candlelight .tl-seal-layer {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 42%, rgba(118,83,32,.30), transparent 70%),
+    linear-gradient(165deg, rgba(42,34,24,.96), rgba(24,20,16,.98)) !important;
+}
+
+/* ---------- 未来留言弹窗 ---------- */
+body.candlelight .future-message-box {
+  color: #e6dcc8 !important;
+}
+
+body.candlelight .future-message-box textarea {
+  caret-color: #d4b56a;
+}
+
+body.candlelight .future-message-box textarea:focus {
+  box-shadow: 0 0 0 3px rgba(201,168,76,.08) !important;
+}
+
+/* ---------- 照片查看器：夜读版 ---------- */
+body.candlelight .photo-viewer {
+  background: rgba(7,6,5,.72) !important;
+  backdrop-filter: blur(28px) saturate(95%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(95%) !important;
+}
+
+body.candlelight .photo-viewer::before {
+  background:
+    radial-gradient(55% 45% at 50% 48%, rgba(255,220,160,.10), transparent 68%),
+    radial-gradient(35% 30% at 50% 45%, rgba(201,168,76,.07), transparent 72%),
+    linear-gradient(180deg, rgba(255,220,160,.035), transparent 30%, rgba(0,0,0,.24)) !important;
+}
+
+body.candlelight .photo-viewer-backdrop {
+  background: rgba(8,7,5,.50) !important;
+}
+
+body.candlelight .photo-viewer-title-wrap,
+body.candlelight .photo-viewer-close,
+body.candlelight .photo-nav,
+body.candlelight .photo-viewer-hint {
+  border-color: rgba(201,168,76,.28) !important;
+  background:
+    radial-gradient(90% 140% at 18% 0%, rgba(255,220,160,.10), transparent 55%),
+    rgba(35,29,22,.62) !important;
+  color: #eee2cd !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -1px 0 rgba(201,168,76,.06),
+    0 14px 42px rgba(0,0,0,.34) !important;
+  backdrop-filter: blur(24px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(120%) !important;
+}
+
+body.candlelight .photo-viewer-title {
+  color: #f0e6d2 !important;
+}
+
+body.candlelight .photo-viewer-counter {
+  color: rgba(232,213,163,.64) !important;
+}
+
+body.candlelight .photo-viewer-close::before,
+body.candlelight .photo-viewer-close::after {
+  background: rgba(240,230,210,.92) !important;
+}
+
+body.candlelight .photo-viewer-hint {
+  color: rgba(232,213,163,.78) !important;
+}
+
+/* ---------- 照片背面 / 回忆卡片 ---------- */
+body.candlelight .photo-memory-card {
+  background:
+    radial-gradient(100% 80% at 12% 0%, rgba(255,220,160,.11), transparent 46%),
+    linear-gradient(145deg, #292219 0%, #211c16 52%, #17120e 100%) !important;
+  border-color: rgba(201,168,76,.26) !important;
+}
+
+body.candlelight .photo-memory-comments {
+  background: rgba(27,23,18,.40) !important;
+  border-color: rgba(201,168,76,.16) !important;
+}
+
+body.candlelight .photo-comment-item {
+  background:
+    linear-gradient(145deg, rgba(67,54,38,.78), rgba(45,37,28,.74)) !important;
+  border-color: rgba(201,168,76,.20) !important;
+}
+
+body.candlelight .photo-comment-empty {
+  color: #9f927d !important;
+}
+
+/* ---------- 普通灯箱 ---------- */
+body.candlelight .lightbox {
+  background: rgba(5,4,3,.82) !important;
+}
+
+body.candlelight .lightbox img {
+  box-shadow:
+    0 24px 80px rgba(0,0,0,.62),
+    0 0 0 1px rgba(201,168,76,.12) !important;
+}
+
+body.candlelight .lightbox-close {
+  background: rgba(45,37,28,.62) !important;
+  border: 1px solid rgba(201,168,76,.28) !important;
+  color: #eee2cd !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 12px 35px rgba(0,0,0,.32) !important;
+}
+
+/* ---------- 开册启封界面 ---------- */
+body.candlelight .book-open-overlay {
+  background:
+    radial-gradient(circle at 50% 38%, rgba(201,168,76,.10), transparent 34%),
+    radial-gradient(circle at 20% 0%, rgba(255,220,160,.06), transparent 40%),
+    #100d0a !important;
+  color: #e6dcc8 !important;
+}
+
+body.candlelight .book-open-overlay::after {
+  background: radial-gradient(circle, rgba(201,168,76,.18), transparent 68%) !important;
+}
+
+body.candlelight .book-open-emblem-wrap::after {
+  background: radial-gradient(ellipse, rgba(201,168,76,.22), transparent 72%) !important;
+}
+
+body.candlelight .book-open-meta span:nth-child(1) {
+  color: rgba(255,248,230,.88) !important;
+}
+
+body.candlelight .book-open-meta {
+  color: rgba(232,213,163,.70) !important;
+}
+
+body.candlelight .book-open-meta span:nth-child(3) {
+  color: rgba(232,213,163,.58) !important;
+}
+
+body.candlelight .book-open-hint {
+  color: rgba(232,213,163,.48) !important;
+}
+
+body.candlelight .book-open-btn {
+  background:
+    linear-gradient(145deg, rgba(74,57,30,.94), rgba(105,79,32,.78)) !important;
+  border-color: rgba(201,168,76,.34) !important;
+  color: #f0dfb7 !important;
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.42),
+    0 0 20px rgba(201,168,76,.08),
+    inset 0 1px 0 rgba(255,255,255,.12) !important;
+}
+
+/* ---------- 班徽界面 ---------- */
+body.candlelight .emblem-stage {
+  background:
+    radial-gradient(circle at 50% 40%, rgba(201,168,76,.08), transparent 45%),
+    transparent !important;
+}
+
+body.candlelight .emblem-reflect {
+  opacity: .10;
+}
+
+body.candlelight .emblem-contact {
+  filter: blur(24px) !important;
+  opacity: .10 !important;
+}
+
+body.candlelight .emblem-back {
+  background:
+    linear-gradient(145deg, rgba(45,37,28,.92), rgba(23,19,15,.95)) !important;
+  border-color: rgba(201,168,76,.24) !important;
+  color: #e6dcc8 !important;
+}
+
+/* ---------- 未来星空作为独立界面 ---------- */
+body.candlelight .future-sky {
+  background:
+    radial-gradient(circle at 52% 46%, rgba(201,168,76,.14), transparent 30%),
+    radial-gradient(circle at 15% 20%, rgba(125,112,72,.07), transparent 30%),
+    linear-gradient(180deg, #100d0a 0%, #080706 100%) !important;
+  border-color: rgba(201,168,76,.18) !important;
+}
+
+/* ---------- 新增的玻璃按钮统一夜读材质 ---------- */
+body.candlelight .wall-btn,
+body.candlelight .open-my-msg-btn,
+body.candlelight .photo-comment-btn,
+body.candlelight .photo-comment-send,
+body.candlelight .future-message-btn,
+body.candlelight .future-message-send {
+  text-shadow: none !important;
+}
+
+body.candlelight .open-my-msg-btn,
+body.candlelight .photo-comment-btn {
+  background:
+    linear-gradient(145deg, rgba(70,56,36,.78), rgba(40,32,24,.72)) !important;
+  color: #e8d5a3 !important;
+  border-color: rgba(201,168,76,.30) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 12px 32px rgba(0,0,0,.30) !important;
+}
+
+body.candlelight .wall-btn,
+body.candlelight .future-message-send,
+body.candlelight .photo-comment-send {
+  background:
+    linear-gradient(145deg, rgba(76,58,31,.96), rgba(109,81,32,.74)) !important;
+  color: #f0dfb7 !important;
+  border-color: rgba(201,168,76,.34) !important;
+}
+
+/* ---------- 文字输入控件 ---------- */
+body.candlelight input,
+body.candlelight textarea,
+body.candlelight select {
+  color-scheme: dark;
+}
+
+body.candlelight input::placeholder,
+body.candlelight textarea::placeholder {
+  color: #766b59 !important;
+}
+
+/* ---------- 烛光模式下滚动条 ---------- */
+body.candlelight ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+body.candlelight ::-webkit-scrollbar-track {
+  background: rgba(16,13,10,.40);
+}
+
+body.candlelight ::-webkit-scrollbar-thumb {
+  background: rgba(201,168,76,.24);
+  border-radius: 999px;
+}
+
+body.candlelight ::-webkit-scrollbar-thumb:hover {
+  background: rgba(201,168,76,.38);
+}
+
+/* ---------- 减少夜读模式下新界面之间的亮色闪现 ---------- */
+body.candlelight .my-msg-modal-box,
+body.candlelight .tl-month-modal-box,
+body.candlelight .future-message-box,
+body.candlelight .photo-memory-card,
+body.candlelight .emblem-back,
+body.candlelight .lightbox-close {
+  color-scheme: dark;
+}
+
+</style>
+
+<style id="candlelight-all-ui-final">
+/* =========================================================
+   烛光夜读 · 全部新弹窗 / 独立界面最终适配
+   仅补充主题材质与文字颜色，不改变布局、尺寸、交互与动画逻辑。
+   ========================================================= */
+
+/* ---------- 未来留言完整面板 ---------- */
+body.candlelight .future-message-panel {
+  background: rgba(8,7,5,.70) !important;
+}
+body.candlelight .future-message-box {
+  background:
+    radial-gradient(100% 75% at 10% 0%, rgba(255,220,160,.10), transparent 52%),
+    linear-gradient(145deg, rgba(47,39,29,.97), rgba(27,23,18,.97)) !important;
+  border-color: rgba(201,168,76,.30) !important;
+  box-shadow:
+    0 28px 90px rgba(0,0,0,.56),
+    0 0 0 1px rgba(201,168,76,.06),
+    inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+body.candlelight .future-message-close {
+  background: rgba(54,43,30,.68) !important;
+  color: #b9aa91 !important;
+  border: 1px solid rgba(201,168,76,.18) !important;
+}
+body.candlelight .future-message-kicker { color: #d4b56a !important; }
+body.candlelight .future-message-title { color: #f0e6d2 !important; }
+body.candlelight .future-message-sub { color: #a99b85 !important; }
+body.candlelight .future-message-box textarea {
+  background: rgba(24,20,16,.72) !important;
+  border-color: rgba(201,168,76,.22) !important;
+  color: #e6dcc8 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05) !important;
+}
+body.candlelight .future-message-send {
+  background: linear-gradient(145deg, rgba(76,58,31,.96), rgba(109,81,32,.74)) !important;
+  color: #f0dfb7 !important;
+  border-color: rgba(201,168,76,.34) !important;
+}
+body.candlelight .future-flying-message {
+  background: linear-gradient(145deg, rgba(67,54,38,.92), rgba(39,31,23,.90)) !important;
+  color: #e8dcc8 !important;
+  border-color: rgba(201,168,76,.28) !important;
+  box-shadow:
+    0 18px 55px rgba(0,0,0,.40),
+    inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+body.candlelight .future-star-note {
+  background: rgba(36,29,22,.72) !important;
+  border-color: rgba(201,168,76,.18) !important;
+  color: rgba(232,213,163,.72) !important;
+}
+
+/* ---------- 相册评论编辑区 ---------- */
+body.candlelight .photo-comment-editor {
+  background: transparent !important;
+}
+body.candlelight .photo-comment-editor textarea {
+  background: rgba(24,20,16,.72) !important;
+  border-color: rgba(201,168,76,.22) !important;
+  color: #e6dcc8 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05) !important;
+}
+body.candlelight .photo-comment-editor textarea::placeholder {
+  color: #766b59 !important;
+}
+body.candlelight .photo-comment-editor textarea:focus {
+  border-color: rgba(201,168,76,.42) !important;
+  box-shadow: 0 0 0 3px rgba(201,168,76,.08), inset 0 1px 0 rgba(255,255,255,.05) !important;
+}
+
+/* ---------- 音乐胶囊 / 完整播放器 ---------- */
+body.candlelight #musicCapsule {
+  background:
+    radial-gradient(100% 120% at 18% 0%, rgba(255,220,160,.12), transparent 52%),
+    linear-gradient(145deg, rgba(47,39,29,.94), rgba(27,23,18,.94)) !important;
+  border-color: rgba(201,168,76,.28) !important;
+  box-shadow:
+    0 20px 56px rgba(0,0,0,.44),
+    0 0 24px rgba(201,168,76,.08),
+    inset 0 1px 0 rgba(255,255,255,.10) !important;
+  color: #e8dcc8 !important;
+}
+body.candlelight #musicCapsule::before {
+  background: linear-gradient(120deg, rgba(255,220,160,.16), transparent 38%, transparent 72%, rgba(201,168,76,.06)) !important;
+}
+body.candlelight .music-capsule-panel {
+  color: #e8dcc8 !important;
+}
+body.candlelight .music-title { color: #f0e6d2 !important; }
+body.candlelight .music-sub { color: #b6a58b !important; }
+body.candlelight .music-artist { color: #9f927d !important; }
+body.candlelight .music-time-row { color: #9f927d !important; }
+body.candlelight .music-lyrics {
+  background: rgba(20,17,13,.36) !important;
+  border-color: rgba(201,168,76,.12) !important;
+}
+body.candlelight .music-lyric-cur { color: #e8d5a3 !important; }
+body.candlelight .music-lyric-next { color: #8f816c !important; }
+body.candlelight .music-progress::-webkit-slider-runnable-track {
+  background: rgba(201,168,76,.18) !important;
+}
+body.candlelight .music-progress::-moz-range-track {
+  background: rgba(201,168,76,.18) !important;
+}
+body.candlelight .music-progress::-webkit-slider-thumb {
+  background: #d4b56a !important;
+  box-shadow: 0 0 0 5px rgba(201,168,76,.12), 0 4px 14px rgba(0,0,0,.28) !important;
+}
+body.candlelight .music-progress::-moz-range-thumb {
+  background: #d4b56a !important;
+  box-shadow: 0 0 0 5px rgba(201,168,76,.12), 0 4px 14px rgba(0,0,0,.28) !important;
+}
+body.candlelight .music-nav-btn,
+body.candlelight .music-play {
+  background: rgba(56,45,31,.66) !important;
+  color: #ead9b5 !important;
+  border-color: rgba(201,168,76,.22) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.09), 0 10px 25px rgba(0,0,0,.22) !important;
+}
+body.candlelight .music-nav-btn.music-play-main,
+body.candlelight #musicPlay {
+  background: linear-gradient(145deg, rgba(76,58,31,.96), rgba(109,81,32,.78)) !important;
+  color: #f5e5bf !important;
+  border-color: rgba(201,168,76,.34) !important;
+}
+
+/* ---------- 时间轴卡片 / 普通提示文字 ---------- */
+body.candlelight .tl-hint { color: #d4b56a !important; }
+body.candlelight .gallery-overlay {
+  background: linear-gradient(transparent, rgba(0,0,0,.78)) !important;
+  color: #f2e7d3 !important;
+}
+
+/* ---------- 主题内通用关闭/标题按钮增强 ---------- */
+body.candlelight .tl-month-modal,
+body.candlelight .my-msg-modal,
+body.candlelight .future-message-panel,
+body.candlelight .photo-viewer,
+body.candlelight .lightbox {
+  color-scheme: dark;
+}
+</style>
 </head>
 <body>
   <!-- ====================== 开册启封 ====================== -->
@@ -10162,7 +10703,7 @@ body::after{
   var sealLayer = document.getElementById('tlSealLayer');
   var sealWax = document.getElementById('tlSealWax');
   var sealCaption = document.getElementById('tlSealCaption');
-  var SEAL_KEY = 'zhenhui_tl_sealed_years';
+  var SEAL_KEY = 'zhenhui_tl_sealed_years_v3';
   var sealBusy = false;
   var reduceMotion = false;
   try {
@@ -10240,8 +10781,17 @@ body::after{
     sealLayer.setAttribute('aria-hidden', 'false');
   }
 
+  var tlModalCloseTimer = null;
+
   function openTlModal(year) {
     if (!modal) return;
+
+    if (tlModalCloseTimer) {
+      clearTimeout(tlModalCloseTimer);
+      tlModalCloseTimer = null;
+    }
+
+    modal.classList.remove('is-closing');
     if (modalTitle) modalTitle.textContent = year + ' · 月度纪事';
     renderMonths(year);
     modal.classList.add('active');
@@ -10255,12 +10805,23 @@ body::after{
   }
 
   function closeTlModal() {
-    if (!modal) return;
-    modal.classList.remove('active');
+    if (!modal || !modal.classList.contains('active')) return;
+
+    /*
+     * 关闭期间保持 active，让弹窗盒子停在最终位置；
+     * 只淡出最外层，避免同时触发卡片缩放、内容 blur 和蜡印层动画。
+     */
+    modal.classList.add('is-closing');
     modal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-    hideSealLayer(true);
     sealBusy = false;
+
+    if (tlModalCloseTimer) clearTimeout(tlModalCloseTimer);
+    tlModalCloseTimer = setTimeout(function () {
+      tlModalCloseTimer = null;
+      modal.classList.remove('active', 'is-closing');
+      hideSealLayer(true);
+      document.body.style.overflow = '';
+    }, 360);
   }
 
   if (sealWax) {
@@ -12219,3 +12780,5 @@ if(track){
 
 </script></body>
 </html>
+
+
