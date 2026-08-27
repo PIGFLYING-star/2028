@@ -7011,7 +7011,16 @@ body.candlelight .lightbox {
      * @param {Array} list 全部留言数组
      */
     function renderMyMessages(list) {
-      const myList = list.filter(item => item.client_id === CLIENT_ID);
+      // 修复：我的留言面板二次防重复渲染
+      // 某些情况下后端可能返回同一客户端同内容的重复记录（例如重试写入、历史脏数据），这里只影响展示，不改变数据结构
+      const mySeenKeys = new Set();
+      const myList = list.filter(item => {
+        if (item.client_id !== CLIENT_ID) return false;
+        const key = `${item.client_id || ''}|${String(item.content || '').trim()}|${item.create_at ? new Date(item.create_at).getTime() : ''}`;
+        if (mySeenKeys.has(key)) return false;
+        mySeenKeys.add(key);
+        return true;
+      });
       modalMyMsgCount.textContent = myList.length;
       if (myList.length === 0) {
         modalMyMsgBody.innerHTML = '<div class="my-msg-empty">暂无留言，发布第一条吧✨</div>';
@@ -7113,12 +7122,18 @@ body.candlelight .lightbox {
           wallTip.textContent = '暂无留言，快来发布第一条回忆吧✨';
           wallTip.className = 'wall-tip';
         } else if (Array.isArray(data)) {
-          allMessages = [...pendingLocalMessages, ...data.filter(item => !pendingLocalMessages.some(p => p.id === item.id && p.content === item.content))];
-          // 修复：后端返回真实记录ID与本地临时记录ID不一致时，避免“我的留言”出现重复相同留言
-          // 保留数据结构不变，仅在渲染前按客户端、内容、时间做前端去重
+          // 合并服务器数据和本地缓存，并处理多种重复来源：
+          // 1. 临时ID与服务器ID不同
+          // 2. 同一客户端同一分钟内重复写入
+          // 3. 历史脏数据重复记录
+          allMessages = [...pendingLocalMessages, ...data];
           const seenMessageKeys = new Set();
           allMessages = allMessages.filter(item => {
-            const key = `${item.client_id || ''}|${item.content || ''}|${item.create_at || ''}`;
+            const content = String(item.content || '').trim();
+            const time = item.create_at ? new Date(item.create_at).getTime() : 0;
+            // 时间精度降低到分钟，避免服务器/本地时间轻微差异造成重复漏判
+            const minute = time ? Math.floor(time / 60000) : '';
+            const key = `${item.client_id || ''}|${content}|${minute}`;
             if (seenMessageKeys.has(key)) return false;
             seenMessageKeys.add(key);
             return true;
@@ -7239,7 +7254,8 @@ body.candlelight .lightbox {
         // 防止接口返回前后ID不同导致同一条留言重复展示
         const submitSeenKeys = new Set();
         allMessages = allMessages.filter(item => {
-          const key = `${item.client_id || ''}|${item.content || ''}|${item.create_at || ''}`;
+          const time = item.create_at ? new Date(item.create_at).getTime() : 0;
+          const key = `${item.client_id || ''}|${String(item.content || '').trim()}|${time ? Math.floor(time / 60000) : ''}`;
           if (submitSeenKeys.has(key)) return false;
           submitSeenKeys.add(key);
           return true;
@@ -12599,6 +12615,5 @@ body.night-reading .photo-comment-item{
 </style>
 </body>
 </html>
-
 
 
