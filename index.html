@@ -7114,6 +7114,15 @@ body.candlelight .lightbox {
           wallTip.className = 'wall-tip';
         } else if (Array.isArray(data)) {
           allMessages = [...pendingLocalMessages, ...data.filter(item => !pendingLocalMessages.some(p => p.id === item.id && p.content === item.content))];
+          // 修复：后端返回真实记录ID与本地临时记录ID不一致时，避免“我的留言”出现重复相同留言
+          // 保留数据结构不变，仅在渲染前按客户端、内容、时间做前端去重
+          const seenMessageKeys = new Set();
+          allMessages = allMessages.filter(item => {
+            const key = `${item.client_id || ''}|${item.content || ''}|${item.create_at || ''}`;
+            if (seenMessageKeys.has(key)) return false;
+            seenMessageKeys.add(key);
+            return true;
+          });
           wallTip.style.display = 'none';
         } else {
           throw new Error('返回数据格式错误');
@@ -7227,6 +7236,14 @@ body.candlelight .lightbox {
         };
         pendingLocalMessages.unshift(localRecord);
         allMessages = [localRecord, ...allMessages.filter(item => item.id !== localRecord.id)];
+        // 防止接口返回前后ID不同导致同一条留言重复展示
+        const submitSeenKeys = new Set();
+        allMessages = allMessages.filter(item => {
+          const key = `${item.client_id || ''}|${item.content || ''}|${item.create_at || ''}`;
+          if (submitSeenKeys.has(key)) return false;
+          submitSeenKeys.add(key);
+          return true;
+        });
         renderMyMessages(allMessages);
         // 下一轮同步后，如果服务器已返回真实记录，清除临时缓存
         setTimeout(() => {
@@ -12582,8 +12599,6 @@ body.night-reading .photo-comment-item{
 </style>
 </body>
 </html>
-
-
 
 
 
