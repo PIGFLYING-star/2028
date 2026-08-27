@@ -7058,23 +7058,25 @@ body.candlelight .lightbox {
      * @param {string} id 留言ID
      */
     async function deleteMessage(id) {
-      if (!confirm('确定要删除这条留言吗？')) return;
+      // UI优先：点击后立即从前端状态移除，不等待接口返回
+      allMessages = allMessages.filter(item => String(item.id) !== String(id));
+      pendingLocalMessages = pendingLocalMessages.filter(item => String(item.id) !== String(id));
+      renderMyMessages(allMessages);
+      document.querySelectorAll(`.danmaku-item[data-id="${id}"]`).forEach(el => el.remove());
+
+      // 后台异步删除，失败仅记录日志，不弹窗
       try {
         const res = await fetch(API_URL, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id, client_id: CLIENT_ID })
         });
-        const ret = await res.json();
-        if (!res.ok || ret.error) throw new Error(ret.error || '删除失败');
-        // 删除成功，重新拉取留言刷新界面
-        await loadMessages();
-        // 删除后刷新弹窗渲染（弹窗如果处于打开状态立刻更新列表）
-        renderMyMessages(allMessages);
-        // 移除页面上正在播放的对应弹幕DOM
-        document.querySelectorAll(`.danmaku-item[data-id="${id}"]`).forEach(el => el.remove());
+        const ret = await res.json().catch(() => null);
+        if (!res.ok || (ret && ret.error)) {
+          console.warn('删除留言失败:', (ret && ret.error) || ('HTTP ' + res.status));
+        }
       } catch (err) {
-        alert('删除失败：' + err.message);
+        console.warn('删除留言请求异常:', err);
       }
     }
     /* ==============================================
@@ -7175,8 +7177,8 @@ body.candlelight .lightbox {
     }
     let postingMessage = false;
     async function postMessage() {
-      if (postingMessage) return;
-      postingMessage = true;
+      // 按钮锁优先于接口结果，点击瞬间阻断重复提交
+      if (postingMessage || submitBtn.disabled) return;
       const text = msgInput.value.trim();
       if (!text) {
         msgInput.style.borderColor = '#e74c3c';
@@ -7184,8 +7186,13 @@ body.candlelight .lightbox {
         msgInput.focus();
         return;
       }
+
+      // 立即锁定按钮并清空输入框，不等待上传结果
+      postingMessage = true;
       submitBtn.disabled = true;
       submitBtn.textContent = '发布中...';
+      msgInput.value = '';
+
       // 飞行动画，抵达弹幕容器中间 → 创建本地虚拟弹幕
       playSendFlyAnimation(text, ()=>{
         createLocalVirtualDanmaku(text);
