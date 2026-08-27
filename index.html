@@ -12941,6 +12941,125 @@ body.candlelight .photo-comment-editor textarea{
 }
 </style>
 
+<style id="ios26-liquid-glass-refraction-upgrade">
+/* =========================================================
+   iOS 26 液态玻璃 · 折射质感升级层
+   仅提升页面中已存在的玻璃元素的 backdrop-filter
+  （模糊/饱和度/对比度/亮度），让玻璃更清透、更有折射感、
+   更贴近 Apple iOS 26 Liquid Glass 的观感。
+   —— 不改变任何背景色、边框颜色、阴影配色、结构、路径、
+      功能或未提及的样式；深色/夜读(candlelight)等已有配色
+      主题保持不变，仅玻璃模糊层本身被强化。
+   ========================================================= */
+
+#musicCapsule{
+  backdrop-filter:blur(30px) saturate(200%) contrast(1.08) brightness(1.04) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(200%) contrast(1.08) brightness(1.04) !important;
+}
+#photoCommentInput{
+  backdrop-filter:blur(20px) saturate(190%) contrast(1.06) !important;
+  -webkit-backdrop-filter:blur(20px) saturate(190%) contrast(1.06) !important;
+}
+.candle-toggle{
+  backdrop-filter:blur(30px) saturate(200%) contrast(1.08) brightness(1.04) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(200%) contrast(1.08) brightness(1.04) !important;
+}
+.fly-message{
+  backdrop-filter:blur(34px) saturate(200%) contrast(1.08) !important;
+  -webkit-backdrop-filter:blur(34px) saturate(200%) contrast(1.08) !important;
+}
+.future-flying-message{
+  backdrop-filter:blur(30px) saturate(200%) contrast(1.08) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(200%) contrast(1.08) !important;
+}
+.future-message-btn{
+  backdrop-filter:blur(28px) saturate(195%) contrast(1.07) brightness(1.03) !important;
+  -webkit-backdrop-filter:blur(28px) saturate(195%) contrast(1.07) brightness(1.03) !important;
+}
+.future-message-panel{
+  backdrop-filter:blur(34px) saturate(140%) contrast(1.05) !important;
+  -webkit-backdrop-filter:blur(34px) saturate(140%) contrast(1.05) !important;
+}
+.my-msg-modal-box,
+.open-my-msg-btn{
+  backdrop-filter:blur(44px) saturate(200%) contrast(1.08) brightness(1.04) !important;
+  -webkit-backdrop-filter:blur(44px) saturate(200%) contrast(1.08) brightness(1.04) !important;
+}
+.photo-comment-btn{
+  backdrop-filter:blur(28px) saturate(195%) contrast(1.07) !important;
+  -webkit-backdrop-filter:blur(28px) saturate(195%) contrast(1.07) !important;
+}
+.photo-comment-editor textarea,
+body.candlelight .photo-comment-editor textarea{
+  backdrop-filter:blur(26px) saturate(185%) contrast(1.06) !important;
+  -webkit-backdrop-filter:blur(26px) saturate(185%) contrast(1.06) !important;
+}
+.photo-memory-container{
+  backdrop-filter:blur(48px) saturate(210%) contrast(1.08) brightness(1.06) !important;
+  -webkit-backdrop-filter:blur(48px) saturate(210%) contrast(1.08) brightness(1.06) !important;
+}
+.photo-viewer{
+  backdrop-filter:blur(40px) saturate(180%) contrast(1.05) brightness(1.02) !important;
+  -webkit-backdrop-filter:blur(40px) saturate(180%) contrast(1.05) brightness(1.02) !important;
+}
+body.candlelight .photo-viewer{
+  backdrop-filter:blur(36px) saturate(105%) contrast(1.05) !important;
+  -webkit-backdrop-filter:blur(36px) saturate(105%) contrast(1.05) !important;
+}
+.photo-viewer-close,
+.photo-nav{
+  backdrop-filter:blur(36px) saturate(210%) contrast(1.08) brightness(1.03) !important;
+  -webkit-backdrop-filter:blur(36px) saturate(210%) contrast(1.08) brightness(1.03) !important;
+}
+.photo-viewer-hint{
+  backdrop-filter:blur(26px) saturate(195%) contrast(1.06) !important;
+  -webkit-backdrop-filter:blur(26px) saturate(195%) contrast(1.06) !important;
+}
+.photo-viewer-title-wrap{
+  backdrop-filter:blur(34px) saturate(205%) contrast(1.07) !important;
+  -webkit-backdrop-filter:blur(34px) saturate(205%) contrast(1.07) !important;
+}
+.tl-card{
+  backdrop-filter:blur(44px) saturate(205%) contrast(1.07) brightness(1.06) !important;
+  -webkit-backdrop-filter:blur(44px) saturate(205%) contrast(1.07) brightness(1.06) !important;
+}
+.tl-seal-layer{
+  backdrop-filter:blur(26px) saturate(185%) contrast(1.06) brightness(1.03) !important;
+  -webkit-backdrop-filter:blur(26px) saturate(185%) contrast(1.06) brightness(1.03) !important;
+}
+.tl-year{
+  backdrop-filter:blur(14px) saturate(160%) contrast(1.05) !important;
+  -webkit-backdrop-filter:blur(14px) saturate(160%) contrast(1.05) !important;
+}
+
+/* 移动端：沿用原有“降低模糊半径以保证滚动流畅”的性能策略，
+   仅做小幅度增强，不恢复到桌面端强度 */
+@media (max-width:768px){
+  .tl-card{
+    backdrop-filter:blur(18px) saturate(170%) contrast(1.05) !important;
+    -webkit-backdrop-filter:blur(18px) saturate(170%) contrast(1.05) !important;
+  }
+  .my-msg-modal-box,
+  .open-my-msg-btn{
+    backdrop-filter:blur(16px) saturate(160%) contrast(1.05) !important;
+    -webkit-backdrop-filter:blur(16px) saturate(160%) contrast(1.05) !important;
+  }
+}
+body.candlelight .tl-card{
+  backdrop-filter:blur(15px) saturate(165%) contrast(1.05) !important;
+  -webkit-backdrop-filter:blur(15px) saturate(165%) contrast(1.05) !important;
+}
+
+@media (prefers-reduced-motion:reduce){
+  #musicCapsule,#photoCommentInput,.candle-toggle,.fly-message,.future-flying-message,
+  .future-message-btn,.future-message-panel,.my-msg-modal-box,.open-my-msg-btn,
+  .photo-comment-btn,.photo-comment-editor textarea,.photo-memory-container,.photo-viewer,
+  .photo-viewer-close,.photo-nav,.photo-viewer-hint,.photo-viewer-title-wrap,.tl-card,
+  .tl-seal-layer,.tl-year{
+    transition:none !important;
+  }
+}
+</style>
 
   
 
