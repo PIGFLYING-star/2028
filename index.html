@@ -7034,6 +7034,9 @@ body.candlelight .lightbox {
       modalMyMsgBody.querySelectorAll('.my-msg-delete').forEach(btn => {
         btn.addEventListener('click', (e) => {
           const id = e.target.dataset.id;
+          // 删除前确认，避免误触删除
+          const confirmed = window.confirm('确定要删除这条留言吗？');
+          if (!confirmed) return;
           deleteMessage(id);
         });
       });
@@ -12525,3 +12528,7 @@ body.candlelight .photo-comment-send{
 
 </body>
 </html>
+
+
+
+
