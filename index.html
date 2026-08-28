@@ -12754,6 +12754,25 @@ body.night-reading .photo-comment-item{
   }
 }
 </style>
+
+<style id="future-message-composite-fix-final">
+/* 修复：移动端首次打开未来留言弹窗时 WebKit 合成层错误裁切。
+   仅关闭该弹窗自身的 GPU 动画合成，不影响结构、尺寸、交互。 */
+#futureMessagePanel .future-message-box{
+  animation:none !important;
+  filter:none !important;
+  -webkit-filter:none !important;
+  will-change:auto !important;
+  transform:none !important;
+  transition:opacity .3s ease !important;
+}
+#futureMessagePanel.is-open .future-message-box{
+  opacity:1 !important;
+}
+#futureMessagePanel:not(.is-open) .future-message-box{
+  opacity:0 !important;
+}
+</style>
 </body>
 </html>
 
