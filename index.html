@@ -11480,7 +11480,8 @@ if(viewer){
 */
 #futureMessagePanel .future-message-box{
   transform-origin:center center;
-  will-change:transform,opacity,filter;
+  /* 修复部分移动端浏览器首次打开弹窗时因 filter 合成层导致的瞬间裁切 */
+  will-change:transform,opacity;
   animation:none !important;
 }
 
@@ -11498,16 +11499,13 @@ if(viewer){
   0%{
     opacity:0;
     transform:translateY(44px) scale(.96);
-    filter:blur(14px);
   }
   28%{
     opacity:1;
     transform:translateY(-13px) scale(1.018);
-    filter:blur(3px);
   }
   46%{
     transform:translateY(6px) scale(.993);
-    filter:blur(1px);
   }
   61%{
     transform:translateY(-5px) scale(1.008);
@@ -11529,7 +11527,6 @@ if(viewer){
   0%{
     opacity:1;
     transform:translateY(0) scale(1);
-    filter:blur(0);
   }
   18%{
     transform:translateY(-5px) scale(1.006);
@@ -11540,7 +11537,6 @@ if(viewer){
   100%{
     opacity:0;
     transform:translateY(30px) scale(.96);
-    filter:blur(10px);
   }
 }
 
@@ -12760,6 +12756,5 @@ body.night-reading .photo-comment-item{
 </style>
 </body>
 </html>
-
 
 
