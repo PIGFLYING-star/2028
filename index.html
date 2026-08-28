@@ -5514,7 +5514,7 @@ body.candlelight .lightbox {
   <div class="wall-section">
     <div class="wall-header">
       <div class="wall-title">班级纪念册 · 弹幕留言墙</div>
-      <div class="wall-sub">写下你的祝福与回忆，所有人都能看见</div>
+      <div class="wall-sub">落笔镌刻祝福与旧日回忆，你的心声，在此与众人相见。</div>
     </div>
     <!-- 弹幕滚动容器 -->
     <div class="danmaku-container" id="danmakuContainer">
@@ -5680,7 +5680,7 @@ body.candlelight .lightbox {
       </button>
     </div>
 
-    <div class="photo-viewer-hint" id="photoViewerHint">左右滑动浏览 · 轻轻上扫查看照片背面</div>
+    <div class="photo-viewer-hint" id="photoViewerHint">左右滑动浏览 · 上扫查看照片背面</div>
 
     <div class="photo-memory-back" id="photoMemoryBack" aria-hidden="true">
       <div class="photo-memory-card" id="photoMemoryCard">
@@ -5689,7 +5689,7 @@ body.candlelight .lightbox {
         <div class="photo-memory-rule"></div>
 
         <div class="photo-memory-comments" id="photoMemoryComments">
-          <div class="photo-comment-empty" id="photoCommentEmpty">还没有评论，写下这张照片里的故事吧。</div>
+          <div class="photo-comment-empty" id="photoCommentEmpty">尚无只言片语，不妨叙写这帧画面承载的回忆。</div>
         </div>
 
         <div class="photo-comment-editor">
@@ -6409,7 +6409,7 @@ body.candlelight .lightbox {
         photoHint.textContent = '轻轻下扫退出照片浏览';
         loadPhotoComments(focusEditor);
       } else {
-        photoHint.textContent = '左右滑动浏览 · 轻轻上扫查看照片背面';
+        photoHint.textContent = '左右滑动浏览 · 上扫查看照片背面';
         photoViewer.classList.remove('is-memory-back');
       }
     }
@@ -6448,7 +6448,7 @@ body.candlelight .lightbox {
         const empty = document.createElement('div');
         empty.className = 'photo-comment-empty';
         empty.id = 'photoCommentEmpty';
-        empty.textContent = '还没有评论，写下这张照片里的故事吧。';
+        empty.textContent = '尚无只言片语，不妨叙写这帧画面承载的回忆。';
         photoMemoryComments.appendChild(empty);
         requestAnimationFrame(() => {
           photoMemoryComments.classList.add('is-visible');
