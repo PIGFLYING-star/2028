@@ -12748,7 +12748,18 @@ body.night-reading .photo-comment-item{
   animation-duration: .82s !important;
 }
 </style>
+
+<!-- 时间轴卡片阴影裁切修复：仅解除移动端时间轴容器的绘制裁切，不改变卡片样式/布局/交互 -->
+<style id="timeline-shadow-clip-fix">
+@media (max-width: 768px) {
+  .timeline {
+    content-visibility: visible;
+    contain: none;
+  }
+}
+</style>
 </body>
 </html>
+
 
 
