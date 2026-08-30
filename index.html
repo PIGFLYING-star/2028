@@ -5631,32 +5631,64 @@ body.candlelight .lightbox {
     </div>
     <div class="emblem-seal-mark" id="emblemSealMark" aria-live="polite"></div>
     <div class="emblem-hint">按住拖动 · 松手回正</div>
-    <div style="margin-top:160px;">
-  <button 
-    type="button" 
-    onclick="window.open('https://zhenhui-to-print-spring.pages.dev/', '_blank')" 
-    style="padding:10px 22px;border:1px solid var(--gold);background:rgba(201,168,76,0.08);color:var(--gold);border-radius:12px;font-size:14px;cursor:pointer;line-height:1.6;"
-  >
-    <span style="display:block;">撷取光景，镌刻回忆。</span>
-    <span style="display:block;font-size:12px;color:#999;">点击此处打印流年</span>
-  </button>
-  <button 
-    type="button" 
-    onclick="window.open('https://zhenhui-zhuawawa.pages.dev/', '_blank')" 
-    style="padding:10px 22px;border:1px solid var(--gold);background:rgba(201,168,76,0.08);color:var(--gold);border-radius:12px;font-size:14px;cursor:pointer;line-height:1.6;margin-top:16px;"
-  >
-    <span style="display:block;">拾取缤纷，收纳奇藏。</span>
-    <span style="display:block;font-size:12px;color:#999;">点击此处夹取网管</span>
-  </button>
-  <button 
-    type="button" 
-    onclick="window.open('https://zhenhui-to-take-photos.pages.dev/', '_blank')" 
-    style="padding:10px 22px;border:1px solid var(--gold);background:rgba(201,168,76,0.08);color:var(--gold);border-radius:12px;font-size:14px;cursor:pointer;line-height:1.6;margin-top:16px;"
-  >
-    <span style="display:block;">撷取浮光，收纳碎景。</span>
-    <span style="display:block;font-size:12px;color:#999;">点击此处捕捉帧影</span>
-  </button>
-</div>
+    <div class="more-header">
+      <div class="more-title">更多</div>
+      <div class="more-sub">/ MORE</div>
+    </div>
+    <div class="more-btns">
+      <button type="button" class="more-btn" onclick="window.open('https://zhenhui-to-print-spring.pages.dev/', '_blank')">
+        <span class="more-btn-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 4h16v10H16z"/>
+            <rect x="9" y="14" width="30" height="22" rx="3"/>
+            <path d="M14 24h20"/>
+            <path d="M18 36h12"/>
+            <circle cx="37" cy="20" r="1.4" fill="currentColor" stroke="none"/>
+          </svg>
+        </span>
+        <span class="more-btn-text">
+          <span class="more-btn-line">撷取光景，镌刻回忆。</span>
+          <span class="more-btn-sub">点击此处打印流年</span>
+        </span>
+      </button>
+      <button type="button" class="more-btn" onclick="window.open('https://zhenhui-zhuawawa.pages.dev/', '_blank')">
+        <span class="more-btn-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="8" y="6" width="32" height="36" rx="3"/>
+            <path d="M12 10h24"/>
+            <rect x="21" y="8" width="6" height="4" rx="1"/>
+            <line x1="24" y1="12" x2="24" y2="19"/>
+            <path d="M20 19c-1 2-1 4 1 5"/>
+            <path d="M24 19v5"/>
+            <path d="M28 19c1 2 1 4-1 5"/>
+            <circle cx="18" cy="34" r="2.5"/>
+            <circle cx="28" cy="35" r="2"/>
+            <rect x="34" y="32" width="4" height="6" rx="1"/>
+          </svg>
+        </span>
+        <span class="more-btn-text">
+          <span class="more-btn-line">拾取缤纷，收纳奇藏。</span>
+          <span class="more-btn-sub">点击此处夹取网管</span>
+        </span>
+      </button>
+      <button type="button" class="more-btn" onclick="window.open('https://zhenhui-to-take-photos.pages.dev/', '_blank')">
+        <span class="more-btn-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 14l1.5-3h11l1.5 3"/>
+            <rect x="8" y="14" width="32" height="24" rx="4"/>
+            <circle cx="24" cy="26" r="8"/>
+            <circle cx="24" cy="26" r="4"/>
+            <circle cx="24" cy="26" r="1.5" fill="currentColor" stroke="none"/>
+            <rect x="33" y="18" width="5" height="4" rx="1"/>
+            <circle cx="36" cy="12" r="1.6" fill="currentColor" stroke="none"/>
+          </svg>
+        </span>
+        <span class="more-btn-text">
+          <span class="more-btn-line">撷取浮光，收纳碎景。</span>
+          <span class="more-btn-sub">点击此处捕捉帧影</span>
+        </span>
+      </button>
+    </div>
   </section>
 
   <!-- ====================== 页脚 ====================== -->
@@ -12798,8 +12830,128 @@ body.night-reading .photo-comment-item{
   opacity:0 !important;
 }
 </style>
+<style id="more-section">
+/* ====================== 更多标题 + 三个纵向按钮（新增，复刻班徽标题样式） ====================== */
+.more-header {
+  position: relative;
+  z-index: 1;
+  margin-top: 44px;
+  margin-bottom: 4px;
+}
+.more-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--dark);
+  letter-spacing: 6px;
+  margin-bottom: 6px;
+}
+.more-sub {
+  font-size: 12px;
+  color: var(--text-sub);
+  letter-spacing: 3px;
+}
+.more-btns {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  margin-top: 26px;
+}
+.more-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: min(340px, 86vw);
+  padding: 13px 20px;
+  border: 1px solid var(--gold);
+  background: rgba(201,168,76,0.08);
+  color: var(--gold);
+  border-radius: 14px;
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.6;
+  cursor: pointer;
+  text-align: left;
+  -webkit-appearance: none;
+  transition: transform 0.35s cubic-bezier(0.22, 1.35, 0.36, 1), background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+  animation: moreBtnBounce 2.4s ease-in-out infinite;
+}
+/* 持续 Q 弹：果冻式轻弹跳动 */
+@keyframes moreBtnBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  25% { transform: translateY(-4px) scale(1.03, 0.97); }
+  45% { transform: translateY(0) scale(1); }
+  65% { transform: translateY(-2px) scale(1.012, 0.99); }
+  82% { transform: translateY(0) scale(1); }
+}
+/* 错峰延迟：三个按钮依次弹跳，形成波浪节奏 */
+.more-btn:nth-child(2) { animation-delay: 0.12s; }
+.more-btn:nth-child(3) { animation-delay: 0.24s; }
+/* 点击动画：按下收缩并暂停弹跳 */
+.more-btn:active {
+  transform: scale(0.94);
+  animation: none;
+  background: rgba(201,168,76,0.2);
+}
+.more-btn-icon {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  color: var(--gold);
+}
+.more-btn-icon svg {
+  width: 34px;
+  height: 34px;
+  display: block;
+}
+.more-btn-text {
+  display: flex;
+  flex-direction: column;
+}
+.more-btn-line {
+  font-weight: 600;
+}
+.more-btn-sub {
+  font-size: 12px;
+  color: #999;
+}
+@media (hover: hover) {
+  .more-btn:hover {
+    background: var(--gold);
+    color: #fff;
+    box-shadow: 0 10px 24px rgba(201,168,76,0.28);
+  }
+  .more-btn:hover .more-btn-icon { color: #fff; }
+  .more-btn:hover .more-btn-sub { color: rgba(255,255,255,0.82); }
+}
+/* 夜读模式适配：标题用变量自动跟随，按钮补充暖暗材质 */
+body.candlelight .more-btn {
+  background: rgba(46,38,28,0.82);
+  border-color: rgba(201,168,76,0.30);
+  color: #f0dfb7;
+}
+body.candlelight .more-btn-icon { color: #e8d5a3; }
+body.candlelight .more-btn-sub { color: #9f927d; }
+body.candlelight .more-btn:active { background: rgba(60,48,30,0.9); }
+@media (hover: hover) {
+  body.candlelight .more-btn:hover {
+    background: linear-gradient(145deg, rgba(74,57,30,.92), rgba(105,79,32,.70));
+    color: #f0dfb7;
+  }
+  body.candlelight .more-btn:hover .more-btn-icon { color: #f0dfb7; }
+  body.candlelight .more-btn:hover .more-btn-sub { color: rgba(240,223,183,0.8); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .more-btn { animation: none !important; }
+}
+</style>
 </body>
 </html>
+
 
 
 
