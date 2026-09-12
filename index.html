@@ -13,14 +13,26 @@
     Noto Serif SC：正文衬线字体
     Ma Shan Zheng：马善政手写书法字体（班训、签名、页脚）
   -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+  <!-- 【字体本地化】Noto Serif SC（可变字体，含400-900字重）+ Ma Shan Zheng 手写体 -->
+  <style>
+    @font-face {
+      font-family: 'Noto Serif SC';
+      src: url('assets/fonts/NotoSerifSC-VF.ttf') format('truetype');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Ma Shan Zheng';
+      src: url('assets/fonts/MaShanZheng-Regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+  </style>
   <!-- 【兼容修复】同源静态资源预连接，改善部分系统浏览器调度 -->
   <link rel="preconnect" href="/" crossorigin>
   <link rel="dns-prefetch" href="/">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
   <style>
     /* ====================== 全局重置与CSS变量 ====================== */
     * {
@@ -5638,12 +5650,26 @@ body.candlelight .lightbox {
     <div class="more-btns">
       <button type="button" class="more-btn" onclick="window.open('https://zhenhui-to-print-spring.pages.dev/', '_blank')">
         <span class="more-btn-icon" aria-hidden="true">
-          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M16 4h16v10H16z"/>
-            <rect x="9" y="14" width="30" height="22" rx="3"/>
-            <path d="M14 24h20"/>
-            <path d="M18 36h12"/>
-            <circle cx="37" cy="20" r="1.4" fill="currentColor" stroke="none"/>
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <!-- 顶部露出的纸 -->
+            <path d="M15 4h18v5H15z"/>
+            <path d="M18 6h12M18 8h8" opacity="0.45"/>
+            <!-- 主机身 -->
+            <rect x="7" y="9" width="34" height="25" rx="3"/>
+            <!-- 上盖分界线 -->
+            <path d="M7 15h34" opacity="0.35"/>
+            <!-- 出纸口 -->
+            <rect x="13" y="27" width="22" height="4" rx="1" fill="currentColor" opacity="0.06"/>
+            <path d="M13 29h22"/>
+            <!-- 输出的纸张 -->
+            <path d="M15 31v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-6"/>
+            <path d="M18 34h9M18 36.5h6" opacity="0.4"/>
+            <!-- 控制面板：指示灯 + 按钮 -->
+            <circle cx="35.5" cy="12.5" r="1.3" fill="currentColor" stroke="none"/>
+            <rect x="31" y="17.5" width="7" height="2.5" rx="0.5"/>
+            <circle cx="34.5" cy="18.75" r="0.6" fill="currentColor" stroke="none" opacity="0.5"/>
+            <!-- 底部进纸托盘 -->
+            <path d="M10 34v2.5c0 .55.45 1 1 1h26c.55 0 1-.45 1-1V34"/>
           </svg>
         </span>
         <span class="more-btn-text">
@@ -5653,17 +5679,49 @@ body.candlelight .lightbox {
       </button>
       <button type="button" class="more-btn" onclick="window.open('https://zhenhui-zhuawawa.pages.dev/', '_blank')">
         <span class="more-btn-icon" aria-hidden="true">
-          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="8" y="6" width="32" height="36" rx="3"/>
-            <path d="M12 10h24"/>
-            <rect x="21" y="8" width="6" height="4" rx="1"/>
-            <line x1="24" y1="12" x2="24" y2="19"/>
-            <path d="M20 19c-1 2-1 4 1 5"/>
-            <path d="M24 19v5"/>
-            <path d="M28 19c1 2 1 4-1 5"/>
-            <circle cx="18" cy="34" r="2.5"/>
-            <circle cx="28" cy="35" r="2"/>
-            <rect x="34" y="32" width="4" height="6" rx="1"/>
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <!-- 顶部招牌 -->
+            <rect x="9" y="3" width="30" height="5" rx="1.2"/>
+            <circle cx="13" cy="5.5" r="0.7" fill="currentColor" stroke="none"/>
+            <circle cx="24" cy="5.5" r="0.7" fill="currentColor" stroke="none"/>
+            <circle cx="35" cy="5.5" r="0.7" fill="currentColor" stroke="none"/>
+            <!-- 主机柜 -->
+            <rect x="6" y="8" width="36" height="35" rx="3"/>
+            <!-- 玻璃舱与底部舱分隔 -->
+            <path d="M6 27h36"/>
+            <!-- 顶部移动轨道 -->
+            <path d="M10 11h28"/>
+            <!-- 滑轮 -->
+            <circle cx="24" cy="11" r="1.3" fill="currentColor" opacity="0.15"/>
+            <!-- 吊杆 -->
+            <line x1="24" y1="12.3" x2="24" y2="16.5"/>
+            <!-- 三爪抓钩 -->
+            <path d="M24 16.5c-2.8 0-3.8 1.8-3.8 3.5"/>
+            <path d="M24 16.5v3.5"/>
+            <path d="M24 16.5c2.8 0 3.8 1.8 3.8 3.5"/>
+            <path d="M20.2 20c-0.8 1.2-0.8 2.5 0.3 3.3"/>
+            <path d="M24 20v3.3"/>
+            <path d="M27.8 20c0.8 1.2 0.8 2.5-0.3 3.3"/>
+            <!-- 玻璃舱内奖品 -->
+            <circle cx="13" cy="22.5" r="2"/>
+            <circle cx="13" cy="22.5" r="0.6" fill="currentColor" stroke="none" opacity="0.3"/>
+            <circle cx="20" cy="23.5" r="1.7"/>
+            <rect x="26.5" y="20.5" width="4" height="4" rx="0.6" transform="rotate(12 28.5 22.5)"/>
+            <path d="M35 21.5l1.2 2.2h-2.4z"/>
+            <circle cx="16.5" cy="25.3" r="1.2"/>
+            <circle cx="32" cy="25" r="1.4"/>
+            <!-- 取物口 -->
+            <rect x="13" y="31" width="16" height="6" rx="1" fill="currentColor" opacity="0.05"/>
+            <path d="M13 34h16"/>
+            <path d="M15.5 36.5h11" opacity="0.35"/>
+            <!-- 右侧控制面板：摇杆 + 按钮 -->
+            <rect x="33" y="30" width="5.5" height="9" rx="1"/>
+            <circle cx="35.75" cy="32.5" r="1.1" fill="currentColor" stroke="none"/>
+            <line x1="35.75" y1="33.6" x2="35.75" y2="35.5"/>
+            <rect x="34.5" y="36.2" width="2.5" height="1.8" rx="0.3"/>
+            <!-- 左侧投币口 -->
+            <rect x="8" y="31" width="3" height="5" rx="0.5"/>
+            <path d="M9 33h1" opacity="0.5"/>
           </svg>
         </span>
         <span class="more-btn-text">
@@ -5673,14 +5731,37 @@ body.candlelight .lightbox {
       </button>
       <button type="button" class="more-btn" onclick="window.open('https://zhenhui-to-take-photos.pages.dev/', '_blank')">
         <span class="more-btn-icon" aria-hidden="true">
-          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17 14l1.5-3h11l1.5 3"/>
-            <rect x="8" y="14" width="32" height="24" rx="4"/>
-            <circle cx="24" cy="26" r="8"/>
-            <circle cx="24" cy="26" r="4"/>
-            <circle cx="24" cy="26" r="1.5" fill="currentColor" stroke="none"/>
-            <rect x="33" y="18" width="5" height="4" rx="1"/>
-            <circle cx="36" cy="12" r="1.6" fill="currentColor" stroke="none"/>
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <!-- 顶部取景器 -->
+            <rect x="15" y="4.5" width="7.5" height="5.5" rx="1"/>
+            <rect x="16.5" y="6" width="4.5" height="2.5" rx="0.4" fill="currentColor" opacity="0.1"/>
+            <!-- 测光窗 -->
+            <rect x="25.5" y="5.5" width="5" height="4" rx="0.8"/>
+            <!-- 闪光灯 -->
+            <circle cx="37.5" cy="7.5" r="2.2"/>
+            <circle cx="37.5" cy="7.5" r="0.9" fill="currentColor" stroke="none"/>
+            <path d="M37.5 4.2v1M37.5 9.8v1M34.2 7.5h1M39.8 7.5h1" opacity="0.4"/>
+            <!-- 主机身 -->
+            <rect x="5" y="10" width="38" height="27" rx="4"/>
+            <!-- 经典彩虹条纹（拍立得标志）-->
+            <path d="M9 13.5h30" opacity="0.25"/>
+            <path d="M9 15h30" opacity="0.18"/>
+            <path d="M9 16.5h30" opacity="0.12"/>
+            <!-- 镜头多层环 -->
+            <circle cx="24" cy="26.5" r="9.5"/>
+            <circle cx="24" cy="26.5" r="7"/>
+            <circle cx="24" cy="26.5" r="4.5"/>
+            <circle cx="24" cy="26.5" r="1.8" fill="currentColor" stroke="none"/>
+            <!-- 镜头高光 -->
+            <path d="M20.5 23c1.2-1 2.8-1.5 4.5-1.5" opacity="0.35"/>
+            <!-- 快门按钮 -->
+            <rect x="33" y="12.5" width="5.5" height="3" rx="0.8" fill="currentColor" opacity="0.1"/>
+            <circle cx="35.75" cy="14" r="0.7" fill="currentColor" stroke="none" opacity="0.4"/>
+            <!-- 底部出片口 + 露出的相纸 -->
+            <rect x="15" y="37" width="18" height="3.5" rx="0.8" fill="currentColor" opacity="0.06"/>
+            <path d="M15 38.75h18"/>
+            <path d="M17 40.5v2.5c0 .4.3.7.7.7h14.6c.4 0 .7-.3.7-.7v-2.5"/>
+            <path d="M19.5 42h9" opacity="0.3"/>
           </svg>
         </span>
         <span class="more-btn-text">
@@ -12951,7 +13032,6 @@ body.candlelight .more-btn:active { background: rgba(60,48,30,0.9); }
 </style>
 </body>
 </html>
-
 
 
 
