@@ -13030,6 +13030,26 @@ body.candlelight .more-btn:active { background: rgba(60,48,30,0.9); }
   .more-btn { animation: none !important; }
 }
 </style>
+<script>
+/* 彩蛋：连续点击班徽10次跳转 */
+(function(){
+  var target = "https://zhenhui-new-page.pages.dev";
+  var stage = document.querySelector(".emblem-stage");
+  if(!stage) return;
+  var count = 0;
+  var timer = null;
+  stage.addEventListener("click", function(e){
+    count++;
+    if(timer) clearTimeout(timer);
+    timer = setTimeout(function(){ count = 0; }, 1500);
+    if(count >= 10){
+      count = 0;
+      if(timer) clearTimeout(timer);
+      window.location.href = target;
+    }
+  }, true);
+})();
+</script>
 </body>
 </html>
 
