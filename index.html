@@ -6127,27 +6127,30 @@ body.candlelight .lightbox {
     }
 
     @media (max-width: 640px) {
+      /* 手机端单页模式：隐藏左页，右页占满，避免文字被压缩 */
+      .huang-book-left { display: none; }
+      .huang-book-right { width: 100%; border-radius: 8px; }
+      .huang-book::before { display: none; }
       .huang-book {
-        width: 96vw;
-        height: min(520px, 72vh);
+        width: 94vw;
+        height: min(560px, 74vh);
+        border-radius: 8px;
       }
+      .huang-page-front { border-radius: 8px; padding: 28px 22px; padding-top: 60px; }
+      .huang-page-back { border-radius: 8px; }
+      .huang-cover-flip-front { border-radius: 8px; }
+      .huang-cover-flip-back { border-radius: 8px; }
       .huang-nav { display: none !important; }
       .huang-close { top: -46px; width: 36px; height: 36px; }
-      .huang-page-front, .huang-page-back { padding: 24px 16px; }
-      .huang-page-front { padding-top: 56px; }
-      .huang-left-inner { padding: 24px 12px; }
-      .huang-left-title { font-size: 18px; letter-spacing: 6px; }
-      .huang-left-seal { width: 40px; height: 40px; font-size: 20px; }
-      .huang-left-en { font-size: 7px; letter-spacing: 2px; }
       .huang-cover-btn { width: 170px; height: 245px; }
       .huang-cover-title-v { font-size: 38px; letter-spacing: 8px; }
       .huang-quote-cn {
-        font-size: clamp(17px, 4.8vw, 22px);
-        letter-spacing: 1.5px;
-        line-height: 1.9;
+        font-size: clamp(19px, 5.2vw, 24px);
+        letter-spacing: 2px;
+        line-height: 2;
       }
-      .huang-quote-ornament { font-size: 38px; margin-bottom: 16px; }
-      .huang-quote-line { margin-top: 22px; }
+      .huang-quote-ornament { font-size: 40px; margin-bottom: 18px; }
+      .huang-quote-line { margin-top: 24px; }
       .huang-page-num { bottom: -38px; font-size: 12px; }
     }
   </style>
@@ -13891,9 +13894,6 @@ body.candlelight .more-btn:active {
 
 </body>
 </html>
-
-
-
 
 
 
