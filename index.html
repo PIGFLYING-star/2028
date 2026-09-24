@@ -5781,12 +5781,13 @@ body.candlelight .lightbox {
     .huang-book-scene {
       position: relative; z-index: 2;
       perspective: 2500px;
-      transform: scale(0.7) translateY(40px) rotateX(8deg);
+      transform: scale(0.85) translateY(16px);
       opacity: 0;
-      transition: transform 0.6s cubic-bezier(0.34, 1.4, 0.64, 1), opacity 0.4s ease;
+      transition: transform 0.55s cubic-bezier(0.34, 1.35, 0.64, 1), opacity 0.35s ease;
+      will-change: transform, opacity;
     }
     .huang-modal.active .huang-book-scene {
-      transform: scale(1) translateY(0) rotateX(0);
+      transform: scale(1) translateY(0);
       opacity: 1;
     }
 
@@ -13722,20 +13723,34 @@ body.candlelight .more-btn:active {
     "人无我有，人有我优，人优我特。"
   ];
 
-  var coverBtn = document.getElementById('huangCoverBtn');
-  var modal    = document.getElementById('huangModal');
-  var overlay  = document.getElementById('huangModalOverlay');
-  var book     = document.getElementById('huangBook');
-  var closeBtn = document.getElementById('huangClose');
-  var prevBtn  = document.getElementById('huangPrev');
-  var nextBtn  = document.getElementById('huangNext');
-  var right    = document.getElementById('huangBookRight');
-  var pageNum  = document.getElementById('huangPageNum');
-  var pages    = [];
-  var total    = QUOTES.length;
-  var current  = 0;
-  var busy     = false;
-  var isOpen   = false;
+  var coverBtn  = document.getElementById('huangCoverBtn');
+  var modal     = document.getElementById('huangModal');
+  var overlay   = document.getElementById('huangModalOverlay');
+  var book      = document.getElementById('huangBook');
+  var bookScene = book.parentElement; /* .huang-book-scene */
+  var closeBtn  = document.getElementById('huangClose');
+  var prevBtn   = document.getElementById('huangPrev');
+  var nextBtn   = document.getElementById('huangNext');
+  var right     = document.getElementById('huangBookRight');
+  var pageNum   = document.getElementById('huangPageNum');
+  var pages     = [];
+  var total     = QUOTES.length;
+  var current   = 0;
+  var busy      = false;
+  var isOpen    = false;
+
+  /* 计算书本从屏幕中央飞到封面位置的 transform */
+  function coverTransform() {
+    var rect = coverBtn.getBoundingClientRect();
+    var bookW = book.offsetWidth;
+    var bookH = book.offsetHeight;
+    var scale = Math.min(rect.width / bookW, rect.height / bookH);
+    var cx = rect.left + rect.width / 2;
+    var cy = rect.top + rect.height / 2;
+    var dx = cx - window.innerWidth / 2;
+    var dy = cy - window.innerHeight / 2;
+    return 'translate(' + dx + 'px,' + dy + 'px) scale(' + scale + ')';
+  }
 
   /* 动态生成语录页面 */
   function buildPages() {
@@ -13761,7 +13776,6 @@ body.candlelight .more-btn:active {
     applyZIndex();
   }
 
-  /* 动态管理 z-index：未翻转按倒序堆叠，翻转后置底 */
   function applyZIndex() {
     pages.forEach(function (p, i) {
       p.style.zIndex = p.classList.contains('flipped') ? 0 : (total - i);
@@ -13783,33 +13797,74 @@ body.candlelight .more-btn:active {
     updateUI();
   }
 
+  /* ===== 打开：封面 → 飞到中央 → 翻开 ===== */
   function openModal() {
     if (isOpen) return;
     isOpen = true;
+    busy = true;
     resetBook();
     book.classList.remove('opening');
+
+    /* 书本先定位到封面的位置和大小 */
+    bookScene.style.transition = 'none';
+    bookScene.style.transform = coverTransform();
+    bookScene.style.opacity = '0';
+
+    /* 隐藏页面中的原封面 */
+    coverBtn.style.transition = 'opacity 0.3s ease';
+    coverBtn.style.opacity = '0';
+
+    /* 显示弹窗 */
     modal.classList.add('active');
     modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
-    /* 强制重排：确保浏览器先渲染封面闭合的初始状态，再触发翻开动画 */
+
+    /* 强制重排，确保初始状态生效 */
     void modal.offsetWidth;
-    void book.offsetWidth;
-    /* 等弹窗入场动画基本完成后再翻开封面，动画更清晰 */
-    setTimeout(function () { book.classList.add('opening'); }, 550);
+
+    /* 下一帧：书本从封面位置飞到屏幕中央 */
+    requestAnimationFrame(function () {
+      bookScene.style.transition = '';
+      bookScene.style.transform = '';
+      bookScene.style.opacity = '';
+    });
+
+    /* 飞行动画完成后翻开封面 */
+    setTimeout(function () {
+      book.classList.add('opening');
+      void book.offsetWidth;
+      setTimeout(function () { busy = false; }, 1000);
+    }, 560);
   }
 
+  /* ===== 关闭：合上封面 → 飞回原位置 → 隐藏 ===== */
   function closeModal() {
-    if (!isOpen) return;
+    if (!isOpen || busy) return;
     isOpen = false;
     busy = true;
+
+    /* 合上封面 */
     book.classList.remove('opening');
-    /* 强制重排：确保合上动画触发 */
     void book.offsetWidth;
+
+    /* 等封面合上后，书本飞回封面位置 */
     setTimeout(function () {
-      modal.classList.remove('active');
-      modal.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = '';
-      setTimeout(function () { resetBook(); busy = false; }, 450);
+      bookScene.style.transition = 'transform 0.5s cubic-bezier(0.5, 0, 0.75, 0), opacity 0.35s ease';
+      bookScene.style.transform = coverTransform();
+      bookScene.style.opacity = '0';
+
+      /* 飞回完成后关闭弹窗，恢复原封面 */
+      setTimeout(function () {
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        coverBtn.style.opacity = '';
+        bookScene.style.transition = '';
+        bookScene.style.transform = '';
+        bookScene.style.opacity = '';
+        resetBook();
+        busy = false;
+      }, 520);
     }, 950);
   }
 
@@ -13892,8 +13947,13 @@ body.candlelight .more-btn:active {
 
 
 
+
 </body>
 </html>
+
+
+
+
 
 
 
