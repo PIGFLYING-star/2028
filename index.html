@@ -5610,6 +5610,584 @@ body.candlelight .lightbox {
     </div>
   </div>
 
+  <!-- ====================== 黄氏语录 · 书本 ====================== -->
+  <style id="huang-quotes-book">
+    /* ===== 区块标题（与班徽标题同款） ===== */
+    .huang-section {
+      padding: 56px 20px 64px;
+      text-align: center;
+      background: var(--cream);
+      position: relative;
+      overflow: hidden;
+    }
+    .huang-header { position: relative; z-index: 1; margin-bottom: 4px; }
+    .huang-title {
+      font-size: 22px; font-weight: 700;
+      color: var(--dark); letter-spacing: 6px;
+      margin-bottom: 6px;
+    }
+    .huang-sub {
+      font-size: 12px; color: var(--text-sub);
+      letter-spacing: 3px;
+    }
+    .huang-stage {
+      position: relative; z-index: 1;
+      margin-top: 40px;
+      display: flex; justify-content: center;
+      perspective: 1500px;
+    }
+
+    /* ===== 页面中的书封面 ===== */
+    .huang-cover-btn {
+      position: relative;
+      width: 210px; height: 300px;
+      cursor: pointer;
+      outline: none;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.34, 1.3, 0.64, 1);
+    }
+    .huang-cover-btn:hover,
+    .huang-cover-btn:focus-visible {
+      transform: translateY(-8px) rotateY(-8deg) rotateX(3deg);
+    }
+    /* 书页厚度（右侧页面边） */
+    .huang-cover-btn::before {
+      content: '';
+      position: absolute;
+      top: 4px; bottom: 4px; right: -6px;
+      width: 6px;
+      background: linear-gradient(90deg, #e8dcc0 0%, #f5ecd6 50%, #d4c8a8 100%);
+      border-radius: 0 2px 2px 0;
+      box-shadow: inset -1px 0 2px rgba(0,0,0,0.1);
+    }
+    /* 底部厚度 */
+    .huang-cover-btn::after {
+      content: '';
+      position: absolute;
+      left: 4px; right: -2px; bottom: -6px;
+      height: 6px;
+      background: linear-gradient(180deg, #d4c8a8 0%, #b8a880 100%);
+      border-radius: 0 0 3px 3px;
+    }
+    .huang-cover-face {
+      position: relative;
+      width: 100%; height: 100%;
+      background:
+        radial-gradient(ellipse at 75% 20%, rgba(255,230,150,0.35) 0%, transparent 50%),
+        linear-gradient(160deg, #d4a73a 0%, #b8891f 35%, #9a6f12 70%, #7a5608 100%);
+      border-radius: 3px 8px 8px 3px;
+      box-shadow:
+        0 20px 50px rgba(90,60,5,0.4),
+        inset 0 0 0 1px rgba(255,220,140,0.3),
+        inset 0 0 40px rgba(60,40,0,0.3);
+      overflow: hidden;
+    }
+    /* 书脊 */
+    .huang-cover-face::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 18px;
+      background: linear-gradient(90deg, rgba(0,0,0,0.3) 0%, rgba(255,220,140,0.1) 70%, rgba(0,0,0,0.1) 100%);
+    }
+    /* 封面纹理 */
+    .huang-cover-face::after {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        repeating-linear-gradient(90deg, transparent 0px, transparent 2px, rgba(255,255,255,0.02) 2px, rgba(255,255,255,0.02) 3px);
+      pointer-events: none;
+    }
+    .huang-cover-inner {
+      position: absolute;
+      inset: 14px 14px 14px 28px;
+      border: 1px solid rgba(255,220,140,0.45);
+      border-radius: 2px 5px 5px 2px;
+      display: flex; flex-direction: column;
+      align-items: flex-end; justify-content: flex-start;
+      padding: 28px 22px 0 0;
+      z-index: 1;
+    }
+    /* 内框四角装饰 */
+    .huang-cover-inner::before,
+    .huang-cover-inner::after {
+      content: '';
+      position: absolute;
+      width: 14px; height: 14px;
+      border-color: rgba(255,220,140,0.5);
+      border-style: solid;
+    }
+    .huang-cover-inner::before {
+      top: 6px; left: 6px;
+      border-width: 1.5px 0 0 1.5px;
+    }
+    .huang-cover-inner::after {
+      bottom: 6px; right: 6px;
+      border-width: 0 1.5px 1.5px 0;
+    }
+    .huang-cover-title-v {
+      writing-mode: vertical-rl;
+      font-family: 'Noto Serif SC', serif;
+      font-weight: 900;
+      font-size: 44px;
+      color: #f5e6b8;
+      letter-spacing: 10px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.4), 0 0 20px rgba(255,210,100,0.2);
+      line-height: 1.1;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .huang-cover-divider {
+      width: 1px; height: 22px;
+      background: linear-gradient(180deg, transparent, rgba(255,220,140,0.5), transparent);
+      margin: 14px 0;
+      flex-shrink: 0;
+    }
+    .huang-cover-en {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 8.5px;
+      letter-spacing: 3.5px;
+      color: rgba(245,230,184,0.6);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .huang-cover-hint {
+      margin-top: 22px;
+      font-size: 12px;
+      color: var(--text-sub);
+      letter-spacing: 5px;
+      animation: huangHint 2.4s ease-in-out infinite;
+    }
+    @keyframes huangHint {
+      0%, 100% { opacity: 0.35; }
+      50% { opacity: 0.85; }
+    }
+
+    /* ===== 弹窗 ===== */
+    .huang-modal {
+      position: fixed; inset: 0;
+      z-index: 99998;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden;
+      transition: opacity 0.5s ease, visibility 0.5s;
+    }
+    .huang-modal.active { opacity: 1; visibility: visible; }
+    .huang-modal-overlay {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center, rgba(30,20,5,0.78) 0%, rgba(10,6,0,0.94) 100%);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .huang-book-scene {
+      position: relative; z-index: 2;
+      perspective: 2500px;
+      transform: scale(0.7) translateY(40px) rotateX(8deg);
+      opacity: 0;
+      transition: transform 0.6s cubic-bezier(0.34, 1.4, 0.64, 1), opacity 0.4s ease;
+    }
+    .huang-modal.active .huang-book-scene {
+      transform: scale(1) translateY(0) rotateX(0);
+      opacity: 1;
+    }
+
+    /* ===== 书本主体 ===== */
+    .huang-book {
+      width: min(720px, 94vw);
+      height: min(480px, 68vh);
+      position: relative;
+      transform-style: preserve-3d;
+      display: flex;
+      border-radius: 6px;
+      box-shadow:
+        0 40px 100px rgba(0,0,0,0.55),
+        0 0 0 1px rgba(201,168,76,0.15);
+    }
+    .huang-book-left,
+    .huang-book-right {
+      width: 50%; height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+    }
+    .huang-book-left {
+      background: linear-gradient(135deg, #8b6914 0%, #6b4f0c 50%, #5a4208 100%);
+      border-radius: 6px 0 0 6px;
+      box-shadow: inset -12px 0 30px rgba(0,0,0,0.25);
+      overflow: hidden;
+    }
+    .huang-book-right {
+      background: linear-gradient(225deg, #fdf6e8 0%, #f3e5c5 100%);
+      border-radius: 0 6px 6px 0;
+      box-shadow: inset 12px 0 30px rgba(0,0,0,0.06);
+    }
+    /* 书脊 */
+    .huang-book::before {
+      content: '';
+      position: absolute;
+      left: 50%; top: 0; bottom: 0;
+      width: 6px;
+      background: linear-gradient(90deg, rgba(0,0,0,0.25), rgba(255,240,200,0.5), rgba(0,0,0,0.25));
+      transform: translateX(-50%);
+      z-index: 100;
+      pointer-events: none;
+    }
+    /* 左页装饰纹理 */
+    .huang-book-left::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(circle at 30% 40%, rgba(255,210,100,0.08) 0%, transparent 50%),
+        repeating-linear-gradient(90deg, transparent 0, transparent 3px, rgba(255,220,140,0.02) 3px, rgba(255,220,140,0.02) 4px);
+    }
+
+    /* 左页内容 */
+    .huang-left-inner {
+      position: relative; z-index: 1;
+      height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 40px 30px;
+      text-align: center;
+    }
+    .huang-left-seal {
+      width: 56px; height: 56px;
+      border: 2px solid rgba(245,230,184,0.5);
+      border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Noto Serif SC', serif;
+      font-weight: 900;
+      font-size: 28px;
+      color: rgba(245,230,184,0.7);
+      margin-bottom: 28px;
+      letter-spacing: 0;
+    }
+    .huang-left-title {
+      writing-mode: vertical-rl;
+      font-family: 'Noto Serif SC', serif;
+      font-weight: 700;
+      font-size: 26px;
+      color: #f0dfa8;
+      letter-spacing: 12px;
+      margin-bottom: 20px;
+    }
+    .huang-left-line {
+      width: 1px; height: 30px;
+      background: linear-gradient(180deg, transparent, rgba(240,223,168,0.4), transparent);
+      margin-bottom: 20px;
+    }
+    .huang-left-en {
+      font-size: 9px;
+      letter-spacing: 4px;
+      color: rgba(240,223,168,0.45);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    /* ===== 翻页层（关键：preserve-3d + perspective） ===== */
+    .huang-page {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      transform-origin: left center;
+      transform-style: preserve-3d;
+      -webkit-transform-style: preserve-3d;
+      transition: transform 0.9s cubic-bezier(0.645, 0.045, 0.355, 1);
+      will-change: transform;
+    }
+    .huang-page { z-index: 1; }
+    .huang-page.flipped {
+      transform: rotateY(-180deg);
+      z-index: 0 !important;
+    }
+    .huang-page-front,
+    .huang-page-back {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 44px 34px;
+      box-sizing: border-box;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+    .huang-page-front {
+      background:
+        radial-gradient(ellipse at 70% 20%, rgba(255,255,255,0.5) 0%, transparent 50%),
+        linear-gradient(225deg, #fefaf0 0%, #f7ead0 100%);
+      border-radius: 0 6px 6px 0;
+      justify-content: flex-start;
+      padding-top: 88px;
+    }
+    /* 纸张纹理 */
+    .huang-page-front::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent 0, transparent 28px, rgba(184,150,46,0.04) 28px, rgba(184,150,46,0.04) 29px);
+      pointer-events: none;
+    }
+    .huang-page-back {
+      background: linear-gradient(135deg, #f0e2c0 0%, #e4d09a 100%);
+      transform: rotateY(180deg);
+      border-radius: 6px 0 0 6px;
+    }
+    .huang-page-back::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent 0, transparent 28px, rgba(150,120,30,0.05) 28px, rgba(150,120,30,0.05) 29px);
+    }
+    .huang-back-mark {
+      font-family: 'Noto Serif SC', serif;
+      font-weight: 900;
+      font-size: 80px;
+      color: rgba(150,110,20,0.08);
+      letter-spacing: 4px;
+      position: relative; z-index: 1;
+    }
+
+    /* 语录排版 */
+    .huang-quote-wrap {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column;
+      align-items: center;
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+    }
+    .huang-quote-ornament {
+      font-family: Georgia, serif;
+      font-size: 48px;
+      color: #c9a84c;
+      line-height: 0.5;
+      margin-bottom: 20px;
+      opacity: 0.6;
+      align-self: flex-start;
+      margin-left: 8%;
+      user-select: none;
+    }
+    .huang-quote-cn {
+      font-family: 'Noto Serif SC', serif;
+      font-size: clamp(18px, 2.6vw, 24px);
+      font-weight: 600;
+      color: #2c1e05;
+      line-height: 2.1;
+      letter-spacing: 5px;
+      text-align: center;
+      max-width: 92%;
+    }
+    .huang-quote-line {
+      width: 44px; height: 1px;
+      background: linear-gradient(90deg, transparent, #c9a84c, transparent);
+      margin-top: 30px;
+    }
+
+    /* ===== 封面翻开层 ===== */
+    .huang-cover-flip {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      transform-origin: left center;
+      transform-style: preserve-3d;
+      -webkit-transform-style: preserve-3d;
+      transform: rotateY(0deg);
+      transition: transform 1s cubic-bezier(0.645, 0.045, 0.355, 1);
+      z-index: 20;
+      will-change: transform;
+    }
+    .huang-book.opening .huang-cover-flip {
+      transform: rotateY(-180deg);
+      z-index: 0;
+    }
+    .huang-cover-flip-front,
+    .huang-cover-flip-back {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      overflow: hidden;
+    }
+    .huang-cover-flip-front {
+      background:
+        radial-gradient(ellipse at 75% 20%, rgba(255,230,150,0.3) 0%, transparent 50%),
+        linear-gradient(160deg, #d4a73a 0%, #b8891f 35%, #9a6f12 70%, #7a5608 100%);
+      border-radius: 0 6px 6px 0;
+      box-shadow: inset 0 0 0 1px rgba(255,220,140,0.25), inset 0 0 40px rgba(60,40,0,0.25);
+      display: flex; flex-direction: column;
+      align-items: flex-end; justify-content: flex-start;
+      padding: 32px 24px 0 0;
+    }
+    .huang-cover-flip-front::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 14px;
+      background: linear-gradient(90deg, rgba(0,0,0,0.25), rgba(255,220,140,0.08));
+    }
+    .huang-cover-flip-back {
+      background: linear-gradient(135deg, #f0e2c0 0%, #e4d09a 100%);
+      transform: rotateY(180deg);
+      border-radius: 6px 0 0 6px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .huang-cover-flip-title {
+      writing-mode: vertical-rl;
+      font-family: 'Noto Serif SC', serif;
+      font-weight: 900;
+      font-size: 40px;
+      color: #f5e6b8;
+      letter-spacing: 10px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .huang-cover-flip-divider {
+      width: 1px; height: 20px;
+      background: linear-gradient(180deg, transparent, rgba(245,230,184,0.4), transparent);
+      margin: 12px 0;
+      flex-shrink: 0;
+    }
+    }
+    .huang-cover-flip-en {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 8px;
+      letter-spacing: 3px;
+      color: rgba(245,230,184,0.5);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    /* ===== 导航 & 关闭 ===== */
+    .huang-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.8);
+      font-size: 26px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.3s ease;
+      z-index: 200;
+      line-height: 1; padding: 0;
+      backdrop-filter: blur(4px);
+    }
+    .huang-nav:hover:not(:disabled) {
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      transform: translateY(-50%) scale(1.1);
+    }
+    .huang-nav:disabled { opacity: 0.15; cursor: default; }
+    .huang-nav-prev { left: -66px; }
+    .huang-nav-next { right: -66px; }
+    .huang-close {
+      position: absolute;
+      top: -54px; right: 0;
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.8);
+      font-size: 20px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.35s ease;
+      z-index: 200;
+      line-height: 1; padding: 0;
+    }
+    .huang-close:hover {
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      transform: rotate(90deg);
+    }
+    .huang-page-num {
+      position: absolute;
+      bottom: -44px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Noto Serif SC', serif;
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 3px;
+      z-index: 200;
+      white-space: nowrap;
+    }
+    .huang-page-num .cur {
+      color: #e8c96a;
+      font-weight: 700;
+    }
+
+    @media (max-width: 640px) {
+      .huang-book { height: min(420px, 62vh); }
+      .huang-nav { display: none !important; }
+      .huang-close { top: -48px; width: 38px; height: 38px; }
+      .huang-page-front, .huang-page-back { padding: 30px 20px; }
+      .huang-left-inner { padding: 30px 16px; }
+      .huang-left-title { font-size: 20px; letter-spacing: 8px; }
+      .huang-left-seal { width: 44px; height: 44px; font-size: 22px; }
+      .huang-cover-btn { width: 180px; height: 260px; }
+      .huang-cover-title-v { font-size: 40px; letter-spacing: 10px; }
+      .huang-quote-cn { letter-spacing: 3px; font-size: clamp(18px, 5vw, 24px); }
+      .huang-quote-ornament { font-size: 44px; }
+    }
+  </style>
+
+  <section class="huang-section" id="huangQuotes" aria-label="黄氏语录">
+    <div class="huang-header">
+      <div class="huang-title">黄氏语录</div>
+      <div class="huang-sub">/ HUANG'S WISDOM</div>
+    </div>
+    <div class="huang-stage">
+      <div class="huang-cover-btn" id="huangCoverBtn" role="button" tabindex="0" aria-label="点击翻开黄氏语录">
+        <div class="huang-cover-face">
+          <div class="huang-cover-inner">
+            <div class="huang-cover-title-v">黄氏语录</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="huang-cover-hint">轻 触 翻 开</div>
+  </section>
+
+  <!-- 黄氏语录 · 书本弹窗 -->
+  <div class="huang-modal" id="huangModal" aria-hidden="true">
+    <div class="huang-modal-overlay" id="huangModalOverlay"></div>
+    <div class="huang-book-scene">
+      <div class="huang-book" id="huangBook">
+        <!-- 左页 -->
+        <div class="huang-book-left">
+          <div class="huang-left-inner">
+            <div class="huang-left-seal">黄</div>
+            <div class="huang-left-title">黄氏语录</div>
+            <div class="huang-left-line"></div>
+            <div class="huang-left-en">Huang's Wisdom</div>
+          </div>
+        </div>
+        <!-- 右页 -->
+        <div class="huang-book-right" id="huangBookRight">
+          <!-- 封面 -->
+          <div class="huang-cover-flip" id="huangCoverFlip">
+            <div class="huang-cover-flip-front">
+              <div class="huang-cover-flip-title">黄氏语录</div>
+            </div>
+            <div class="huang-cover-flip-back">
+              <div class="huang-back-mark">黄</div>
+            </div>
+          </div>
+          <!-- 语录页面由 JS 动态生成 -->
+        </div>
+      </div>
+      <button type="button" class="huang-nav huang-nav-prev" id="huangPrev" aria-label="上一页">‹</button>
+      <button type="button" class="huang-nav huang-nav-next" id="huangNext" aria-label="下一页">›</button>
+      <button type="button" class="huang-close" id="huangClose" aria-label="关闭">×</button>
+      <div class="huang-page-num" id="huangPageNum"><span class="cur">01</span> / 03</div>
+    </div>
+  </div>
 
   <!-- ====================== 立体玻璃班徽（页脚上方） ====================== -->
   <section class="emblem-section" id="classEmblem" aria-label="我们的班徽">
@@ -5649,6 +6227,7 @@ body.candlelight .lightbox {
     </div>
     <div class="more-btns">
       <button type="button" class="more-btn" onclick="window.open('https://zhenhui-to-print-spring.pages.dev/', '_blank')">
+        <span class="more-btn-shine"></span>
         <span class="more-btn-icon" aria-hidden="true">
           <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <!-- 顶部露出的纸 -->
@@ -5678,6 +6257,7 @@ body.candlelight .lightbox {
         </span>
       </button>
       <button type="button" class="more-btn" onclick="window.open('https://zhenhui-zhuawawa.pages.dev/', '_blank')">
+        <span class="more-btn-shine"></span>
         <span class="more-btn-icon" aria-hidden="true">
           <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <!-- 顶部招牌 -->
@@ -5730,6 +6310,7 @@ body.candlelight .lightbox {
         </span>
       </button>
       <button type="button" class="more-btn" onclick="window.open('https://zhenhui-to-take-photos.pages.dev/', '_blank')">
+        <span class="more-btn-shine"></span>
         <span class="more-btn-icon" aria-hidden="true">
           <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <!-- 顶部取景器 -->
@@ -12941,86 +13522,149 @@ body.night-reading .photo-comment-item{
   margin-top: 26px;
 }
 .more-btn {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 14px;
-  width: min(340px, 86vw);
-  padding: 13px 20px;
-  border: 1px solid var(--gold);
-  background: rgba(201,168,76,0.08);
-  color: var(--gold);
-  border-radius: 14px;
+  gap: 16px;
+  width: min(360px, 88vw);
+  padding: 16px 22px;
+  border: none;
+  border-radius: 16px;
   font-size: 14px;
   font-family: inherit;
   line-height: 1.6;
   cursor: pointer;
   text-align: left;
   -webkit-appearance: none;
-  transition: transform 0.35s cubic-bezier(0.22, 1.35, 0.36, 1), background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-  animation: moreBtnBounce 2.4s ease-in-out infinite;
+  background: linear-gradient(135deg, rgba(255,252,245,0.92) 0%, rgba(250,242,225,0.88) 100%);
+  box-shadow:
+    0 2px 8px rgba(184,137,31,0.08),
+    0 10px 28px rgba(184,137,31,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.85);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease;
+  overflow: hidden;
 }
-/* 持续 Q 弹：果冻式轻弹跳动 */
-@keyframes moreBtnBounce {
-  0%, 100% { transform: translateY(0) scale(1); }
-  25% { transform: translateY(-4px) scale(1.03, 0.97); }
-  45% { transform: translateY(0) scale(1); }
-  65% { transform: translateY(-2px) scale(1.012, 0.99); }
-  82% { transform: translateY(0) scale(1); }
+/* 渐变描边 */
+.more-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(201,168,76,0.45), rgba(201,168,76,0.12) 50%, rgba(201,168,76,0.35));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
-/* 错峰延迟：三个按钮依次弹跳，形成波浪节奏 */
-.more-btn:nth-child(2) { animation-delay: 0.12s; }
-.more-btn:nth-child(3) { animation-delay: 0.24s; }
-/* 点击动画：按下收缩并暂停弹跳 */
+/* 右侧箭头 */
+.more-btn::after {
+  content: '›';
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%) translateX(-8px);
+  font-size: 24px;
+  font-weight: 300;
+  color: var(--gold);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+/* 光泽扫过层 */
+.more-btn-shine {
+  position: absolute;
+  top: 0; left: -100%;
+  width: 55%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+  transition: left 0.65s ease;
+  pointer-events: none;
+}
+/* 错峰延迟已移除，改为静态高级感 */
 .more-btn:active {
-  transform: scale(0.94);
-  animation: none;
-  background: rgba(201,168,76,0.2);
+  transform: translateY(-1px) scale(0.985);
+  box-shadow:
+    0 1px 4px rgba(184,137,31,0.1),
+    0 4px 12px rgba(184,137,31,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.8);
 }
 .more-btn-icon {
   flex: 0 0 auto;
-  width: 42px;
-  height: 42px;
+  width: 46px;
+  height: 46px;
   display: grid;
   place-items: center;
-  color: var(--gold);
+  border-radius: 12px;
+  background: linear-gradient(145deg, #f2e2a8, #d8ba5c);
+  box-shadow: 0 2px 8px rgba(184,137,31,0.28), inset 0 1px 0 rgba(255,255,255,0.55);
+  color: #6b4f0c;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .more-btn-icon svg {
-  width: 34px;
-  height: 34px;
+  width: 26px;
+  height: 26px;
   display: block;
 }
 .more-btn-text {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  padding-right: 16px;
 }
 .more-btn-line {
-  font-weight: 600;
+  font-weight: 700;
+  color: #3a2a08;
+  font-size: 15px;
+  letter-spacing: 1px;
 }
 .more-btn-sub {
   font-size: 12px;
-  color: #999;
+  color: #a08040;
+  margin-top: 3px;
+  letter-spacing: 0.5px;
 }
 @media (hover: hover) {
   .more-btn:hover {
-    background: var(--gold);
-    color: #fff;
-    box-shadow: 0 10px 24px rgba(201,168,76,0.28);
+    transform: translateY(-4px);
+    box-shadow:
+      0 6px 16px rgba(184,137,31,0.16),
+      0 20px 48px rgba(184,137,31,0.14),
+      inset 0 1px 0 rgba(255,255,255,0.95);
   }
-  .more-btn:hover .more-btn-icon { color: #fff; }
-  .more-btn:hover .more-btn-sub { color: rgba(255,255,255,0.82); }
+  .more-btn:hover .more-btn-icon {
+    background: linear-gradient(145deg, #ecd27a, #c9a030);
+    box-shadow: 0 5px 14px rgba(184,137,31,0.4), inset 0 1px 0 rgba(255,255,255,0.65);
+    transform: scale(1.06);
+    color: #4a3508;
+  }
+  .more-btn:hover::after {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+  .more-btn:hover .more-btn-shine { left: 130%; }
 }
 /* 夜读模式适配：标题用变量自动跟随，按钮补充暖暗材质 */
 body.candlelight .more-btn {
-  background: rgba(46,38,28,0.82);
-  border-color: rgba(201,168,76,0.30);
-  color: #f0dfb7;
+  background: linear-gradient(135deg, rgba(52,42,28,0.9) 0%, rgba(40,32,20,0.88) 100%);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 10px 28px rgba(0,0,0,0.2), inset 0 1px 0 rgba(201,168,76,0.15);
 }
-body.candlelight .more-btn-icon { color: #e8d5a3; }
+body.candlelight .more-btn::before {
+  background: linear-gradient(135deg, rgba(201,168,76,0.4), rgba(201,168,76,0.1) 50%, rgba(201,168,76,0.3));
+}
+body.candlelight .more-btn-icon {
+  background: linear-gradient(145deg, #6b5530, #4a3a1e);
+  color: #e8d5a3;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(201,168,76,0.2);
+}
+body.candlelight .more-btn-line { color: #f0dfb7; }
 body.candlelight .more-btn-sub { color: #9f927d; }
-body.candlelight .more-btn:active { background: rgba(60,48,30,0.9); }
+body.candlelight .more-btn:active {
+  background: linear-gradient(135deg, rgba(60,48,30,0.92) 0%, rgba(48,38,24,0.9) 100%);
+}
 @media (hover: hover) {
   body.candlelight .more-btn:hover {
-    background: linear-gradient(145deg, rgba(74,57,30,.92), rgba(105,79,32,.70));
+    background: linear-gradient(135deg, rgba(62,50,32,0.95) 0%, rgba(50,40,24,0.92) 100%);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.4), 0 20px 48px rgba(0,0,0,0.3), inset 0 1px 0 rgba(201,168,76,0.2);
     color: #f0dfb7;
   }
   body.candlelight .more-btn:hover .more-btn-icon { color: #f0dfb7; }
@@ -13050,10 +13694,184 @@ body.candlelight .more-btn:active { background: rgba(60,48,30,0.9); }
   }, true);
 })();
 </script>
+<script>
+/* ====================== 黄氏语录 · 书本交互 ====================== */
+(function () {
+  /* ===== 语录数据：未来新增只需在此数组追加一行字符串 ===== */
+  var QUOTES = [
+    "要动、要扣、要摸，打报告。",
+    "综合优秀，全班辉煌。",
+    "人无我有，人有我优，人优我特。"
+  ];
+
+  var coverBtn = document.getElementById('huangCoverBtn');
+  var modal    = document.getElementById('huangModal');
+  var overlay  = document.getElementById('huangModalOverlay');
+  var book     = document.getElementById('huangBook');
+  var closeBtn = document.getElementById('huangClose');
+  var prevBtn  = document.getElementById('huangPrev');
+  var nextBtn  = document.getElementById('huangNext');
+  var right    = document.getElementById('huangBookRight');
+  var pageNum  = document.getElementById('huangPageNum');
+  var pages    = [];
+  var total    = QUOTES.length;
+  var current  = 0;
+  var busy     = false;
+  var isOpen   = false;
+
+  /* 动态生成语录页面 */
+  function buildPages() {
+    QUOTES.forEach(function (text, i) {
+      var page = document.createElement('div');
+      page.className = 'huang-page';
+      page.setAttribute('data-page', i);
+      page.innerHTML =
+        '<div class="huang-page-front">' +
+          '<div class="huang-quote-wrap">' +
+            '<div class="huang-quote-ornament">"</div>' +
+            '<div class="huang-quote-cn">' + text + '</div>' +
+            '<div class="huang-quote-line"></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="huang-page-back">' +
+          '<div class="huang-back-mark">黄</div>' +
+        '</div>';
+      right.appendChild(page);
+    });
+    pages = right.querySelectorAll('.huang-page');
+    total = pages.length;
+    applyZIndex();
+  }
+
+  /* 动态管理 z-index：未翻转按倒序堆叠，翻转后置底 */
+  function applyZIndex() {
+    pages.forEach(function (p, i) {
+      p.style.zIndex = p.classList.contains('flipped') ? 0 : (total - i);
+    });
+  }
+
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+  function updateUI() {
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === total - 1;
+    pageNum.innerHTML = '<span class="cur">' + pad(current + 1) + '</span> / ' + pad(total);
+    applyZIndex();
+  }
+
+  function resetBook() {
+    pages.forEach(function (p) { p.classList.remove('flipped'); });
+    current = 0;
+    updateUI();
+  }
+
+  function openModal() {
+    if (isOpen) return;
+    isOpen = true;
+    resetBook();
+    book.classList.remove('opening');
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    /* 强制重排：确保浏览器先渲染封面闭合的初始状态，再触发翻开动画 */
+    void modal.offsetWidth;
+    void book.offsetWidth;
+    /* 等弹窗入场动画基本完成后再翻开封面，动画更清晰 */
+    setTimeout(function () { book.classList.add('opening'); }, 550);
+  }
+
+  function closeModal() {
+    if (!isOpen) return;
+    isOpen = false;
+    busy = true;
+    book.classList.remove('opening');
+    /* 强制重排：确保合上动画触发 */
+    void book.offsetWidth;
+    setTimeout(function () {
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      setTimeout(function () { resetBook(); busy = false; }, 450);
+    }, 950);
+  }
+
+  function nextPage() {
+    if (busy || current >= total - 1) return;
+    busy = true;
+    pages[current].classList.add('flipped');
+    current++;
+    updateUI();
+    setTimeout(function () { busy = false; }, 900);
+  }
+
+  function prevPage() {
+    if (busy || current <= 0) return;
+    busy = true;
+    current--;
+    pages[current].classList.remove('flipped');
+    updateUI();
+    setTimeout(function () { busy = false; }, 900);
+  }
+
+  function goToPage(idx) {
+    if (busy || idx < 0 || idx >= total || idx === current) return;
+    busy = true;
+    if (idx > current) {
+      for (var i = current; i < idx; i++) pages[i].classList.add('flipped');
+    } else {
+      for (var j = current - 1; j >= idx; j--) pages[j].classList.remove('flipped');
+    }
+    current = idx;
+    updateUI();
+    setTimeout(function () { busy = false; }, 900);
+  }
+
+  /* 事件绑定 */
+  coverBtn.addEventListener('click', openModal);
+  coverBtn.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(); }
+  });
+  closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', closeModal);
+  nextBtn.addEventListener('click', nextPage);
+  prevBtn.addEventListener('click', prevPage);
+
+  document.addEventListener('keydown', function (e) {
+    if (!modal.classList.contains('active')) return;
+    if (e.key === 'Escape') closeModal();
+    else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextPage();
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prevPage();
+  });
+
+  /* 滑动翻页（桌面鼠标 + 移动端触摸，统一 Pointer Events） */
+  var startX = 0, startY = 0, tracking = false;
+
+  book.addEventListener('pointerdown', function (e) {
+    if (busy || !book.classList.contains('opening')) return;
+    tracking = true;
+    startX = e.clientX;
+    startY = e.clientY;
+  });
+
+  book.addEventListener('pointerup', function (e) {
+    if (!tracking) return;
+    tracking = false;
+    var dx = e.clientX - startX;
+    var dy = e.clientY - startY;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    if (dx < 0) nextPage();
+    else prevPage();
+  });
+
+  book.addEventListener('pointercancel', function () { tracking = false; });
+
+  /* 初始化 */
+  buildPages();
+  updateUI();
+})();
+</script>
+
+
+
 </body>
 </html>
-
-
-
-
-
