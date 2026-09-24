@@ -5801,6 +5801,10 @@ body.candlelight .lightbox {
       box-shadow:
         0 40px 100px rgba(0,0,0,0.55),
         0 0 0 1px rgba(201,168,76,0.15);
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
     }
     .huang-book-left,
     .huang-book-right {
@@ -6123,17 +6127,28 @@ body.candlelight .lightbox {
     }
 
     @media (max-width: 640px) {
-      .huang-book { height: min(420px, 62vh); }
+      .huang-book {
+        width: 96vw;
+        height: min(520px, 72vh);
+      }
       .huang-nav { display: none !important; }
-      .huang-close { top: -48px; width: 38px; height: 38px; }
-      .huang-page-front, .huang-page-back { padding: 30px 20px; }
-      .huang-left-inner { padding: 30px 16px; }
-      .huang-left-title { font-size: 20px; letter-spacing: 8px; }
-      .huang-left-seal { width: 44px; height: 44px; font-size: 22px; }
-      .huang-cover-btn { width: 180px; height: 260px; }
-      .huang-cover-title-v { font-size: 40px; letter-spacing: 10px; }
-      .huang-quote-cn { letter-spacing: 3px; font-size: clamp(18px, 5vw, 24px); }
-      .huang-quote-ornament { font-size: 44px; }
+      .huang-close { top: -46px; width: 36px; height: 36px; }
+      .huang-page-front, .huang-page-back { padding: 24px 16px; }
+      .huang-page-front { padding-top: 56px; }
+      .huang-left-inner { padding: 24px 12px; }
+      .huang-left-title { font-size: 18px; letter-spacing: 6px; }
+      .huang-left-seal { width: 40px; height: 40px; font-size: 20px; }
+      .huang-left-en { font-size: 7px; letter-spacing: 2px; }
+      .huang-cover-btn { width: 170px; height: 245px; }
+      .huang-cover-title-v { font-size: 38px; letter-spacing: 8px; }
+      .huang-quote-cn {
+        font-size: clamp(17px, 4.8vw, 22px);
+        letter-spacing: 1.5px;
+        line-height: 1.9;
+      }
+      .huang-quote-ornament { font-size: 38px; margin-bottom: 16px; }
+      .huang-quote-line { margin-top: 22px; }
+      .huang-page-num { bottom: -38px; font-size: 12px; }
     }
   </style>
 
@@ -13848,6 +13863,7 @@ body.candlelight .more-btn:active {
 
   book.addEventListener('pointerdown', function (e) {
     if (busy || !book.classList.contains('opening')) return;
+    e.preventDefault();
     tracking = true;
     startX = e.clientX;
     startY = e.clientY;
@@ -13875,3 +13891,9 @@ body.candlelight .more-btn:active {
 
 </body>
 </html>
+
+
+
+
+
+
