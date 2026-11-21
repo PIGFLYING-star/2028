@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>页面走丢了 · 臻辉班班级纪念册</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="/assets/img/favicon-32.png" sizes="32x32">
+  <style>
+    :root {
+      --gold: #c9a84c;
+      --cream: #fdf8f0;
+      --dark: #1a1a2e;
+      --sub: #8a7f6d;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      padding: 32px 24px;
+      background: radial-gradient(circle at 50% 0%, #fffdf8 0%, var(--cream) 60%);
+      color: var(--dark);
+      font-family: "Songti SC", "Noto Serif SC", "Source Han Serif SC", SimSun, serif;
+      text-align: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .badge {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      object-fit: contain;
+      background: #fff;
+      box-shadow: 0 6px 22px rgba(201, 168, 76, 0.22);
+    }
+    .code {
+      font-size: 72px;
+      line-height: 1;
+      letter-spacing: 6px;
+      color: var(--gold);
+      font-weight: 900;
+      text-shadow: 2px 2px 0 rgba(201, 168, 76, 0.18);
+    }
+    h1 {
+      font-size: clamp(20px, 5vw, 26px);
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+    p {
+      font-size: 15px;
+      line-height: 1.9;
+      color: var(--sub);
+      max-width: 30em;
+    }
+    .divider {
+      width: 60px;
+      height: 2px;
+      background: var(--gold);
+      border-radius: 1px;
+      margin: 4px 0;
+    }
+    a.home {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 12px 30px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #e8d5a3, var(--gold));
+      color: #fff;
+      font-size: 16px;
+      text-decoration: none;
+      box-shadow: 0 8px 20px rgba(201, 168, 76, 0.28);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    a.home:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(201, 168, 76, 0.34); }
+    a.home:active { transform: translateY(0); }
+    @media (prefers-reduced-motion: reduce) {
+      a.home { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <img class="badge" src="/assets/img/111.webp" alt="臻辉班班徽" width="84" height="84">
+  <div class="code">404</div>
+  <h1>这一页，我们没能找到</h1>
+  <div class="divider"></div>
+  <p>可能是链接写错了，也可能是它已经被收进了回忆里。<br>回到纪念册，继续看看我们的三年。</p>
+  <a class="home" href="/">回到班级纪念册</a>
+</body>
+</html>

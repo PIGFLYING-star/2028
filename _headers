@@ -1,0 +1,36 @@
+# Cloudflare Pages 响应头配置
+# 文档：https://developers.cloudflare.com/pages/configuration/headers/
+#
+# 规则按顺序叠加，同一响应头后写的覆盖先写的，所以把通用规则放前面、具体规则放后面。
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'
+
+# 图片 / 音频 / 歌词：文件名不变时缓存 1 天。
+# 覆盖同名文件后最多 1 天才更新，要立即生效就改名或加 ?v=N。
+/assets/img/*
+  Cache-Control: public, max-age=86400
+/assets/music/*
+  Cache-Control: public, max-age=86400
+/media/*
+  Cache-Control: public, max-age=86400
+
+# 字体体积大且基本不变，缓存 7 天；换字重/子集时记得把 @font-face 里的 ?v= 加一
+/assets/fonts/*
+  Cache-Control: public, max-age=604800
+
+# 入口 HTML 必须每次回源校验，保证改完立刻生效
+/
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/404.html
+  Cache-Control: no-cache
+
+# 接口一律不缓存
+/api/*
+  Cache-Control: no-store
