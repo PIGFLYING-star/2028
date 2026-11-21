@@ -6,7 +6,7 @@
     移动端视口配置
     不再禁止双指缩放（无障碍要求）；双击放大由 touch-action: manipulation 抑制
   -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
   <title>臻辉班 · 班级纪念册</title>
   <meta name="description" content="臻辉班 · 班级纪念册：三年同窗的光影、歌声与留言，都在这里。">
   <meta name="theme-color" content="#c9a84c">
@@ -1930,281 +1930,6 @@ body:before{
 }
 
 
-/* ===== v5 photo comment real override =====
-   The previous override only changed the child appearance.
-   This version targets the dynamically generated .photo-comment-item
-   and forces glass rendering above the old white-card rules.
-*/
-.photo-memory-comments .photo-comment-item{
-  isolation:isolate;
-  position:relative;
-  overflow:hidden;
-
-  padding:14px 16px !important;
-  margin-bottom:12px !important;
-  border-radius:22px !important;
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255,255,255,.78),
-      rgba(255,255,255,.30)
-    ) !important;
-
-  border:1px solid rgba(255,255,255,.72) !important;
-
-  -webkit-backdrop-filter:blur(24px) saturate(180%) !important;
-  backdrop-filter:blur(24px) saturate(180%) !important;
-
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.95),
-    inset 0 -1px 0 rgba(255,255,255,.18),
-    0 18px 45px rgba(50,40,20,.12) !important;
-
-  opacity:0;
-  transform:translateY(16px) scale(.96);
-  animation:photoCommentRealIn .5s cubic-bezier(.22,1,.36,1) forwards;
-}
-
-.photo-memory-comments .photo-comment-item::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  z-index:-1;
-  background:
-    radial-gradient(
-      120% 80% at 0% 0%,
-      rgba(255,255,255,.8),
-      transparent 55%
-    );
-  pointer-events:none;
-}
-
-.photo-memory-comments .photo-comment-item .photo-comment-text{
-  position:relative;
-}
-
-@keyframes photoCommentRealIn{
-  0%{
-    opacity:0;
-    transform:translateY(20px) scale(.94);
-    filter:blur(8px);
-  }
-  60%{
-    opacity:1;
-    transform:translateY(-2px) scale(1.01);
-    filter:blur(0);
-  }
-  100%{
-    opacity:1;
-    transform:translateY(0) scale(1);
-  }
-}
-@keyframes photoCommentRealOut{
-  from{
-    opacity:1;
-    transform:translateY(0) scale(1);
-    filter:blur(0);
-  }
-  to{
-    opacity:0;
-    transform:translateY(-12px) scale(.96);
-    filter:blur(8px);
-  }
-}
-
-
-/* 评论容器加载状态：保持玻璃通透感，避免透明状态导致文字不可见 */
-.photo-memory-comments{
-  opacity:0;
-  transition:opacity .35s ease;
-}
-.photo-memory-comments.is-visible{
-  opacity:1;
-}
-
-/* 夜读/烛光模式：删除按钮适配 */
-[data-theme="candle"] .photo-comment-delete,
-.candle-mode .photo-comment-delete,
-body.night-reading .photo-comment-delete{
-  color:#d4b56a;
-}
-[data-theme="candle"] .photo-comment-delete:hover,
-.candle-mode .photo-comment-delete:hover,
-body.night-reading .photo-comment-delete:hover{
-  color:#e8d5a3;
-}
-
-
-/* ===== photo memory comment panel material fix ===== */
-/* 只处理照片查看器评论区域，不改图片浏览逻辑 */
-.photo-memory-comments{
-  position:relative;
-  min-height:150px;
-  padding:18px;
-  border-radius:28px;
-
-  background:
-    linear-gradient(135deg,
-      rgba(255,255,255,.42),
-      rgba(255,255,255,.16));
-
-  border:1px solid rgba(255,255,255,.58);
-
-  backdrop-filter:blur(26px) saturate(150%);
-  -webkit-backdrop-filter:blur(26px) saturate(150%);
-
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.75),
-    0 20px 55px rgba(0,0,0,.12);
-
-  animation:memoryCommentPanelIn .5s cubic-bezier(.22,1,.36,1);
-}
-
-.photo-comment-empty{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  min-height:110px;
-
-  color:rgba(85,75,60,.72);
-  letter-spacing:.08em;
-
-  background:rgba(255,255,255,.18);
-  border-radius:22px;
-  border:1px solid rgba(255,255,255,.35);
-
-  backdrop-filter:blur(14px);
-  -webkit-backdrop-filter:blur(14px);
-}
-
-.photo-comment-editor{
-  background:
-    linear-gradient(135deg,
-      rgba(255,255,255,.55),
-      rgba(255,255,255,.22));
-
-  border-radius:26px;
-  padding:8px;
-
-  border:1px solid rgba(255,255,255,.65);
-
-  backdrop-filter:blur(24px) saturate(160%);
-  -webkit-backdrop-filter:blur(24px) saturate(160%);
-
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.85),
-    0 12px 35px rgba(0,0,0,.08);
-}
-
-#photoCommentInput{
-  background:rgba(255,255,255,.25)!important;
-  border-color:rgba(255,255,255,.45)!important;
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-}
-
-.photo-comment-send{
-  transition:
-    transform .35s cubic-bezier(.22,1,.36,1),
-    box-shadow .35s ease,
-    filter .35s ease;
-}
-
-.photo-comment-send:active{
-  transform:scale(.94);
-}
-
-@keyframes memoryCommentPanelIn{
-  from{
-    opacity:0;
-    transform:translateY(18px) scale(.98);
-    filter:blur(8px);
-  }
-  to{
-    opacity:1;
-    transform:translateY(0) scale(1);
-    filter:blur(0);
-  }
-}
-
-
-/* ===== photo comment panel use existing my-message glass material ===== */
-.photo-memory-comments,
-.photo-comment-item,
-.photo-comment-empty,
-.photo-comment-editor,
-.photo-comment-send,
-#photoCommentInput{
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255,255,255,.42),
-      rgba(255,255,255,.12)
-    ) !important;
-
-  border-color:rgba(255,255,255,.55) !important;
-
-  backdrop-filter:
-    blur(28px)
-    saturate(180%) !important;
-
-  -webkit-backdrop-filter:
-    blur(28px)
-    saturate(180%) !important;
-
-  box-shadow:
-    0 20px 60px rgba(0,0,0,.12),
-    inset 0 1px 1px rgba(255,255,255,.85),
-    inset 0 -10px 30px rgba(255,255,255,.08) !important;
-}
-
-.photo-comment-item,
-.photo-comment-empty,
-.photo-comment-editor{
-  position:relative;
-  overflow:hidden;
-}
-
-.photo-comment-item::before,
-.photo-comment-empty::before,
-.photo-comment-editor::before{
-  content:"";
-  position:absolute;
-  inset:1px;
-  pointer-events:none;
-  background:
-    radial-gradient(
-      circle at 30% 10%,
-      rgba(255,255,255,.75),
-      transparent 38%
-    );
-  opacity:.65;
-}
-
-.photo-comment-item > *,
-.photo-comment-empty > *,
-.photo-comment-editor > *,
-#photoCommentInput{
-  position:relative;
-  z-index:1;
-}
-
-
-
-/* ===== photo comment empty state single glass panel fix =====
-   去掉“还没有评论...”内部重复矩形，只保留 photo-memory-comments 外层玻璃卡片
-*/
-.photo-comment-empty{
-  background:transparent !important;
-  border:none !important;
-  border-radius:0 !important;
-  backdrop-filter:none !important;
-  -webkit-backdrop-filter:none !important;
-  box-shadow:none !important;
-  min-height:110px;
-}
-
 </style>
 
 
@@ -2939,16 +2664,7 @@ body.night-reading .photo-comment-delete:hover{
   -webkit-overflow-scrolling:touch;
 }
 .photo-memory-comments::-webkit-scrollbar{width:5px}
-.photo-memory-comments::-webkit-scrollbar-thumb{background:rgba(201,168,76,.25);border-radius:999px}
-.photo-comment-item{
-  padding:10px 12px;
-  margin-bottom:8px;
-  border-radius:17px;
-  border:1px solid rgba(201,168,76,.14);
-  background:rgba(255,255,255,.72);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.96),0 5px 18px rgba(102,82,40,.05);
-}
-.photo-comment-text{
+.photo-memory-comments::-webkit-scrollbar-thumb{background:rgba(201,168,76,.25);border-radius:999px}.photo-comment-text{
   font-size:13px;
   line-height:1.75;
   color:#5e5547;
@@ -3338,7 +3054,11 @@ body.book-open-lock {
   line-height: inherit;
   letter-spacing: inherit;
   color: inherit;
-}.book-open-motto .book-open-line-text {
+}.book-open-motto .book-open-line--sign {
+  text-align: right;
+  padding-right: 0.6em;
+}
+.book-open-motto .book-open-line-text {
   display: inline;
 }
 .book-open-motto .book-open-ch {
@@ -6814,22 +6534,30 @@ body.candlelight .tl-month-modal,
       safeList.slice(0, 50).forEach(item => {
         const wrap = document.createElement('div');
         wrap.className = 'photo-comment-item';
-        const text = document.createElement('div');
-        text.className = 'photo-comment-text';
-        text.textContent = item.content || '';
-        const time = document.createElement('div');
+
+        const head = document.createElement('div');
+        head.className = 'photo-comment-head';
+
+        const time = document.createElement('span');
         time.className = 'photo-comment-time';
         time.textContent = formatTime(item.create_at);
-        wrap.appendChild(text);
-        wrap.appendChild(time);
+        head.appendChild(time);
 
         if (item.mine) {
           const del = document.createElement('button');
+          del.type = 'button';
           del.className = 'photo-comment-delete';
           del.textContent = '删除';
           del.onclick = () => deletePhotoComment(item.id);
-          wrap.appendChild(del);
+          head.appendChild(del);
         }
+
+        const text = document.createElement('div');
+        text.className = 'photo-comment-text';
+        text.textContent = item.content || '';
+
+        wrap.appendChild(head);
+        wrap.appendChild(text);
 
         photoMemoryComments.appendChild(wrap);
       });
@@ -11149,40 +10877,6 @@ if(viewer){
   transform:scale(.75)!important;
   pointer-events:none!important;
 }
-
-/* ===== Photo comment glass material override v4 =====
-   Only affects photo comment cards.
-   Reuses project glass language: blur + saturation + highlight + soft shadow.
-*/
-.photo-comment-item{
-  position:relative;
-  overflow:hidden;
-  padding:14px 15px;
-  margin-bottom:10px;
-  border-radius:22px;
-
-  background:
-    radial-gradient(120% 120% at 0% 0%,
-      rgba(255,255,255,.82),
-      rgba(255,255,255,.38) 45%,
-      rgba(255,255,255,.18) 100%),
-    rgba(255,255,255,.26);
-
-  border:1px solid rgba(255,255,255,.72);
-
-  -webkit-backdrop-filter:blur(22px) saturate(170%);
-  backdrop-filter:blur(22px) saturate(170%);
-
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.95),
-    inset 0 -1px 0 rgba(255,255,255,.22),
-    0 12px 34px rgba(60,48,28,.10);
-
-  transform:translateY(8px);
-  opacity:0;
-  animation:photoCommentGlassIn .45s cubic-bezier(.22,1,.36,1) forwards;
-}
-
 .photo-comment-item::before{
   content:"";
   position:absolute;
@@ -11348,14 +11042,6 @@ if(viewer){
   opacity:0;
   filter:blur(6px);
 }
-
-/* 动态评论条：更柔和的出现 */
-.photo-memory-comments .photo-comment-item{
-  animation:
-    photoCommentSpringIn .55s cubic-bezier(.22,1,.36,1) both;
-  will-change:transform,opacity,filter;
-}
-
 @keyframes photoCommentSpringIn{
   0%{
     opacity:0;
@@ -11835,20 +11521,6 @@ body.candlelight .photo-memory-card{
   backdrop-filter:none !important;
   -webkit-backdrop-filter:none !important;
 }
-
-/* 评论改为“悬浮内容 + 细分隔线”，不再使用完整矩形框 */
-.photo-memory-comments .photo-comment-item{
-  position:relative !important;
-  margin:0 2px !important;
-  padding:13px 10px 12px 14px !important;
-  border:0 !important;
-  border-radius:18px !important;
-  background:transparent !important;
-  box-shadow:none !important;
-  backdrop-filter:none !important;
-  -webkit-backdrop-filter:none !important;
-}
-
 .photo-memory-comments .photo-comment-item::before{
   content:"" !important;
   position:absolute !important;
@@ -12215,31 +11887,7 @@ body.candlelight .tl-card{
 .photo-memory-comments::-webkit-scrollbar-thumb{
   background: rgba(201,168,76,.30) !important;
   border-radius: 999px !important;
-}
-
-/* ---------- 单条评论：小型液态玻璃卡片，比外层略高不透明度以保证可读 ---------- */
-.photo-memory-comments .photo-comment-item,
-.photo-comment-item{
-  position: relative !important;
-  overflow: hidden !important;
-  padding: 12px 40px 12px 14px !important;
-  margin-bottom: 10px !important;
-  border-radius: 18px !important;
-  background:
-    linear-gradient(150deg, var(--amc-row-glass), rgba(255,255,255,.30)) !important;
-  border: 1px solid rgba(255,255,255,.65) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.9),
-    0 8px 22px rgba(80,60,20,.07) !important;
-  backdrop-filter: blur(18px) saturate(170%) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(170%) !important;
-  opacity: 1 !important;
-  transform: none !important;
-  filter: none !important;
-  will-change: transform, opacity, filter !important;
-  animation: liquidCommentIn .6s cubic-bezier(.22,1,.36,1) both !important;
-}
-.photo-memory-comments .photo-comment-item::before,
+}.photo-memory-comments .photo-comment-item::before,
 .photo-memory-comments .photo-comment-item::after,
 .photo-comment-item::before,
 .photo-comment-item::after{
@@ -12414,12 +12062,7 @@ body.candlelight .tl-card{
     backdrop-filter: blur(26px) saturate(180%) brightness(1.04) !important;
     -webkit-backdrop-filter: blur(26px) saturate(180%) brightness(1.04) !important;
   }
-  .photo-memory-title{ font-size: 18px !important; }
-  .photo-comment-item{
-    backdrop-filter: blur(12px) saturate(160%) !important;
-    -webkit-backdrop-filter: blur(12px) saturate(160%) !important;
-  }
-}
+  .photo-memory-title{ font-size: 18px !important; }}
       body.candlelight .photo-memory-card
     {
   background:
@@ -12489,10 +12132,7 @@ body.candlelight .photo-comment-send{
   box-shadow: inset 0 1px 0 rgba(255,225,170,.12), 0 10px 26px rgba(0,0,0,.30) !important;
 }
 
-@media (prefers-reduced-motion: reduce){
-  .photo-memory-comments .photo-comment-item,
-  .photo-comment-item{ animation: none !important; }
-  .photo-memory-card,
+@media (prefers-reduced-motion: reduce){  .photo-memory-card,
   .photo-comment-send,
   .photo-comment-editor textarea{ transition: none !important; }
 }
@@ -12638,19 +12278,7 @@ body.candlelight .photo-comment-send{
     linear-gradient(155deg, rgba(255,255,255,.78), rgba(255,248,232,.58) 55%, rgba(255,255,255,.68)) !important;
   backdrop-filter: blur(32px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(32px) saturate(180%) !important;
-}
-
-/* 评论列表去除内部卡片感：取消分割线、边框、阴影，仅保留玻璃文字层 */
-.photo-memory-comments .photo-comment-item,
-.photo-comment-item{
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border-radius: 0 !important;
-}
-.photo-memory-comments .photo-comment-item::before,
+}.photo-memory-comments .photo-comment-item::before,
 .photo-memory-comments .photo-comment-item::after,
 .photo-comment-item::before,
 .photo-comment-item::after{
@@ -13481,9 +13109,378 @@ body.candlelight .more-btn:active {
 
 
 
+
+<style id="photo-comment-v2">
+/* =========================================================
+   照片回忆 · 评论面板 v3（Liquid Glass）
+   结构：卡片只做「一层」backdrop-filter（模糊照片背景），
+        评论条目是玻璃上的磨砂小片，不再各自算模糊 → 手机不卡。
+   版式：卡片竖向 flex，只有列表滚动，输入框永远贴在底部。
+   ========================================================= */
+
+/* ---- 外层：flex 居中，卡片的 max-height:100% 才能生效 ---- */
+.photo-memory-back {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  inset: clamp(52px, 8vh, 96px) clamp(12px, 4vw, 64px) clamp(42px, 6vh, 78px) !important;
+}
+
+/* ---- 卡片：液态玻璃本体 ---- */
+.photo-memory-card {
+  position: relative !important;
+  isolation: isolate !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: min(620px, 92vw) !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: min(100%, calc(100dvh - 32px)) !important;
+  padding: 22px 20px 14px !important;
+  box-sizing: border-box !important;
+  border-radius: 28px !important;
+  overflow: hidden !important;
+
+  background:
+    radial-gradient(130% 100% at 16% 0%, rgba(255,255,255,.68) 0%, rgba(255,255,255,.26) 42%, rgba(255,255,255,.16) 100%),
+    linear-gradient(158deg, rgba(255,253,247,.58) 0%, rgba(252,244,231,.46) 58%, rgba(246,236,220,.38) 100%);
+  border: 1px solid rgba(255,255,255,.58);
+  box-shadow:
+    0 30px 80px rgba(30,20,4,.34),
+    0 2px 8px rgba(30,20,4,.10),
+    inset 0 1px 0 rgba(255,255,255,.95),
+    inset 0 -1px 0 rgba(255,255,255,.30),
+    inset 0 0 0 1px rgba(255,255,255,.16);
+
+  -webkit-backdrop-filter: blur(26px) saturate(180%);
+  backdrop-filter: blur(26px) saturate(180%);
+
+  color: #403a2f !important;
+}
+
+/* 顶部高光弧（液态玻璃的"那一抹亮"） */
+.photo-memory-card::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  border-radius: inherit !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+  background:
+    radial-gradient(78% 58% at 18% -12%, rgba(255,255,255,.85) 0%, rgba(255,255,255,0) 62%),
+    radial-gradient(58% 42% at 104% -6%, rgba(255,255,255,.42) 0%, rgba(255,255,255,0) 64%);
+  mix-blend-mode: screen;
+}
+/* 边缘折射光 + 底部金色反光 */
+.photo-memory-card::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  border-radius: inherit !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.30),
+    inset 0 22px 40px -30px rgba(255,255,255,.85),
+    inset 0 -26px 50px -34px rgba(201,168,76,.55);
+}
+.photo-memory-card > * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.photo-memory-kicker {
+  flex: 0 0 auto !important;
+  font: 700 10px/1 Georgia, 'Times New Roman', serif !important;
+  letter-spacing: .30em !important;
+  color: #a98436 !important;
+  text-align: center !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.75);
+}
+.photo-memory-title {
+  flex: 0 0 auto !important;
+  margin: 10px 0 10px !important;
+  text-align: center !important;
+  font: 700 clamp(17px, 4vw, 22px)/1.45 'Noto Serif SC', serif !important;
+  letter-spacing: .06em !important;
+  color: #383226 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.55);
+}
+.photo-memory-rule {
+  flex: 0 0 auto !important;
+  width: 64px !important; height: 1px !important;
+  margin: 0 auto 14px !important;
+  background: linear-gradient(90deg, transparent, rgba(201,168,76,.85), transparent) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,.5);
+}
+
+/* ---- 列表：唯一可滚动区域 ---- */
+.photo-memory-comments {
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 2px 6px 6px 2px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  animation: none !important;
+  opacity: 1 !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(201,168,76,.40) transparent;
+}
+.photo-memory-comments::-webkit-scrollbar { width: 4px; }
+.photo-memory-comments::-webkit-scrollbar-thumb {
+  background: rgba(201,168,76,.40); border-radius: 999px;
+}
+
+/* ---- 单条评论：玻璃上的磨砂小片（不再各自模糊） ---- */
+.photo-memory-comments .photo-comment-item,
+.photo-comment-item {
+  position: relative !important;
+  display: block !important;
+  padding: 10px 13px 11px !important;
+  margin: 0 0 9px !important;
+  border-radius: 16px !important;
+
+  background:
+    linear-gradient(152deg, rgba(255,255,255,.62) 0%, rgba(255,255,255,.34) 100%) !important;
+  border: 1px solid rgba(255,255,255,.60) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.95),
+    inset 0 -1px 0 rgba(255,255,255,.22),
+    0 6px 18px rgba(80,60,20,.10) !important;
+
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  animation: none !important;
+  overflow: visible !important;
+  isolation: auto !important;
+}
+.photo-comment-item::before,
+.photo-comment-item::after { content: none !important; }
+
+.photo-comment-head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  margin-bottom: 5px !important;
+}
+.photo-comment-time {
+  margin: 0 !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+  letter-spacing: .06em !important;
+  color: #9c8f78 !important;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 0 rgba(255,255,255,.6);
+}
+.photo-comment-delete {
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  padding: 3px 8px !important;
+  border: none !important;
+  border-radius: 8px !important;
+  background: rgba(255,255,255,.40) !important;
+  color: #a8935f !important;
+  font: 400 10.5px/1 'Noto Serif SC', serif !important;
+  letter-spacing: .06em !important;
+  cursor: pointer !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
+  transition: color .2s ease, background .2s ease !important;
+}
+.photo-comment-delete:hover {
+  color: #b3392b !important;
+  background: rgba(255,235,232,.75) !important;
+}
+.photo-comment-text {
+  font-size: 13.5px !important;
+  line-height: 1.72 !important;
+  color: #453d31 !important;
+  word-break: break-word !important;
+  white-space: pre-wrap !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.45);
+}
+
+/* ---- 空状态 ---- */
+.photo-comment-empty {
+  display: grid !important;
+  place-items: center !important;
+  min-height: 120px !important;
+  padding: 0 18px !important;
+  text-align: center !important;
+  font-size: 12px !important;
+  line-height: 1.8 !important;
+  color: #9c8f78 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+/* ---- 输入区：玻璃槽 ---- */
+.photo-comment-editor {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  gap: 8px !important;
+  align-items: flex-end !important;
+  margin-top: 10px !important;
+  padding: 7px !important;
+  border-radius: 20px !important;
+  background: linear-gradient(150deg, rgba(255,255,255,.46), rgba(255,255,255,.24)) !important;
+  border: 1px solid rgba(255,255,255,.62) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.95),
+    inset 0 -1px 0 rgba(255,255,255,.25),
+    0 8px 24px rgba(80,60,20,.08) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+#photoCommentInput {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  min-height: 44px !important;
+  max-height: 96px !important;
+  padding: 11px 12px !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(255,255,255,.70) !important;
+  background: rgba(255,255,255,.55) !important;
+  color: #453d31 !important;
+  font: 13px/1.55 'Noto Serif SC', serif !important;
+  resize: none !important;
+  outline: none !important;
+  box-shadow: inset 0 1px 2px rgba(90,70,30,.06) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+#photoCommentInput::placeholder { color: #a89b84 !important; }
+#photoCommentInput:focus {
+  border-color: rgba(201,168,76,.62) !important;
+  box-shadow: inset 0 1px 2px rgba(90,70,30,.06), 0 0 0 3px rgba(201,168,76,.14) !important;
+}
+.photo-comment-send {
+  flex: 0 0 auto !important;
+  min-width: 58px !important;
+  height: 44px !important;
+  padding: 0 12px !important;
+  border: 1px solid rgba(255,255,255,.55) !important;
+  border-radius: 14px !important;
+  background: linear-gradient(150deg, rgba(226,205,151,.96), rgba(186,150,66,.94)) !important;
+  color: #fff !important;
+  font: 700 12px/1 'Noto Serif SC', serif !important;
+  letter-spacing: .08em !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.75),
+    0 8px 20px rgba(150,115,40,.28) !important;
+  cursor: pointer !important;
+  backdrop-filter: none !important;
+}
+.photo-comment-send:active { transform: scale(.96); }
+.photo-comment-send:disabled { opacity: .55 !important; cursor: wait !important; }
+.photo-memory-back-hint {
+  flex: 0 0 auto !important;
+  margin-top: 9px !important;
+  text-align: center !important;
+  font-size: 10px !important;
+  letter-spacing: .10em !important;
+  color: #a89b84 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.5);
+}
+
+/* ---- 夜读：深色烟熏玻璃 ---- */
+body.candlelight .photo-memory-card {
+  background:
+    radial-gradient(130% 100% at 16% 0%, rgba(255,228,168,.14) 0%, rgba(255,255,255,.04) 44%, rgba(255,255,255,.02) 100%),
+    linear-gradient(158deg, rgba(38,30,20,.72) 0%, rgba(28,22,15,.64) 60%, rgba(22,17,12,.58) 100%) !important;
+  border-color: rgba(201,168,76,.30) !important;
+  color: #e6dcc8 !important;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.66),
+    inset 0 1px 0 rgba(255,236,190,.14),
+    inset 0 -1px 0 rgba(255,236,190,.05),
+    inset 0 0 0 1px rgba(201,168,76,.12) !important;
+}
+body.candlelight .photo-memory-card::before {
+  background:
+    radial-gradient(78% 58% at 18% -12%, rgba(255,232,178,.22) 0%, rgba(255,255,255,0) 62%),
+    radial-gradient(58% 42% at 104% -6%, rgba(255,232,178,.10) 0%, rgba(255,255,255,0) 64%);
+}
+body.candlelight .photo-memory-card::after {
+  box-shadow:
+    inset 0 0 0 1px rgba(201,168,76,.16),
+    inset 0 22px 40px -30px rgba(255,232,178,.16),
+    inset 0 -26px 50px -34px rgba(201,168,76,.28);
+}
+body.candlelight .photo-memory-title { color: #f0e6d2 !important; text-shadow: none; }
+body.candlelight .photo-memory-kicker { color: #d4b56a !important; text-shadow: none; }
+body.candlelight .photo-memory-rule {
+  background: linear-gradient(90deg, transparent, rgba(201,168,76,.75), transparent) !important;
+  box-shadow: none;
+}
+body.candlelight .photo-memory-comments .photo-comment-item,
+body.candlelight .photo-comment-item {
+  background: linear-gradient(152deg, rgba(255,240,205,.10) 0%, rgba(255,255,255,.045) 100%) !important;
+  border-color: rgba(201,168,76,.22) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,236,190,.14),
+    0 6px 18px rgba(0,0,0,.28) !important;
+}
+body.candlelight .photo-comment-text { color: #e6dcc8 !important; text-shadow: none; }
+body.candlelight .photo-comment-time { color: #93846a !important; text-shadow: none; }
+body.candlelight .photo-comment-delete {
+  color: #b39c6e !important;
+  background: rgba(255,255,255,.06) !important;
+  box-shadow: inset 0 1px 0 rgba(255,236,190,.10);
+}
+body.candlelight .photo-comment-delete:hover {
+  color: #f0b8a0 !important;
+  background: rgba(240,184,160,.12) !important;
+}
+body.candlelight .photo-comment-empty { color: #93846a !important; }
+body.candlelight .photo-comment-editor {
+  background: linear-gradient(150deg, rgba(255,240,205,.08), rgba(255,255,255,.035)) !important;
+  border-color: rgba(201,168,76,.24) !important;
+  box-shadow: inset 0 1px 0 rgba(255,236,190,.10) !important;
+}
+body.candlelight #photoCommentInput {
+  background: rgba(255,255,255,.06) !important;
+  border-color: rgba(201,168,76,.24) !important;
+  color: #e6dcc8 !important;
+  box-shadow: none !important;
+}
+body.candlelight #photoCommentInput::placeholder { color: #8a7c63 !important; }
+body.candlelight .photo-comment-send {
+  background: linear-gradient(150deg, rgba(150,122,58,.95), rgba(104,84,34,.95)) !important;
+  border-color: rgba(201,168,76,.35) !important;
+  color: #f7efdc !important;
+  box-shadow: inset 0 1px 0 rgba(255,236,190,.18), 0 8px 20px rgba(0,0,0,.42) !important;
+}
+body.candlelight .photo-memory-back-hint { color: #8a7c63 !important; text-shadow: none; }
+
+/* 不支持 backdrop-filter 时的兜底：稍微提高不透明度，保证可读 */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .photo-memory-card {
+    background: linear-gradient(158deg, rgba(255,253,247,.94), rgba(248,240,228,.92)) !important;
+  }
+  body.candlelight .photo-memory-card {
+    background: linear-gradient(158deg, rgba(36,29,20,.96), rgba(26,20,14,.94)) !important;
+  }
+}
+</style>
+
 </body>
 </html>
-
 
 
 
